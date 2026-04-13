@@ -1,0 +1,2 @@
+.page { display: flex; flex-direction: column; gap: 0; }
+.actions { display: flex; gap: 6px; align-items: center; }

@@ -1,0 +1,22 @@
+/* ══ PAGE HEADER ══ */
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.title {
+  font-size: var(--text-xl);
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+.subtitle {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin-top: 4px;
+  line-height: 1.5;
+}

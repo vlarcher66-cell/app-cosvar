@@ -1,0 +1,31 @@
+/* ══ INPUT ══ */
+.field { display: flex; flex-direction: column; gap: 5px; }
+
+.label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.input {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text);
+  font-size: var(--text-sm);
+  font-family: var(--font);
+  padding: 10px 14px;
+  width: 100%;
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease), background var(--dur);
+  outline: none;
+}
+.input::placeholder { color: var(--text-faint); }
+.input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+  background: var(--surface);
+}
+.input:hover:not(:focus) { border-color: #c0c8d8; }
+.inputError { border-color: var(--danger) !important; }
+.inputError:focus { box-shadow: 0 0 0 3px rgba(220,38,38,0.12) !important; }
+.error { font-size: var(--text-xs); color: var(--danger); font-weight: 500; margin-top: 2px; }

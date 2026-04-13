@@ -1,0 +1,27 @@
+.page { display: flex; flex-direction: column; gap: 16px; }
+.actions { display: flex; gap: 6px; align-items: center; }
+.form { display: flex; flex-direction: column; gap: 16px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 480px) { .grid2 { grid-template-columns: 1fr; } }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.label { font-size: var(--text-sm); font-weight: 600; color: var(--text-2); }
+.textarea {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text);
+  padding: 10px 14px;
+  font-size: var(--text-sm);
+  font-family: var(--font);
+  resize: vertical;
+  outline: none;
+  width: 100%;
+  box-shadow: var(--shadow-xs);
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.textarea::placeholder { color: var(--text-faint); }
+.textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow), var(--shadow-xs);
+}
+.formActions { display: flex; justify-content: flex-end; gap: 10px; padding-top: 8px; }

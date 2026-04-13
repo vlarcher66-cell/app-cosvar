@@ -1,0 +1,36 @@
+/* ══ MAIN LAYOUT ══ */
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+/* overlay mobile — agora tratado no Sidebar.jsx via AnimatePresence */
+.overlay { display: none; }
+
+.body {
+  flex: 1;
+  min-height: 100vh;
+  /* marginLeft controlado pelo Framer Motion */
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .body { margin-left: 0 !important; }
+}
+
+@media (max-width: 768px) {
+  .main { padding-bottom: 60px; }
+}
+
+.main {
+  flex: 1;
+  padding-top: var(--topbar-h);
+}
+
+.content {
+  padding: 28px;
+}
+
+@media (max-width: 640px) { .content { padding: 16px 12px; } }

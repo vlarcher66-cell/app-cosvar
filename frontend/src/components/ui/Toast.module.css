@@ -1,0 +1,42 @@
+.container {
+  position: fixed; bottom: 24px; right: 24px;
+  z-index: 999; display: flex; flex-direction: column; gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  padding: 12px 18px;
+  border-radius: var(--r-lg);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  animation: slideLeft 220ms var(--ease) both;
+  min-width: 290px;
+  max-width: 360px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: all;
+  border: 1px solid transparent;
+}
+@keyframes slideLeft {
+  from { transform: translateX(24px); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+.success {
+  background: var(--surface);
+  color: var(--success);
+  border-color: rgba(5,150,105,0.2);
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(5,150,105,0.06);
+}
+.error {
+  background: var(--surface);
+  color: var(--danger);
+  border-color: rgba(220,38,38,0.2);
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(220,38,38,0.06);
+}
+.info {
+  background: var(--surface);
+  color: var(--info);
+  border-color: rgba(2,132,199,0.2);
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(2,132,199,0.06);
+}
