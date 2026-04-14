@@ -1,7 +1,13 @@
 import axios from 'axios';
 
+const BASE_URL = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+    ? 'https://app-cosvar-production.up.railway.app/api'
+    : '/api';
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api',
+  baseURL: BASE_URL,
   timeout: 15000,
 });
 
