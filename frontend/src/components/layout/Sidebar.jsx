@@ -20,34 +20,6 @@ const Icon = {
   right:     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>,
 };
 
-/* ── Bottom Nav Mobile ── */
-function BottomNav() {
-  const location = useLocation();
-  return (
-    <nav className={s.bottomNav}>
-      <NavLink to="/dashboard"       className={({ isActive }) => `${s.bnItem} ${isActive ? s.bnActive : ''}`}>
-        <span className={s.bnIcon}>{Icon.dashboard}</span>
-        <span className={s.bnLabel}>Início</span>
-      </NavLink>
-      <NavLink to="/despesas"        className={({ isActive }) => `${s.bnItem} ${isActive ? s.bnActive : ''}`}>
-        <span className={s.bnIcon}>{Icon.expense}</span>
-        <span className={s.bnLabel}>Despesa</span>
-      </NavLink>
-      <NavLink to="/receitas"        className={({ isActive }) => `${s.bnItem} ${isActive ? s.bnActive : ''}`}>
-        <span className={s.bnIcon}>{Icon.income}</span>
-        <span className={s.bnLabel}>Receita</span>
-      </NavLink>
-      <NavLink to="/cacau/producao"  className={({ isActive }) => `${s.bnItem} ${(isActive || location.pathname.startsWith('/cacau')) ? s.bnActive : ''}`}>
-        <span className={s.bnIcon}>{Icon.cacau}</span>
-        <span className={s.bnLabel}>Cacau</span>
-      </NavLink>
-      <NavLink to="/relatorios"      className={({ isActive }) => `${s.bnItem} ${isActive ? s.bnActive : ''}`}>
-        <span className={s.bnIcon}>{Icon.reports}</span>
-        <span className={s.bnLabel}>Relatórios</span>
-      </NavLink>
-    </nav>
-  );
-}
 
 const NAV = [
   { id: 'dashboard', label: 'Dashboard', icon: Icon.dashboard, path: '/dashboard' },
@@ -209,9 +181,10 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onMob
 
       <motion.aside
         className={`${s.sidebar} ${mobileOpen ? s.sidebarMobileOpen : ''}`}
-        initial={{ width: W_OPEN }}
+        initial={false}
         animate={{ width: collapsed ? W_CLOSED : W_OPEN }}
         transition={spring}
+        style={{ width: undefined }}
       >
         {/* ── Brand ── */}
         <div className={`${s.brand} ${collapsed ? s.brandCollapsed : ''}`}>
@@ -322,8 +295,6 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onMob
 
       </motion.aside>
 
-      {/* ── Bottom navigation bar — mobile only ── */}
-      <BottomNav />
     </>
   );
 }
