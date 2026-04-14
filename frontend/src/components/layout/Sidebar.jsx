@@ -163,6 +163,7 @@ function NavGroup({ item, collapsed, onClose }) {
 
 /* ── Sidebar principal ── */
 export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onMobileClose }) {
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
   return (
     <>
       {/* Overlay mobile */}
@@ -182,9 +183,8 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onMob
       <motion.aside
         className={`${s.sidebar} ${mobileOpen ? s.sidebarMobileOpen : ''}`}
         initial={false}
-        animate={{ width: collapsed ? W_CLOSED : W_OPEN }}
+        animate={isMobile ? {} : { width: collapsed ? W_CLOSED : W_OPEN }}
         transition={spring}
-        style={{ width: undefined }}
       >
         {/* ── Brand ── */}
         <div className={`${s.brand} ${collapsed ? s.brandCollapsed : ''}`}>
