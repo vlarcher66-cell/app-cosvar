@@ -30,6 +30,7 @@ export default function MainLayout() {
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 
   const sideW = collapsed ? W_CLOSED : W_OPEN;
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
 
   return (
     <Toast.Provider value={toast}>
@@ -44,8 +45,8 @@ export default function MainLayout() {
         {/* Body acompanha a largura do sidebar com spring */}
         <motion.div
           className={s.body}
-          initial={{ marginLeft: W_OPEN }}
-          animate={{ marginLeft: sideW }}
+          initial={{ marginLeft: isMobile ? 0 : W_OPEN }}
+          animate={{ marginLeft: isMobile ? 0 : sideW }}
           transition={spring}
         >
           <Topbar
