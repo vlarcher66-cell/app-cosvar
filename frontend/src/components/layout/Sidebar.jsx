@@ -46,9 +46,7 @@ const NAV = [
           },
         ],
       },
-      { label: 'Produtor',        path: '/cadastros/produtores' },
       { label: 'Fornecedor',      path: '/cadastros/fornecedores' },
-      { label: 'Comprador',       path: '/cadastros/compradores' },
       { label: 'Projetos',        path: '/cadastros/projetos' },
       { label: 'Centro de Custo', path: '/cadastros/centros-custo' },
       { label: 'Banco',           path: '/cadastros/bancos' },
@@ -60,6 +58,8 @@ const NAV = [
     children: [
       { label: 'Controle de Produção', path: '/cacau/producao' },
       { label: 'Cacau a Ordem',        path: '/cacau/ordens' },
+      { label: 'Produtor',             path: '/cadastros/produtores' },
+      { label: 'Comprador',            path: '/cadastros/compradores' },
     ],
   },
   {
