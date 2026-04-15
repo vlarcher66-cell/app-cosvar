@@ -24,13 +24,6 @@ const Icon = {
 const NAV = [
   { id: 'dashboard', label: 'Dashboard', icon: Icon.dashboard, path: '/dashboard' },
   {
-    id: 'financeiro', label: 'Financeiro', icon: Icon.finance,
-    children: [
-      { label: 'Lançar Despesa', path: '/despesas', icon: Icon.expense, color: '#ef4444' },
-      { label: 'Lançar Receita', path: '/receitas', icon: Icon.income,  color: '#10b981' },
-    ],
-  },
-  {
     id: 'cadastros', label: 'Cadastros', icon: Icon.register,
     children: [
       { label: 'Grupo',           path: '/cadastros/grupos' },
@@ -52,6 +45,13 @@ const NAV = [
     children: [
       { label: 'Controle de Produção', path: '/cacau/producao' },
       { label: 'Cacau a Ordem',        path: '/cacau/ordens' },
+    ],
+  },
+  {
+    id: 'financeiro', label: 'Financeiro', icon: Icon.finance,
+    children: [
+      { label: 'Lançar Despesa', path: '/despesas', icon: Icon.expense, color: '#ef4444' },
+      { label: 'Lançar Receita', path: '/receitas', icon: Icon.income,  color: '#10b981' },
     ],
   },
   { id: 'relatorios', label: 'Relatórios', icon: Icon.reports, path: '/relatorios' },
