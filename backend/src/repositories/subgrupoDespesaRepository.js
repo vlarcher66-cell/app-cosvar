@@ -5,17 +5,15 @@ const findAll = async (usuario_id) => {
     `SELECT s.*, g.nome AS grupo_nome
      FROM subgrupo_despesa s
      JOIN grupo_despesa g ON g.id = s.grupo_id
-     WHERE s.usuario_id = ?
-     ORDER BY g.nome, s.nome`,
-    [usuario_id]
+     ORDER BY g.nome, s.nome`
   );
   return rows;
 };
 
 const findByGrupo = async (grupo_id, usuario_id) => {
   const [rows] = await db.query(
-    'SELECT * FROM subgrupo_despesa WHERE grupo_id = ? AND usuario_id = ? ORDER BY nome',
-    [grupo_id, usuario_id]
+    'SELECT * FROM subgrupo_despesa WHERE grupo_id = ? ORDER BY nome',
+    [grupo_id]
   );
   return rows;
 };

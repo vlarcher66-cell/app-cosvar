@@ -10,8 +10,7 @@ const makeRepo = (tableName, extraFields = []) => {
 
   const findAll = async (usuario_id) => {
     const [rows] = await db.query(
-      `SELECT * FROM ${tableName} WHERE usuario_id = ? ORDER BY nome`,
-      [usuario_id]
+      `SELECT * FROM ${tableName} ORDER BY nome`
     );
     return rows;
   };
