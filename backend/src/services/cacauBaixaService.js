@@ -29,12 +29,19 @@ const cacauBaixaService = {
   },
   async remove(id)           { await this.getById(id); return repo.remove(id); },
 
-  // Cria venda + lança receita no financeiro numa única transação
+  // Cria venda + lança receitas (uma por parcela de pagamento) numa única transação
   async vendaCompleta(data, usuarioId) {
     if (!data.data)         throw { status: 400, message: 'Data é obrigatória' };
     if (!data.comprador_id) throw { status: 400, message: 'Credora é obrigatória' };
     if (!data.kg || parseFloat(data.kg) <= 0) throw { status: 400, message: 'KG deve ser maior que zero' };
-    if (!data.conta_id)     throw { status: 400, message: 'Conta de recebimento é obrigatória' };
+
+    // Normaliza parcelas — aceita array novo ou formato legado {conta_id, forma_pagamento_id}
+    const parcelas = Array.isArray(data.parcelas) && data.parcelas.length > 0
+      ? data.parcelas
+      : [{ conta_id: data.conta_id, forma_pagamento_id: data.forma_pagamento_id || null, valor: data.valor_total }];
+
+    if (!parcelas.every(p => p.conta_id)) throw { status: 400, message: 'Todas as parcelas precisam de conta de recebimento' };
+    if (!parcelas.every(p => parseFloat(p.valor) > 0)) throw { status: 400, message: 'Todas as parcelas precisam ter valor maior que zero' };
 
     const conn = await db.getConnection();
     try {
@@ -45,8 +52,7 @@ const cacauBaixaService = {
       const numero  = String(seq.prox).padStart(4, '0');
       const ym      = new Date().toISOString().slice(0, 7).replace('-', '');
       const numero_ordem = `VND-${ym}-${numero}`;
-
-      const qtd_arrobas = (parseFloat(data.kg) / 15).toFixed(3);
+      const qtd_arrobas  = (parseFloat(data.kg) / 15).toFixed(3);
 
       // 2. Insere a baixa
       const [baixaResult] = await conn.query(
@@ -58,7 +64,7 @@ const cacauBaixaService = {
       );
       const baixaId = baixaResult.insertId;
 
-      // 3. Lança a receita no financeiro
+      // 3. Busca categoria e descrição
       const [[cat]] = await conn.query(
         `SELECT id FROM categoria_receita WHERE nome = 'Cacau' AND tipo = 'Venda' LIMIT 1`
       );
@@ -70,16 +76,18 @@ const cacauBaixaService = {
       );
       if (!desc) throw { status: 500, message: 'Descrição "Venda de Cacau" não encontrada. Configure no cadastro.' };
 
-      const observacao = `Venda de cacau — ${numero_ordem} — ${data.credora}`;
-      await conn.query(
-        `INSERT INTO receita (categoria_id, descricao_id, projeto_id, conta_id, forma_pagamento_id, cacau_baixa_id, valor, data, descricao, status, usuario_id)
-         VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, 'recebido', ?)`,
-        [cat.id, desc.id, data.conta_id, data.forma_pagamento_id || null,
-         baixaId, data.valor_total, data.data, observacao, usuarioId]
-      );
+      // 4. Insere uma receita por parcela
+      for (const p of parcelas) {
+        const observacao = `Venda de cacau — ${numero_ordem}${parcelas.length > 1 ? ` (parcela)` : ''}`;
+        await conn.query(
+          `INSERT INTO receita (categoria_id, descricao_id, projeto_id, conta_id, forma_pagamento_id, cacau_baixa_id, valor, data, descricao, status, usuario_id)
+           VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, 'recebido', ?)`,
+          [cat.id, desc.id, p.conta_id, p.forma_pagamento_id || null,
+           baixaId, p.valor, data.data, observacao, usuarioId]
+        );
+      }
 
       await conn.commit();
-
       const [rows] = await db.query('SELECT * FROM cacau_baixa WHERE id = ?', [baixaId]);
       return rows[0];
     } catch (err) {

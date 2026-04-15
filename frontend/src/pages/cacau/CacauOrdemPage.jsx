@@ -398,18 +398,17 @@ function TabBaixa({ toast, ano }) {
   const [recebimentoOpen, setRecebimentoOpen]   = useState(false);
   const [recebimentoVenda, setRecebimentoVenda] = useState(null);
   const [contas, setContas]                     = useState([]);
-  const [contaSel, setContaSel]                 = useState('');
   const [savingReceita, setSavingReceita]        = useState(false);
   const [formas, setFormas]                     = useState([]);
-  const [formaSel, setFormaSel]                 = useState('');
   const [novaForma, setNovaForma]               = useState('');
   const [savingForma, setSavingForma]           = useState(false);
-  const [formaDropOpen, setFormaDropOpen]       = useState(false);
-  const [editingForma, setEditingForma]         = useState(null); // { id, nome }
+  const [editingForma, setEditingForma]         = useState(null);
   const [editFormaVal, setEditFormaVal]         = useState('');
   const [savingEditForma, setSavingEditForma]   = useState(false);
   const [deletingForma, setDeletingForma]       = useState(null);
-  const formaDropRef                            = useRef(null);
+  // parcelas: [{_id, forma_id, conta_id, valor, formaDropOpen}]
+  const [parcelas, setParcelas]                 = useState([]);
+  const parcelaDropRefs                         = useRef({});
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -476,9 +475,8 @@ function TabBaixa({ toast, ano }) {
         setModalOpen(false); load();
       } else {
         // Apenas abre o modal de recebimento — nada é salvo ainda
-        setContaSel('');
-        setFormaSel('');
         setNovaForma('');
+        setParcelas([{ _id: Date.now(), forma_id: '', conta_id: '', valor: form.valor_total || '', dropOpen: false }]);
         Promise.all([
           contaService.getAll(),
           formaPagamentoService.getAll(),
@@ -495,10 +493,9 @@ function TabBaixa({ toast, ano }) {
     if (!novaForma.trim()) return;
     setSavingForma(true);
     try {
-      const criada = await formaPagamentoService.create({ nome: novaForma.trim() });
+      await formaPagamentoService.create({ nome: novaForma.trim() });
       const lista = await formaPagamentoService.getAll();
       setFormas(lista);
-      setFormaSel(String(criada.id));
       setNovaForma('');
     } catch { toast?.error('Erro ao cadastrar forma de pagamento'); }
     finally { setSavingForma(false); }
@@ -508,8 +505,7 @@ function TabBaixa({ toast, ano }) {
     setSavingEditForma(true);
     try {
       await formaPagamentoService.update(f.id, { nome: editFormaVal.trim() });
-      const lista = await formaPagamentoService.getAll();
-      setFormas(lista);
+      setFormas(await formaPagamentoService.getAll());
       setEditingForma(null);
     } catch { toast?.error('Erro ao editar forma de pagamento'); }
     finally { setSavingEditForma(false); }
@@ -519,29 +515,33 @@ function TabBaixa({ toast, ano }) {
     setDeletingForma(id);
     try {
       await formaPagamentoService.remove(id);
-      const lista = await formaPagamentoService.getAll();
-      setFormas(lista);
-      if (String(formaSel) === String(id)) setFormaSel('');
+      setFormas(await formaPagamentoService.getAll());
+      setParcelas(prev => prev.map(p => String(p.forma_id) === String(id) ? { ...p, forma_id: '' } : p));
     } catch { toast?.error('Erro ao excluir forma de pagamento'); }
     finally { setDeletingForma(null); }
   };
 
-  // Fecha dropdown de forma ao clicar fora
-  useEffect(() => {
-    if (!formaDropOpen) return;
-    const handler = (e) => { if (formaDropRef.current && !formaDropRef.current.contains(e.target)) setFormaDropOpen(false); };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [formaDropOpen]);
+  // helpers de parcela
+  const setParcela = (id, field, val) =>
+    setParcelas(prev => prev.map(p => p._id === id ? { ...p, [field]: val } : p));
+  const addParcela = () =>
+    setParcelas(prev => [...prev, { _id: Date.now(), forma_id: '', conta_id: '', valor: '', dropOpen: false }]);
+  const removeParcela = (id) =>
+    setParcelas(prev => prev.filter(p => p._id !== id));
+
+  const totalParcelas  = parcelas.reduce((acc, p) => acc + (parseFloat(p.valor) || 0), 0);
+  const totalVenda     = parseFloat(form.valor_total) || 0;
+  const diferencaParcelas = totalVenda - totalParcelas;
 
   const handleLancarReceita = async () => {
-    if (!contaSel) { toast?.error('Selecione a conta de recebimento'); return; }
+    if (parcelas.some(p => !p.conta_id)) { toast?.error('Selecione a conta em todas as parcelas'); return; }
+    if (parcelas.some(p => !(parseFloat(p.valor) > 0))) { toast?.error('Informe o valor em todas as parcelas'); return; }
+    if (Math.abs(diferencaParcelas) > 0.01) { toast?.error(`Diferença de R$ ${Math.abs(diferencaParcelas).toFixed(2)} — o total das parcelas deve ser igual ao valor da venda`); return; }
     setSavingReceita(true);
     try {
       await cacauBaixaService.vendaCompleta({
         ...form,
-        conta_id:           contaSel,
-        forma_pagamento_id: formaSel || null,
+        parcelas: parcelas.map(p => ({ forma_pagamento_id: p.forma_id || null, conta_id: p.conta_id, valor: p.valor })),
       });
       toast?.success('Venda e recebimento registrados com sucesso!');
       setRecebimentoOpen(false);
@@ -806,92 +806,130 @@ function TabBaixa({ toast, ano }) {
 
           <div className={s.ordemDivider} style={{ margin: '12px 0' }} />
 
-          <div className={s.ordemFieldGroup} ref={formaDropRef} style={{ position: 'relative' }}>
-            <label className={s.ordemLabel}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-              Forma de pagamento
-            </label>
-            {/* Trigger */}
-            <button type="button" className={s.fpTrigger} onClick={() => setFormaDropOpen(v => !v)}>
-              <span>{formaSel ? (formas.find(f => String(f.id) === String(formaSel))?.nome || 'Selecione...') : 'Selecione...'}</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: formaDropOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.18s' }}><polyline points="6 9 12 15 18 9"/></svg>
+          {/* ── Parcelas de pagamento ── */}
+          <div className={s.parcelasLabel}>
+            Formas de recebimento
+            {/* Gerenciar formas cadastradas */}
+            <button type="button" className={s.fpGerenciarBtn} onClick={() => setEditingForma(editingForma === '__GERENCIAR__' ? null : '__GERENCIAR__')}>
+              Gerenciar formas
             </button>
-            <AnimatePresence>
-              {formaDropOpen && (
-                <motion.div className={s.fpDropdown}
-                  initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.15 }}>
-                  {formas.length === 0 && (
-                    <div className={s.fpEmpty}>Nenhuma forma cadastrada</div>
-                  )}
-                  {formas.map(f => (
-                    <div key={f.id} className={`${s.fpItem} ${String(formaSel) === String(f.id) ? s.fpItemSel : ''}`}>
-                      {editingForma?.id === f.id ? (
-                        <div className={s.fpEditRow}>
-                          <input autoFocus className={s.fpEditInput} value={editFormaVal}
-                            onChange={e => setEditFormaVal(e.target.value)}
-                            onKeyDown={e => { if (e.key === 'Enter') handleEditForma(f); if (e.key === 'Escape') setEditingForma(null); }} />
-                          <button type="button" className={s.fpBtnSave} onClick={() => handleEditForma(f)} disabled={savingEditForma || !editFormaVal.trim()}>
-                            {savingEditForma ? '...' : '✓'}
-                          </button>
-                          <button type="button" className={s.fpBtnCancel} onClick={() => setEditingForma(null)}>✕</button>
-                        </div>
-                      ) : (
-                        <>
-                          <span className={s.fpItemNome} onClick={() => { setFormaSel(String(f.id)); setFormaDropOpen(false); }}>{f.nome}</span>
-                          <div className={s.fpActions}>
-                            <button type="button" className={s.fpBtnEdit} title="Editar" onClick={() => { setEditingForma(f); setEditFormaVal(f.nome); }}>
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                            </button>
-                            <button type="button" className={s.fpBtnDel} title="Excluir" disabled={deletingForma === f.id} onClick={() => handleDeleteForma(f.id)}>
-                              {deletingForma === f.id ? '...' : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>}
-                            </button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  ))}
-                  {/* Adicionar nova */}
-                  <div className={s.fpAddRow}>
-                    <input className={s.fpAddInput} placeholder="Nova forma (ex: PIX)..."
-                      value={novaForma} onChange={e => setNovaForma(e.target.value)}
-                      onKeyDown={e => e.key === 'Enter' && handleCadastrarForma()} />
-                    <button type="button" className={s.fpBtnAdd} onClick={handleCadastrarForma} disabled={savingForma || !novaForma.trim()}>
-                      {savingForma ? '...' : '+ Add'}
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </div>
 
-          <div className={s.ordemFieldGroup}>
-            <label className={s.ordemLabel}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-              Conta de recebimento
-            </label>
-            <select className={s.ordemSelect} value={contaSel} onChange={e => setContaSel(e.target.value)}>
-              <option value="">Selecione a conta...</option>
-              {contas.map(c => (
-                <option key={c.id} value={c.id}>
-                  {c.tipo === 'caixa' ? 'Caixa' : c.banco_nome ? `${c.banco_nome} — ${c.numero}` : c.numero}
-                </option>
-              ))}
-            </select>
-            {contas.length === 0 && (
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>
-                Nenhuma conta cadastrada — acesse Cadastros → Banco / Conta para adicionar.
-              </span>
+          {/* Painel gerenciar formas (toggle) */}
+          <AnimatePresence>
+            {editingForma === '__GERENCIAR__' && (
+              <motion.div className={s.fpGerenciarBox}
+                initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.18 }}>
+                {formas.length === 0 && <div className={s.fpEmpty}>Nenhuma forma cadastrada</div>}
+                {formas.map(f => (
+                  <div key={f.id} className={s.fpGerenciarItem}>
+                    {editingForma?.id === f.id ? (
+                      <div className={s.fpEditRow}>
+                        <input autoFocus className={s.fpEditInput} value={editFormaVal}
+                          onChange={e => setEditFormaVal(e.target.value)}
+                          onKeyDown={e => { if (e.key === 'Enter') handleEditForma(f); if (e.key === 'Escape') setEditingForma('__GERENCIAR__'); }} />
+                        <button type="button" className={s.fpBtnSave} onClick={() => handleEditForma(f)} disabled={savingEditForma || !editFormaVal.trim()}>{savingEditForma ? '...' : '✓'}</button>
+                        <button type="button" className={s.fpBtnCancel} onClick={() => setEditingForma('__GERENCIAR__')}>✕</button>
+                      </div>
+                    ) : (
+                      <>
+                        <span className={s.fpItemNomeStatic}>{f.nome}</span>
+                        <div className={s.fpActions}>
+                          <button type="button" className={s.fpBtnEdit} onClick={() => { setEditingForma(f); setEditFormaVal(f.nome); }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                          </button>
+                          <button type="button" className={s.fpBtnDel} disabled={deletingForma === f.id} onClick={() => handleDeleteForma(f.id)}>
+                            {deletingForma === f.id ? '...' : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>}
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
+                <div className={s.fpAddRow}>
+                  <input className={s.fpAddInput} placeholder="Nova forma (ex: PIX)..."
+                    value={novaForma} onChange={e => setNovaForma(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleCadastrarForma()} />
+                  <button type="button" className={s.fpBtnAdd} onClick={handleCadastrarForma} disabled={savingForma || !novaForma.trim()}>
+                    {savingForma ? '...' : '+ Add'}
+                  </button>
+                </div>
+              </motion.div>
             )}
+          </AnimatePresence>
+
+          {/* Lista de parcelas */}
+          <div className={s.parcelasList}>
+            {parcelas.map((p, idx) => (
+              <div key={p._id} className={s.parcelaRow}
+                ref={el => { parcelaDropRefs.current[p._id] = el; }}>
+                <div className={s.parcelaIdx}>{idx + 1}</div>
+                {/* Forma */}
+                <div className={s.parcelaFormaWrap} style={{ position: 'relative' }}>
+                  <button type="button" className={s.fpTrigger} style={{ fontSize: '0.8rem', padding: '7px 10px' }}
+                    onClick={() => setParcela(p._id, 'dropOpen', !p.dropOpen)}>
+                    <span style={{ color: p.forma_id ? 'var(--text-2)' : 'var(--text-muted)' }}>
+                      {p.forma_id ? (formas.find(f => String(f.id) === String(p.forma_id))?.nome || 'Forma') : 'Forma (opcional)'}
+                    </span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: p.dropOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s', flexShrink: 0 }}><polyline points="6 9 12 15 18 9"/></svg>
+                  </button>
+                  <AnimatePresence>
+                    {p.dropOpen && (
+                      <motion.div className={s.fpDropdown}
+                        initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.13 }}>
+                        <div className={`${s.fpItem} ${!p.forma_id ? s.fpItemSel : ''}`}
+                          onClick={() => { setParcela(p._id, 'forma_id', ''); setParcela(p._id, 'dropOpen', false); }}>
+                          <span className={s.fpItemNome} style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Sem forma</span>
+                        </div>
+                        {formas.map(f => (
+                          <div key={f.id} className={`${s.fpItem} ${String(p.forma_id) === String(f.id) ? s.fpItemSel : ''}`}
+                            onClick={() => { setParcela(p._id, 'forma_id', String(f.id)); setParcela(p._id, 'dropOpen', false); }}>
+                            <span className={s.fpItemNome}>{f.nome}</span>
+                          </div>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+                {/* Conta */}
+                <select className={s.parcelaSelect} value={p.conta_id} onChange={e => setParcela(p._id, 'conta_id', e.target.value)}>
+                  <option value="">Conta *</option>
+                  {contas.map(c => (
+                    <option key={c.id} value={c.id}>
+                      {c.tipo === 'caixa' ? 'Caixa' : c.banco_nome ? `${c.banco_nome}` : c.numero}
+                    </option>
+                  ))}
+                </select>
+                {/* Valor */}
+                <input type="number" step="0.01" min="0" className={s.parcelaValor}
+                  placeholder="Valor *" value={p.valor}
+                  onChange={e => setParcela(p._id, 'valor', e.target.value)} />
+                {/* Remover */}
+                {parcelas.length > 1 && (
+                  <button type="button" className={s.parcelaRemove} onClick={() => removeParcela(p._id)}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Totalizador + adicionar parcela */}
+          <div className={s.parcelasFooter}>
+            <button type="button" className={s.parcelaAddBtn} onClick={addParcela}>
+              + Adicionar forma
+            </button>
+            <div className={`${s.parcelasTotal} ${Math.abs(diferencaParcelas) > 0.01 ? s.parcelasTotalErro : s.parcelasTotalOk}`}>
+              {Math.abs(diferencaParcelas) > 0.01
+                ? `Falta: R$ ${Math.abs(diferencaParcelas).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                : '✓ Total ok'}
+            </div>
           </div>
 
           <div className={s.recebimentoActions}>
-            <Button
-              variant="primary"
-              onClick={handleLancarReceita}
-              loading={savingReceita}
-              disabled={savingReceita || !contaSel}
-            >
+            <Button variant="primary" onClick={handleLancarReceita} loading={savingReceita} disabled={savingReceita}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               Lançar receita
             </Button>
