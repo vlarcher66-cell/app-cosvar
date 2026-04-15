@@ -20,7 +20,7 @@ import s from './DespesaPage.module.css';
 /* Campos compartilhados entre todos os itens do lote */
 const EMPTY_SHARED = {
   fornecedor_id: '', comprador_id: '', centro_custo_id: '',
-  projeto_id: '', conta_id: '', data: '', descricao: '', status: 'pendente',
+  projeto_id: '', conta_id: '', data: '', descricao: '', status: 'pendente', desconto: '',
 };
 
 /* Um item da lista */
@@ -333,10 +333,12 @@ function TabAPagar({ toast }) {
           descricao: shared.descricao || null,
           status: shared.status,
         },
-        itens: preenchidas.map(r => ({
-          item_id: r.item_id, subgrupo_id: r.subgrupo_id,
-          grupo_id: r.grupo_id, valor: r.valor,
-        })),
+        itens: preenchidas.map(r => {
+          const valorBruto = Number(r.valor || 0);
+          const proporcao  = subtotalCarrinho > 0 ? valorBruto / subtotalCarrinho : 0;
+          const valorLiq   = +(valorBruto - descontoCarrinho * proporcao).toFixed(2);
+          return { item_id: r.item_id, subgrupo_id: r.subgrupo_id, grupo_id: r.grupo_id, valor: valorLiq };
+        }),
       });
       toast?.success(`${preenchidas.length} despesa(s) lançada(s)`);
       setModalOpen(false); load();
@@ -352,7 +354,9 @@ function TabAPagar({ toast }) {
   };
 
   const temFiltro = Object.values(filtros).some(v => v);
-  const totalCarrinho = carrinho.filter(r => r.item_id && r.valor).reduce((a, r) => a + Number(r.valor || 0), 0);
+  const subtotalCarrinho = carrinho.filter(r => r.item_id && r.valor).reduce((a, r) => a + Number(r.valor || 0), 0);
+  const descontoCarrinho = Math.min(Number(shared.desconto || 0), subtotalCarrinho);
+  const totalCarrinho    = subtotalCarrinho - descontoCarrinho;
 
   const columns = [
     { key: 'data',            label: 'Data',       width: 105, render: v => <span className={s.cellDate}>{formatDate(v)}</span> },
@@ -674,10 +678,12 @@ function TabAPagar({ toast }) {
               <div className={s.carrinhoBox}>
                 <div className={s.carrinhoHeader}>
                   <span className={s.carrinhoTitle}>Itens da Despesa</span>
-                  {totalCarrinho > 0 && (
-                    <span className={s.carrinhoTotal}>
-                      Total: <strong>{formatCurrency(totalCarrinho)}</strong>
-                    </span>
+                  {subtotalCarrinho > 0 && (
+                    <div className={s.carrinhoTotais}>
+                      {descontoCarrinho > 0 && <span className={s.carrinhoSubtotal}>Subtotal: {formatCurrency(subtotalCarrinho)}</span>}
+                      {descontoCarrinho > 0 && <span className={s.carrinhoDesconto}>- {formatCurrency(descontoCarrinho)}</span>}
+                      <span className={s.carrinhoTotal}>Total: <strong>{formatCurrency(totalCarrinho)}</strong></span>
+                    </div>
                   )}
                 </div>
 
@@ -710,11 +716,24 @@ function TabAPagar({ toast }) {
                 </button>
               </div>
 
-              <div className={s.field}>
-                <label className={s.label}>Observação</label>
-                <textarea className={s.textarea} value={shared.descricao}
-                  onChange={e => setS('descricao', e.target.value)} rows={2}
-                  placeholder="Observações adicionais..." />
+              <div className={s.grid2}>
+                <div className={s.field}>
+                  <label className={s.label}>Desconto <span className={s.labelHint}>opcional</span></label>
+                  <div className={s.inputWrap}>
+                    <span className={s.inputPrefix}>R$</span>
+                    <input type="number" step="0.01" min="0"
+                      className={`${s.input} ${s.inputWithPrefix}`}
+                      value={shared.desconto}
+                      onChange={e => setS('desconto', e.target.value)}
+                      placeholder="0,00" />
+                  </div>
+                </div>
+                <div className={s.field}>
+                  <label className={s.label}>Observação</label>
+                  <textarea className={s.textarea} value={shared.descricao}
+                    onChange={e => setS('descricao', e.target.value)} rows={2}
+                    placeholder="Observações adicionais..." />
+                </div>
               </div>
             </>
           )}
