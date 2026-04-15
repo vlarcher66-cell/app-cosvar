@@ -248,6 +248,19 @@
   display: inline-block;
 }
 
+.cellVinculada {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 2px 8px;
+  display: inline-block;
+  cursor: default;
+  white-space: nowrap;
+}
+
 .cellForma {
   font-size: 0.75rem;
   font-weight: 600;

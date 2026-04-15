@@ -11,12 +11,14 @@ const findById = async (id, usuario_id) => {
 const create = (data) => repo.create(data);
 
 const update = async (id, data) => {
-  await findById(id, data.usuario_id);
+  const item = await findById(id, data.usuario_id);
+  if (item.cacau_baixa_id) throw { statusCode: 403, message: 'Receita vinculada a uma venda de cacau — edite pela página de Cacau a Ordem.' };
   await repo.update(id, data);
 };
 
 const remove = async (id, usuario_id) => {
-  await findById(id, usuario_id);
+  const item = await findById(id, usuario_id);
+  if (item.cacau_baixa_id) throw { statusCode: 403, message: 'Receita vinculada a uma venda de cacau — exclua pela venda de cacau.' };
   await repo.remove(id, usuario_id);
 };
 

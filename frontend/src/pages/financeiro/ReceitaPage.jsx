@@ -136,12 +136,19 @@ export default function ReceitaPage() {
         {v === 'recebido' ? 'Recebido' : 'Pendente'}
       </span> },
     { key: '_actions', label: '', width: 80, align: 'center',
-      render: (_, row) => (
-        <div className={s.actions}>
-          <button className={s.btnEdit}   onClick={() => openEdit(row)}       title="Editar"><IcoEdit /></button>
-          <button className={s.btnDelete} onClick={() => setDeleteTarget(row)} title="Excluir"><IcoDelete /></button>
-        </div>
-      )},
+      render: (_, row) => {
+        const vinculada = !!row.cacau_baixa_id;
+        return vinculada ? (
+          <span className={s.cellVinculada} title={`Gerada pela venda ${row.cacau_venda_numero} — edite/exclua pela venda de cacau`}>
+            🔒 {row.cacau_venda_numero || 'Cacau'}
+          </span>
+        ) : (
+          <div className={s.actions}>
+            <button className={s.btnEdit}   onClick={() => openEdit(row)}        title="Editar"><IcoEdit /></button>
+            <button className={s.btnDelete} onClick={() => setDeleteTarget(row)} title="Excluir"><IcoDelete /></button>
+          </div>
+        );
+      }},
   ];
 
   return (
