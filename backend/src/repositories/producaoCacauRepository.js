@@ -18,8 +18,8 @@ const producaoCacauRepository = {
         (p.qtd_arrobas * 15) AS total_kg,
         (p.lucro_kg * p.qtd_arrobas * 15) AS lucro_total
       FROM producao_cacau p
-      INNER JOIN projeto  pr ON pr.id = p.projeto_id
-      INNER JOIN produtor pd ON pd.id = p.produtor_id
+      LEFT JOIN projeto  pr ON pr.id = p.projeto_id
+      LEFT JOIN produtor pd ON pd.id = p.produtor_id
       ${where}
       ORDER BY p.data DESC, p.id DESC
     `, params);
@@ -32,19 +32,21 @@ const producaoCacauRepository = {
         pr.nome AS projeto_nome,
         pd.nome AS produtor_nome
       FROM producao_cacau p
-      INNER JOIN projeto  pr ON pr.id = p.projeto_id
-      INNER JOIN produtor pd ON pd.id = p.produtor_id
+      LEFT JOIN projeto  pr ON pr.id = p.projeto_id
+      LEFT JOIN produtor pd ON pd.id = p.produtor_id
       WHERE p.id = ?
     `, [id]);
     return rows[0] || null;
   },
 
   async create(data) {
+    const produtor_id = parseInt(data.produtor_id) || null;
+    const projeto_id  = parseInt(data.projeto_id)  || null;
     const [result] = await pool.query(
       `INSERT INTO producao_cacau
         (data, projeto_id, produtor_id, producao, preco_kg, qtd_arrobas, sacas, cmv_kg, lucro_kg, observacao, usuario_id)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [data.data, data.projeto_id, data.produtor_id, data.producao,
+      [data.data, projeto_id, produtor_id, data.producao,
        data.preco_kg || null, data.qtd_arrobas, data.sacas || null, data.cmv_kg || null,
        data.lucro_kg || null, data.observacao || null, data.usuario_id]
     );
@@ -52,12 +54,14 @@ const producaoCacauRepository = {
   },
 
   async update(id, data) {
+    const produtor_id = parseInt(data.produtor_id) || null;
+    const projeto_id  = parseInt(data.projeto_id)  || null;
     await pool.query(
       `UPDATE producao_cacau SET
         data=?, projeto_id=?, produtor_id=?, producao=?, preco_kg=?,
         qtd_arrobas=?, sacas=?, cmv_kg=?, lucro_kg=?, observacao=?
        WHERE id=?`,
-      [data.data, data.projeto_id, data.produtor_id, data.producao,
+      [data.data, projeto_id, produtor_id, data.producao,
        data.preco_kg || null, data.qtd_arrobas, data.sacas || null, data.cmv_kg || null,
        data.lucro_kg || null, data.observacao || null, id]
     );

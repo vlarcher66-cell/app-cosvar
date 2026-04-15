@@ -59,6 +59,33 @@ const migrations = [
         ON DELETE RESTRICT ON UPDATE CASCADE
     `,
   },
+  // producao_cacau: adiciona FKs para produtor e projeto
+  {
+    name: 'add_produtor_id_to_producao_cacau',
+    sql: `ALTER TABLE producao_cacau ADD COLUMN IF NOT EXISTS produtor_id INT DEFAULT NULL AFTER produtor`,
+  },
+  {
+    name: 'add_projeto_id_to_producao_cacau',
+    sql: `ALTER TABLE producao_cacau ADD COLUMN IF NOT EXISTS projeto_id INT DEFAULT NULL AFTER projeto`,
+  },
+  {
+    name: 'add_fk_producao_cacau_produtor',
+    sql: `
+      ALTER TABLE producao_cacau
+        ADD CONSTRAINT fk_prod_cacau_produtor
+        FOREIGN KEY (produtor_id) REFERENCES produtor (id)
+        ON DELETE RESTRICT ON UPDATE CASCADE
+    `,
+  },
+  {
+    name: 'add_fk_producao_cacau_projeto',
+    sql: `
+      ALTER TABLE producao_cacau
+        ADD CONSTRAINT fk_prod_cacau_projeto
+        FOREIGN KEY (projeto_id) REFERENCES projeto (id)
+        ON DELETE RESTRICT ON UPDATE CASCADE
+    `,
+  },
 ];
 
 const runMigrations = async () => {
@@ -68,7 +95,7 @@ const runMigrations = async () => {
       console.log(`✅ Migration OK: ${migration.name}`);
     } catch (err) {
       // Ignora erro de coluna/tabela já existente
-      if (err.code === 'ER_DUP_FIELDNAME' || err.code === 'ER_TABLE_EXISTS_ERROR' || err.code === 'ER_FK_DUP_NAME' || err.code === 'ER_DUP_KEY') {
+      if (['ER_DUP_FIELDNAME', 'ER_TABLE_EXISTS_ERROR', 'ER_FK_DUP_NAME', 'ER_DUP_KEY', 'ER_CANT_DROP_FIELD_OR_KEY'].includes(err.code)) {
         console.log(`⏭️  Migration já aplicada: ${migration.name}`);
       } else {
         console.error(`❌ Migration falhou: ${migration.name} —`, err.message);
