@@ -123,7 +123,8 @@ export default function ReceitaPage() {
     if (loadingProcesso) return;
     setLoadingProcesso(true); setProcesso(null);
     try { setProcesso(await receitaService.getProcesso(cacau_baixa_id)); }
-    catch (err) { toast?.error(err.response?.data?.message || 'Erro ao carregar processo'); setLoadingProcesso(false); }
+    catch (err) { toast?.error(err.response?.data?.message || 'Erro ao carregar processo'); }
+    finally { setLoadingProcesso(false); }
   };
 
   const temFiltro = Object.values(filtros).some(v => v);
