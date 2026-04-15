@@ -279,3 +279,17 @@ VALUES (
   'admin',
   'ativo'
 );
+
+-- ------------------------------------------------------------
+-- SEED: Categoria e Descrição de Receita padrão para Cacau
+-- Estes registros são obrigatórios para o lançamento automático
+-- de receita ao registrar uma Ordem de Venda de Cacau.
+-- NÃO EXCLUIR — o sistema depende destes IDs.
+-- ------------------------------------------------------------
+INSERT INTO categoria_receita (id, nome, tipo, usuario_id)
+VALUES (1, 'Cacau', 'Venda', 1)
+ON DUPLICATE KEY UPDATE nome = VALUES(nome);
+
+INSERT INTO descricao_receita (id, nome, categoria_id, usuario_id)
+VALUES (1, 'Venda de Cacau', 1, 1)
+ON DUPLICATE KEY UPDATE nome = VALUES(nome);

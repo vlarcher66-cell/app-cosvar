@@ -78,11 +78,22 @@ const totaisPorStatus = async (usuario_id, mes, ano) => {
 
 // Lança receita automática a partir de uma ordem de venda de cacau
 const lancarReceitaVenda = async ({ baixa_id, valor, data, conta_id, observacao, usuario_id }) => {
-  // Categoria e descrição fixas de seed (id=1)
+  // Busca categoria e descrição padrão de Cacau pelo nome
+  const [[cat]] = await db.query(
+    `SELECT id FROM categoria_receita WHERE nome = 'Cacau' AND tipo = 'Venda' LIMIT 1`
+  );
+  if (!cat) throw { status: 500, message: 'Categoria de receita "Cacau" não encontrada. Configure no cadastro.' };
+
+  const [[desc]] = await db.query(
+    `SELECT id FROM descricao_receita WHERE nome = 'Venda de Cacau' AND categoria_id = ? LIMIT 1`,
+    [cat.id]
+  );
+  if (!desc) throw { status: 500, message: 'Descrição de receita "Venda de Cacau" não encontrada. Configure no cadastro.' };
+
   const [result] = await db.query(
     `INSERT INTO receita (categoria_id, descricao_id, projeto_id, conta_id, valor, data, descricao, status, usuario_id)
-     VALUES (1, 1, NULL, ?, ?, ?, ?, 'recebido', ?)`,
-    [conta_id, valor, data, observacao || null, usuario_id]
+     VALUES (?, ?, NULL, ?, ?, ?, ?, 'recebido', ?)`,
+    [cat.id, desc.id, conta_id, valor, data, observacao || null, usuario_id]
   );
   return result.insertId;
 };
