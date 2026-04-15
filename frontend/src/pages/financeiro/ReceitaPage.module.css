@@ -343,6 +343,129 @@
 .btnDelete:hover { background: rgba(220,38,38,0.16); }
 .btnEdit svg, .btnDelete svg { width: 14px; height: 14px; }
 
+.btnView {
+  display: flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px;
+  border: none; border-radius: var(--r-sm);
+  cursor: pointer;
+  background: rgba(5,150,105,0.09);
+  color: #059669;
+  transition: background var(--dur);
+  flex-shrink: 0;
+}
+.btnView:hover { background: rgba(5,150,105,0.18); }
+.btnView svg { width: 15px; height: 15px; }
+
+/* ── Processo Modal ── */
+.processoWrap { display: flex; flex-direction: column; gap: 20px; padding: 2px 0; }
+
+.processoSection {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 16px 18px;
+}
+
+.processoSectionTitle {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.processoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 20px;
+}
+
+.processoField { display: flex; flex-direction: column; gap: 2px; }
+
+.processoFieldLabel {
+  font-size: 0.70rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+}
+
+.processoFieldValue {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.processoFieldMono {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: #059669;
+}
+
+.parcelasList { display: flex; flex-direction: column; gap: 8px; }
+
+.parcelaCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.parcelaInfo { display: flex; flex-direction: column; gap: 2px; }
+
+.parcelaForma {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.parcelaConta {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.parcelaRight { display: flex; align-items: center; gap: 10px; }
+
+.parcelaValor {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 800;
+  color: #059669;
+}
+
+.parcelaStatus {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: var(--r-full);
+}
+.parcelaStatus.recebido {
+  background: rgba(5,150,105,0.10);
+  color: #059669;
+  border: 1px solid rgba(5,150,105,0.20);
+}
+.parcelaStatus.pendente {
+  background: rgba(217,119,6,0.10);
+  color: #d97706;
+  border: 1px solid rgba(217,119,6,0.20);
+}
+
+.processoLoading {
+  text-align: center;
+  padding: 40px 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
 /* ══ MODAL FORM ══ */
 .form { display: flex; flex-direction: column; gap: 16px; padding: 2px 0; }
 

@@ -27,6 +27,7 @@ const IcoEdit      = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentC
 const IcoDelete    = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>;
 const IcoPlus      = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
 const IcoFilter    = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>;
+const IcoView      = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>;
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -50,6 +51,8 @@ export default function ReceitaPage() {
   const [projetos, setProjetos]     = useState([]);
 
   const [filtros, setFiltros] = useState({ data_inicio: '', data_fim: '', status: '', categoria_id: '' });
+  const [processo, setProcesso]       = useState(null);
+  const [loadingProcesso, setLoadingProcesso] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -116,6 +119,13 @@ export default function ReceitaPage() {
     finally { setDeleting(false); }
   };
 
+  const openProcesso = async (cacau_baixa_id) => {
+    setLoadingProcesso(true); setProcesso(null);
+    try { setProcesso(await receitaService.getProcesso(cacau_baixa_id)); }
+    catch { toast?.error('Erro ao carregar processo'); }
+    finally { setLoadingProcesso(false); }
+  };
+
   const temFiltro = Object.values(filtros).some(v => v);
 
   // KPIs calculados do lado do cliente
@@ -140,7 +150,11 @@ export default function ReceitaPage() {
         {v === 'recebido' ? 'Recebido' : 'Pendente'}
       </span> },
     { key: '_actions', label: 'Ações', width: 80, align: 'center',
-      render: (_, row) => row.cacau_baixa_id ? null : (
+      render: (_, row) => row.cacau_baixa_id ? (
+        <button className={s.btnView} onClick={() => openProcesso(row.cacau_baixa_id)} title="Ver processo">
+          <IcoView />
+        </button>
+      ) : (
         <div className={s.actions}>
           <button className={s.btnEdit}   onClick={() => openEdit(row)}        title="Editar"><IcoEdit /></button>
           <button className={s.btnDelete} onClick={() => setDeleteTarget(row)} title="Excluir"><IcoDelete /></button>
@@ -377,6 +391,73 @@ export default function ReceitaPage() {
         title="Excluir Receita"
         message={`Excluir receita de ${formatCurrency(deleteTarget?.valor)} em ${formatDate(deleteTarget?.data)}?`}
       />
+
+      {/* ── Modal Processo Venda de Cacau ── */}
+      <Modal
+        isOpen={!!processo || loadingProcesso}
+        onClose={() => { setProcesso(null); setLoadingProcesso(false); }}
+        title="Processo de Venda de Cacau"
+        width={560}
+      >
+        {loadingProcesso ? (
+          <div className={s.processoLoading}>Carregando processo...</div>
+        ) : processo ? (
+          <div className={s.processoWrap}>
+            {/* Dados da venda */}
+            <div className={s.processoSection}>
+              <div className={s.processoSectionTitle}>Venda — {processo.baixa?.numero_ordem || `#${processo.baixa?.id}`}</div>
+              <div className={s.processoGrid}>
+                <div className={s.processoField}>
+                  <span className={s.processoFieldLabel}>Comprador</span>
+                  <span className={s.processoFieldValue}>{processo.baixa?.credora_nome || '—'}</span>
+                </div>
+                <div className={s.processoField}>
+                  <span className={s.processoFieldLabel}>Data</span>
+                  <span className={s.processoFieldValue}>{formatDate(processo.baixa?.data)}</span>
+                </div>
+                <div className={s.processoField}>
+                  <span className={s.processoFieldLabel}>Quantidade (kg)</span>
+                  <span className={s.processoFieldValue}>{processo.baixa?.quantidade_kg ? `${Number(processo.baixa.quantidade_kg).toFixed(1)} kg` : '—'}</span>
+                </div>
+                <div className={s.processoField}>
+                  <span className={s.processoFieldLabel}>Arrobas</span>
+                  <span className={s.processoFieldValue}>{processo.baixa?.qtd_arrobas ? `${Number(processo.baixa.qtd_arrobas).toFixed(2)} @` : '—'}</span>
+                </div>
+                <div className={s.processoField}>
+                  <span className={s.processoFieldLabel}>Preço / Arroba</span>
+                  <span className={s.processoFieldValue}>{processo.baixa?.preco_arroba ? formatCurrency(processo.baixa.preco_arroba) : '—'}</span>
+                </div>
+                <div className={s.processoField}>
+                  <span className={s.processoFieldLabel}>Total da Venda</span>
+                  <span className={s.processoFieldMono}>{formatCurrency(processo.baixa?.valor_total)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Parcelas de recebimento */}
+            <div className={s.processoSection}>
+              <div className={s.processoSectionTitle}>Recebimentos ({processo.parcelas?.length || 0})</div>
+              <div className={s.parcelasList}>
+                {(processo.parcelas || []).map((p, i) => (
+                  <div key={p.id || i} className={s.parcelaCard}>
+                    <div className={s.parcelaInfo}>
+                      <span className={s.parcelaForma}>{p.forma_pagamento_nome || 'Sem forma definida'}</span>
+                      <span className={s.parcelaConta}>
+                        {p.banco_nome ? `${p.banco_nome} — ` : ''}{p.conta_numero || '—'}
+                        {p.conta_tipo === 'caixa' ? ' (Caixa)' : ''}
+                      </span>
+                    </div>
+                    <div className={s.parcelaRight}>
+                      <span className={s.parcelaValor}>{formatCurrency(p.valor)}</span>
+                      <span className={`${s.parcelaStatus} ${p.status}`}>{p.status === 'recebido' ? 'Recebido' : 'Pendente'}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </Modal>
     </div>
   );
 }
