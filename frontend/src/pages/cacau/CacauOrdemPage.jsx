@@ -525,7 +525,10 @@ function TabBaixa({ toast, ano }) {
   const setParcela = (id, field, val) =>
     setParcelas(prev => prev.map(p => p._id === id ? { ...p, [field]: val } : p));
   const addParcela = () =>
-    setParcelas(prev => [...prev, { _id: Date.now(), forma_id: '', conta_id: '', valor: '', dropOpen: false }]);
+    setParcelas(prev => {
+      const restante = Math.max(0, totalVenda - prev.reduce((acc, p) => acc + (parseFloat(p.valor) || 0), 0));
+      return [...prev, { _id: Date.now(), forma_id: '', conta_id: '', valor: restante > 0 ? restante.toFixed(2) : '', dropOpen: false }];
+    });
   const removeParcela = (id) =>
     setParcelas(prev => prev.filter(p => p._id !== id));
 
