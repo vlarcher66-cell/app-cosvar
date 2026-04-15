@@ -63,4 +63,15 @@ const createBatch = async (req, res, next) => {
   }
 };
 
-module.exports = { getAll, getOne, create, createBatch, update, remove };
+const baixar = async (req, res, next) => {
+  try {
+    await service.baixar(req.params.id, { ...req.body, usuario_id: req.user.id });
+    const item = await service.findById(req.params.id, req.user.id);
+    return success(res, item, 'Baixa registrada com sucesso');
+  } catch (err) {
+    if (err.statusCode) return error(res, err.message, err.statusCode);
+    next(err);
+  }
+};
+
+module.exports = { getAll, getOne, create, createBatch, update, remove, baixar };

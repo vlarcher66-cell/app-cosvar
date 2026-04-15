@@ -35,6 +35,7 @@ const IcoEdit     = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentCo
 const IcoDelete   = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>;
 const IcoPlus     = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
 const IcoFilter   = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>;
+const IcoBaixa    = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>;
 const IcoAPagar   = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
 const IcoPagas    = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>;
 const IcoAnalise  = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>;
@@ -267,6 +268,10 @@ function TabAPagar({ toast }) {
     }
   }, [modalOpen]);
 
+  useEffect(() => {
+    if (baixaTarget) contaService.getAll().then(setContas);
+  }, [baixaTarget]);
+
   const setS = (k, v) => setShared(p => ({ ...p, [k]: v }));
   const setE = (k, v) => setEditForm(p => ({ ...p, [k]: v }));
 
@@ -353,6 +358,36 @@ function TabAPagar({ toast }) {
     finally { setDeleting(false); }
   };
 
+  const [baixaTarget, setBaixaTarget] = useState(null);
+  const [baixaForm, setBaixaForm]     = useState({});
+  const [baixando, setBaixando]       = useState(false);
+
+  const openBaixa = (row) => {
+    setBaixaTarget(row);
+    setBaixaForm({
+      data_pagamento: new Date().toISOString().slice(0, 10),
+      conta_id: '',
+      valor_pago: row.valor,
+      acrescimo: '',
+      desconto_pagamento: '',
+      observacao: '',
+    });
+  };
+
+  const handleBaixa = async (e) => {
+    e.preventDefault();
+    if (!baixaForm.conta_id)       { toast?.error('Selecione a conta'); return; }
+    if (!baixaForm.data_pagamento) { toast?.error('Informe a data de pagamento'); return; }
+    setBaixando(true);
+    try {
+      await despesaService.baixar(baixaTarget.id, baixaForm);
+      toast?.success('Baixa registrada com sucesso');
+      setBaixaTarget(null);
+      load();
+    } catch (err) { toast?.error(err.response?.data?.message || 'Erro ao registrar baixa'); }
+    finally { setBaixando(false); }
+  };
+
   const temFiltro = Object.values(filtros).some(v => v);
   const subtotalCarrinho = carrinho.filter(r => r.item_id && r.valor).reduce((a, r) => a + Number(r.valor || 0), 0);
   const descontoCarrinho = Math.min(Number(shared.desconto || 0), subtotalCarrinho);
@@ -370,11 +405,12 @@ function TabAPagar({ toast }) {
       render: v => <span className={`${s.badge} ${v === 'pago' ? s.badgePago : s.badgePendente}`}>
         {v === 'pago' ? 'Pago' : 'Pendente'}
       </span> },
-    { key: '_actions', label: '', width: 80, align: 'center',
+    { key: '_actions', label: '', width: 110, align: 'center',
       render: (_, row) => (
         <div className={s.actions}>
-          <button className={s.btnEdit}   onClick={() => openEdit(row)}        title="Editar"><IcoEdit /></button>
-          <button className={s.btnDelete} onClick={() => setDeleteTarget(row)} title="Excluir"><IcoDelete /></button>
+          <button className={s.btnBaixa}  onClick={() => openBaixa(row)}       title="Registrar pagamento"><IcoBaixa /></button>
+          <button className={s.btnEdit}   onClick={() => openEdit(row)}         title="Editar"><IcoEdit /></button>
+          <button className={s.btnDelete} onClick={() => setDeleteTarget(row)}  title="Excluir"><IcoDelete /></button>
         </div>
       )},
   ];
@@ -753,6 +789,97 @@ function TabAPagar({ toast }) {
         title="Excluir Despesa"
         message={`Excluir despesa de ${formatCurrency(deleteTarget?.valor)} em ${formatDate(deleteTarget?.data)}?`}
       />
+
+      {/* ══ MODAL BAIXA ══ */}
+      <Modal isOpen={!!baixaTarget} onClose={() => setBaixaTarget(null)} title="Registrar Pagamento" width={480}>
+        {baixaTarget && (
+          <form onSubmit={handleBaixa} className={s.form}>
+            <div className={s.baixaInfo}>
+              <div className={s.baixaInfoItem}>
+                <span className={s.baixaInfoLabel}>Despesa</span>
+                <span className={s.baixaInfoVal}>{baixaTarget.item_nome || '—'}</span>
+              </div>
+              <div className={s.baixaInfoItem}>
+                <span className={s.baixaInfoLabel}>Valor Original</span>
+                <span className={s.baixaInfoVal}>{formatCurrency(baixaTarget.valor)}</span>
+              </div>
+            </div>
+
+            <div className={s.grid2}>
+              <div className={s.field}>
+                <label className={s.label}>Data do Pagamento <span className={s.req}>*</span></label>
+                <input type="date" className={s.input} value={baixaForm.data_pagamento}
+                  onChange={e => setBaixaForm(p => ({ ...p, data_pagamento: e.target.value }))} required />
+              </div>
+              <div className={s.field}>
+                <label className={s.label}>Conta <span className={s.req}>*</span></label>
+                <select className={s.select} value={baixaForm.conta_id}
+                  onChange={e => setBaixaForm(p => ({ ...p, conta_id: e.target.value }))} required>
+                  <option value="">Selecione...</option>
+                  {contas.map(c => <option key={c.id} value={c.id}>{c.tipo === 'caixa' ? 'Caixa' : `${c.banco_nome || ''} — ${c.numero}`}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div className={s.field}>
+              <label className={s.label}>Valor Pago <span className={s.req}>*</span></label>
+              <div className={s.inputWrap}>
+                <span className={s.inputPrefix}>R$</span>
+                <input type="number" step="0.01" min="0.01"
+                  className={`${s.input} ${s.inputWithPrefix}`}
+                  value={baixaForm.valor_pago}
+                  onChange={e => {
+                    const vp = e.target.value;
+                    const diff = Number(vp) - Number(baixaTarget.valor);
+                    setBaixaForm(p => ({
+                      ...p,
+                      valor_pago: vp,
+                      acrescimo: diff > 0 ? diff.toFixed(2) : '',
+                      desconto_pagamento: diff < 0 ? Math.abs(diff).toFixed(2) : '',
+                    }));
+                  }}
+                  placeholder="0,00" required />
+              </div>
+            </div>
+
+            <AnimatePresence>
+              {Number(baixaForm.valor_pago) > Number(baixaTarget.valor) && (
+                <motion.div className={`${s.field} ${s.baixaAcrescimo}`}
+                  initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
+                  <label className={s.label}>Acréscimo (juros/multa)</label>
+                  <div className={s.inputWrap}>
+                    <span className={s.inputPrefix}>R$</span>
+                    <input type="number" step="0.01" min="0" className={`${s.input} ${s.inputWithPrefix}`}
+                      value={baixaForm.acrescimo} readOnly />
+                  </div>
+                </motion.div>
+              )}
+              {Number(baixaForm.valor_pago) < Number(baixaTarget.valor) && Number(baixaForm.valor_pago) > 0 && (
+                <motion.div className={`${s.field} ${s.baixaDesconto}`}
+                  initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
+                  <label className={s.label}>Desconto/Abatimento</label>
+                  <div className={s.inputWrap}>
+                    <span className={s.inputPrefix}>R$</span>
+                    <input type="number" step="0.01" min="0" className={`${s.input} ${s.inputWithPrefix}`}
+                      value={baixaForm.desconto_pagamento} readOnly />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className={s.field}>
+              <label className={s.label}>Observação <span className={s.labelHint}>opcional</span></label>
+              <textarea className={s.textarea} rows={2} placeholder="Ex: pago com desconto negociado..."
+                value={baixaForm.observacao} onChange={e => setBaixaForm(p => ({ ...p, observacao: e.target.value }))} />
+            </div>
+
+            <div className={s.formActions}>
+              <Button type="button" variant="secondary" onClick={() => setBaixaTarget(null)} disabled={baixando}>Cancelar</Button>
+              <Button type="submit" variant="primary" loading={baixando}>Confirmar Pagamento</Button>
+            </div>
+          </form>
+        )}
+      </Modal>
     </div>
   );
 }

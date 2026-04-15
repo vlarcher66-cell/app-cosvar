@@ -20,6 +20,15 @@ const remove = async (id, usuario_id) => {
   await repo.remove(id, usuario_id);
 };
 
+const baixar = async (id, data) => {
+  const despesa = await findById(id, data.usuario_id);
+  if (despesa.status === 'pago') throw { statusCode: 400, message: 'Despesa já foi baixada' };
+  if (!data.conta_id)        throw { statusCode: 400, message: 'Conta é obrigatória' };
+  if (!data.data_pagamento)  throw { statusCode: 400, message: 'Data de pagamento é obrigatória' };
+  if (!data.valor_pago || Number(data.valor_pago) <= 0) throw { statusCode: 400, message: 'Valor pago é obrigatório' };
+  await repo.baixar(id, data);
+};
+
 const createBatch = async (payload) => {
   const { itens, compartilhado, usuario_id } = payload;
   if (!itens || itens.length === 0) throw { statusCode: 400, message: 'Informe pelo menos um item' };
@@ -35,4 +44,4 @@ const createBatch = async (payload) => {
   return repo.createBatch(registros);
 };
 
-module.exports = { findAll, findById, create, createBatch, update, remove };
+module.exports = { findAll, findById, create, createBatch, update, remove, baixar };

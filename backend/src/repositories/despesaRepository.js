@@ -79,6 +79,22 @@ const remove = async (id, usuario_id) => {
   await db.query('DELETE FROM despesa WHERE id=? AND usuario_id=?', [id, usuario_id]);
 };
 
+const baixar = async (id, { conta_id, data_pagamento, valor_pago, acrescimo, desconto_pagamento, observacao, usuario_id }) => {
+  await db.query(
+    `UPDATE despesa SET
+      status = 'pago',
+      conta_id = ?,
+      data_pagamento = ?,
+      valor_pago = ?,
+      acrescimo = ?,
+      desconto_pagamento = ?,
+      descricao = CASE WHEN ? IS NOT NULL THEN ? ELSE descricao END
+     WHERE id = ? AND usuario_id = ?`,
+    [conta_id, data_pagamento, valor_pago, acrescimo || 0, desconto_pagamento || 0,
+     observacao, observacao, id, usuario_id]
+  );
+};
+
 // Para dashboard
 const totaisPorStatus = async (usuario_id, mes, ano) => {
   const [rows] = await db.query(
@@ -134,4 +150,4 @@ const createBatch = async (itens) => {
   }
 };
 
-module.exports = { findAll, findById, create, createBatch, update, remove, totaisPorStatus, totaisPorGrupo };
+module.exports = { findAll, findById, create, createBatch, update, remove, baixar, totaisPorStatus, totaisPorGrupo };
