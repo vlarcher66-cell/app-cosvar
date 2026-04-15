@@ -29,4 +29,6 @@ const lancarReceitaVenda = async ({ baixa_id, valor, data, conta_id, observacao,
   return repo.lancarReceitaVenda({ baixa_id, valor, data, conta_id, observacao, usuario_id });
 };
 
-module.exports = { findAll, findById, create, update, remove, lancarReceitaVenda };
+const getProcesso = (cacau_baixa_id, usuario_id) => repo.getProcesso(cacau_baixa_id, usuario_id);
+
+module.exports = { findAll, findById, create, update, remove, lancarReceitaVenda, getProcesso };

@@ -116,4 +116,32 @@ const lancarReceitaVenda = async ({ baixa_id, valor, data, conta_id, observacao,
   return result.insertId;
 };
 
-module.exports = { findAll, findById, create, update, remove, totaisPorStatus, lancarReceitaVenda };
+// Retorna dados completos da venda de cacau + parcelas de receita vinculadas
+const getProcesso = async (cacau_baixa_id, usuario_id) => {
+  const [[baixa]] = await db.query(`
+    SELECT b.*,
+      cp.nome AS credora_nome
+    FROM cacau_baixa b
+    LEFT JOIN comprador cp ON cp.id = b.comprador_id
+    WHERE b.id = ?
+  `, [cacau_baixa_id]);
+
+  if (!baixa) throw { statusCode: 404, message: 'Venda não encontrada' };
+
+  const [parcelas] = await db.query(`
+    SELECT r.id, r.valor, r.data, r.status, r.descricao,
+      ct.numero AS conta_numero, ct.tipo AS conta_tipo,
+      bco.nome AS banco_nome,
+      fp.nome AS forma_pagamento_nome
+    FROM receita r
+    LEFT JOIN conta ct         ON ct.id = r.conta_id
+    LEFT JOIN banco bco        ON bco.id = ct.banco_id
+    LEFT JOIN forma_pagamento fp ON fp.id = r.forma_pagamento_id
+    WHERE r.cacau_baixa_id = ? AND r.usuario_id = ?
+    ORDER BY r.id ASC
+  `, [cacau_baixa_id, usuario_id]);
+
+  return { baixa, parcelas };
+};
+
+module.exports = { findAll, findById, create, update, remove, totaisPorStatus, lancarReceitaVenda, getProcesso };

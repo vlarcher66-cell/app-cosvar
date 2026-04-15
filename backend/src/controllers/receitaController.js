@@ -63,4 +63,14 @@ const lancarReceitaVenda = async (req, res, next) => {
   }
 };
 
-module.exports = { getAll, getOne, create, update, remove, lancarReceitaVenda };
+const getProcesso = async (req, res, next) => {
+  try {
+    const data = await service.getProcesso(req.params.cacau_baixa_id, req.user.id);
+    return success(res, data);
+  } catch (err) {
+    if (err.statusCode) return error(res, err.message, err.statusCode);
+    next(err);
+  }
+};
+
+module.exports = { getAll, getOne, create, update, remove, lancarReceitaVenda, getProcesso };
