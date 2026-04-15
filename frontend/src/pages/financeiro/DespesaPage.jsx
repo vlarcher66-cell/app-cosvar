@@ -592,26 +592,6 @@ function TabAPagar({ toast }) {
 
               <div className={s.grid2}>
                 <div className={s.field}>
-                  <label className={s.label}>Conta <span className={s.req}>*</span></label>
-                  <select className={s.select} value={editForm.conta_id} onChange={e => setE('conta_id', e.target.value)} required>
-                    <option value="">Selecione...</option>
-                    {contas.map(c => <option key={c.id} value={c.id}>{c.tipo === 'caixa' ? 'Caixa' : `${c.banco_nome || ''} — ${c.numero}`}</option>)}
-                  </select>
-                </div>
-                <div className={s.field}>
-                  <label className={s.label}>Status</label>
-                  <div className={s.statusToggle}>
-                    {[{ value: 'pendente', label: 'Pendente', cls: s.togglePendente }, { value: 'pago', label: 'Pago', cls: s.togglePago }].map(opt => (
-                      <button key={opt.value} type="button"
-                        className={`${s.toggleBtn} ${editForm.status === opt.value ? `${opt.cls} ${s.toggleActive}` : ''}`}
-                        onClick={() => setE('status', opt.value)}>{opt.label}</button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className={s.grid2}>
-                <div className={s.field}>
                   <label className={s.label}>Valor <span className={s.req}>*</span></label>
                   <div className={s.inputWrap}>
                     <span className={s.inputPrefix}>R$</span>
@@ -622,10 +602,18 @@ function TabAPagar({ toast }) {
                   </div>
                 </div>
                 <div className={s.field}>
-                  <label className={s.label}>Data <span className={s.req}>*</span></label>
+                  <label className={s.label}>Data de Previsão <span className={s.req}>*</span></label>
                   <input type="date" className={s.input} value={editForm.data}
                     onChange={e => setE('data', e.target.value)} required />
                 </div>
+              </div>
+
+              <div className={s.field}>
+                <label className={s.label}>Conta <small style={{ fontWeight: 400, color: 'var(--text-secondary)' }}>(opcional — definida no pagamento)</small></label>
+                <select className={s.select} value={editForm.conta_id} onChange={e => setE('conta_id', e.target.value)}>
+                  <option value="">Nenhuma</option>
+                  {contas.map(c => <option key={c.id} value={c.id}>{c.tipo === 'caixa' ? 'Caixa' : `${c.banco_nome || ''} — ${c.numero}`}</option>)}
+                </select>
               </div>
 
               <div className={s.field}>
