@@ -81,35 +81,22 @@ function ItemSearchRow({ row, todosItens, onChange, onRemove, canRemove }) {
     onChange({ ...row, item_id: '', subgrupo_id: '', grupo_id: '', item: null });
   };
 
-  const dropdown = (
-    <AnimatePresence>
-      {dropOpen && filtrados.length > 0 && createPortal(
-        <motion.ul
-          className={s.itemDropdown}
-          style={{ position: 'fixed', top: dropPos.top, left: dropPos.left, width: dropPos.width, zIndex: 9999 }}
-          initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.15 }}>
-          {filtrados.slice(0, 10).map(it => (
-            <li key={it.id} className={s.itemDropItem} onMouseDown={() => selecionar(it)}>
+  const dropStyle = { position: 'fixed', top: dropPos.top, left: dropPos.left, width: dropPos.width, zIndex: 9999 };
+
+  const dropdown = dropOpen ? createPortal(
+    <ul className={s.itemDropdown} style={dropStyle}>
+      {filtrados.length > 0
+        ? filtrados.slice(0, 12).map(it => (
+            <li key={it.id} className={s.itemDropItem} onMouseDown={(e) => { e.preventDefault(); selecionar(it); }}>
               <span className={s.itemDropNome}>{it.nome}</span>
               <span className={s.itemDropPath}>{it.grupo_nome}{it.subgrupo_nome ? ` › ${it.subgrupo_nome}` : ''}</span>
             </li>
-          ))}
-        </motion.ul>,
-        document.body
-      )}
-      {dropOpen && query && filtrados.length === 0 && createPortal(
-        <motion.ul
-          className={s.itemDropdown}
-          style={{ position: 'fixed', top: dropPos.top, left: dropPos.left, width: dropPos.width, zIndex: 9999 }}
-          initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.15 }}>
-          <li className={s.itemDropEmpty}>Nenhum item encontrado</li>
-        </motion.ul>,
-        document.body
-      )}
-    </AnimatePresence>
-  );
+          ))
+        : query ? <li className={s.itemDropEmpty}>Nenhum item encontrado</li> : null
+      }
+    </ul>,
+    document.body
+  ) : null;
 
   return (
     <div className={s.carrinhoRow}>
