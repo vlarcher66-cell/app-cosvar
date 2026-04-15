@@ -125,7 +125,7 @@ function NavSubsection({ sub, onClose }) {
   return (
     <div className={s.subsection}>
       <button
-        className={`${s.subsectionBtn} ${isActive ? s.subsectionBtnActive : ''}`}
+        className={`${s.subsectionBtn} ${isActive ? s.subsectionBtnActive : ''} ${open ? s.subsectionBtnOpen : ''}`}
         onClick={() => setOpen(p => !p)}
       >
         <span>{sub.label}</span>
@@ -174,9 +174,9 @@ function NavSection({ sec, onClose }) {
   useEffect(() => { if (isActive) setOpen(true); }, [location.pathname]);
 
   return (
-    <div className={s.section}>
+    <div className={`${s.section} ${open ? s.sectionOpen : ''}`}>
       <button
-        className={`${s.sectionBtn} ${isActive ? s.sectionBtnActive : ''}`}
+        className={`${s.sectionBtn} ${isActive ? s.sectionBtnActive : ''} ${open ? s.sectionBtnOpen : ''}`}
         onClick={() => setOpen(p => !p)}
       >
         <span>{sec.label}</span>
@@ -219,16 +219,15 @@ function NavSection({ sec, onClose }) {
 }
 
 /* ── Grupo colapsável ── */
-function NavGroup({ item, collapsed, onClose }) {
+function NavGroup({ item, collapsed, onClose, isOpen, onToggle }) {
   const location = useLocation();
   const allPaths = item.children?.flatMap(c =>
     c.section ? c.children?.flatMap(s => s.children?.map(x => x.path) ?? [s.path]) ?? []
               : [c.path]
   ) ?? [];
   const isActive = allPaths.some(p => p && location.pathname.startsWith(p));
-  const [open, setOpen] = useState(isActive);
 
-  useEffect(() => { if (isActive) setOpen(true); }, [location.pathname]);
+  useEffect(() => { if (isActive && !isOpen) onToggle(); }, [location.pathname]);
 
   if (collapsed) {
     return (
@@ -242,10 +241,10 @@ function NavGroup({ item, collapsed, onClose }) {
   }
 
   return (
-    <div className={s.group}>
+    <div className={`${s.group} ${isOpen ? s.groupOpen : ''}`}>
       <button
-        className={`${s.groupBtn} ${isActive ? s.groupBtnActive : ''}`}
-        onClick={() => setOpen(p => !p)}
+        className={`${s.groupBtn} ${isActive || isOpen ? s.groupBtnActive : ''}`}
+        onClick={onToggle}
       >
         <span className={s.groupBtnLeft}>
           <span className={s.navIcon}>{item.icon}</span>
@@ -253,7 +252,7 @@ function NavGroup({ item, collapsed, onClose }) {
         </span>
         <motion.span
           className={s.chevron}
-          animate={{ rotate: open ? 180 : 0 }}
+          animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
           style={{ display: 'flex', alignItems: 'center', minWidth: 14, flexShrink: 0 }}
         >
@@ -262,7 +261,7 @@ function NavGroup({ item, collapsed, onClose }) {
       </button>
 
       <AnimatePresence initial={false}>
-        {open && (
+        {isOpen && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
@@ -305,6 +304,10 @@ function NavGroup({ item, collapsed, onClose }) {
 
 /* ── Conteúdo interno do sidebar ── */
 function SidebarContent({ collapsed, onToggleCollapse, onMobileClose, isMobile }) {
+  const [openGroup, setOpenGroup] = useState(null);
+
+  const handleToggle = (id) => setOpenGroup(prev => prev === id ? null : id);
+
   return (
     <>
       {/* ── Brand ── */}
@@ -409,6 +412,8 @@ function SidebarContent({ collapsed, onToggleCollapse, onMobileClose, isMobile }
               item={item}
               collapsed={collapsed && !isMobile}
               onClose={onMobileClose}
+              isOpen={openGroup === item.id}
+              onToggle={() => handleToggle(item.id)}
             />
           );
         })}

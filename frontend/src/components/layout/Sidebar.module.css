@@ -268,8 +268,21 @@
   min-width: 0;
 }
 .groupBtn:hover { background: var(--sidebar-bg-hover); color: rgba(220,235,255,0.90); }
-.groupBtnActive { color: rgba(220,235,255,0.90); }
+.groupBtnActive {
+  background: rgba(37,99,235,0.14);
+  color: rgba(220,235,255,0.95);
+}
 .groupBtnActive .navIcon { color: var(--accent-light); }
+.groupBtnActive::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 6px; bottom: 6px;
+  width: 3px;
+  background: var(--accent);
+  border-radius: 0 3px 3px 0;
+  box-shadow: 0 0 8px rgba(37,99,235,0.55);
+}
+.groupBtn { position: relative; }
 
 .groupBtnLeft {
   display: flex;
@@ -364,6 +377,11 @@
 }
 .sectionBtn:hover { color: rgba(200,215,240,0.85); }
 .sectionBtnActive { color: var(--accent-light); }
+.sectionBtnOpen {
+  color: rgba(220,235,255,0.90);
+  background: rgba(37,99,235,0.08);
+  border-radius: var(--r-sm);
+}
 
 .sectionChildren {
   display: flex;
@@ -398,6 +416,11 @@
 }
 .subsectionBtn:hover { color: rgba(200,215,240,0.80); }
 .subsectionBtnActive { color: rgba(147,197,253,0.80); }
+.subsectionBtnOpen {
+  color: rgba(200,215,240,0.75);
+  background: rgba(37,99,235,0.06);
+  border-radius: var(--r-sm);
+}
 
 .subsectionChildren {
   display: flex;
