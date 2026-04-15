@@ -207,7 +207,7 @@ CREATE TABLE IF NOT EXISTS despesa (
   comprador_id    INT            DEFAULT NULL,
   centro_custo_id INT            DEFAULT NULL,
   projeto_id      INT            DEFAULT NULL,
-  conta_id        INT            NOT NULL,
+  conta_id        INT            DEFAULT NULL,
   valor           DECIMAL(15,2)  NOT NULL,
   data            DATE           NOT NULL,
   descricao       TEXT           DEFAULT NULL,

@@ -54,7 +54,7 @@ const create = async (data) => {
       centro_custo_id, projeto_id, conta_id, valor, data, descricao, status, usuario_id)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [grupo_id, subgrupo_id, item_id, fornecedor_id || null, comprador_id || null,
-     centro_custo_id || null, projeto_id || null, conta_id, valor, dt,
+     centro_custo_id || null, projeto_id || null, conta_id || null, valor, dt,
      descricao, status || 'pendente', usuario_id]
   );
   return result.insertId;
@@ -70,7 +70,7 @@ const update = async (id, data) => {
      valor=?, data=?, descricao=?, status=?
      WHERE id=? AND usuario_id=?`,
     [grupo_id, subgrupo_id, item_id, fornecedor_id || null, comprador_id || null,
-     centro_custo_id || null, projeto_id || null, conta_id, valor, dt,
+     centro_custo_id || null, projeto_id || null, conta_id || null, valor, dt,
      descricao, status, id, usuario_id]
   );
 };
@@ -119,7 +119,7 @@ const createBatch = async (itens) => {
           centro_custo_id, projeto_id, conta_id, valor, data, descricao, status, usuario_id)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [grupo_id, subgrupo_id, item_id, fornecedor_id || null, comprador_id || null,
-         centro_custo_id || null, projeto_id || null, conta_id, valor, dt,
+         centro_custo_id || null, projeto_id || null, conta_id || null, valor, dt,
          descricao || null, status || 'pendente', usuario_id]
       );
       ids.push(result.insertId);
