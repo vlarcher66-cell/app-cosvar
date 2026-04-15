@@ -135,7 +135,7 @@ export default function ReceitaPage() {
       render: v => <span className={`${s.badge} ${v === 'recebido' ? s.badgeRecebido : s.badgePendente}`}>
         {v === 'recebido' ? 'Recebido' : 'Pendente'}
       </span> },
-    { key: '_actions', label: '', width: 80, align: 'center',
+    { key: '_actions', label: 'Ações', width: 160, align: 'center',
       render: (_, row) => {
         const vinculada = !!row.cacau_baixa_id;
         return vinculada ? (
