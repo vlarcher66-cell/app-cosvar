@@ -268,10 +268,6 @@ function TabAPagar({ toast }) {
     }
   }, [modalOpen]);
 
-  useEffect(() => {
-    if (baixaTarget) contaService.getAll().then(setContas);
-  }, [baixaTarget]);
-
   const setS = (k, v) => setShared(p => ({ ...p, [k]: v }));
   const setE = (k, v) => setEditForm(p => ({ ...p, [k]: v }));
 
@@ -361,6 +357,10 @@ function TabAPagar({ toast }) {
   const [baixaTarget, setBaixaTarget] = useState(null);
   const [baixaForm, setBaixaForm]     = useState({});
   const [baixando, setBaixando]       = useState(false);
+
+  useEffect(() => {
+    if (baixaTarget) contaService.getAll().then(setContas);
+  }, [baixaTarget]);
 
   const openBaixa = (row) => {
     setBaixaTarget(row);
