@@ -26,7 +26,7 @@ const cacauBaixaController = {
     catch (e) { res.status(e.status || 500).json({ message: e.message }); }
   },
   async saldoCredora(req, res) {
-    try { res.json(await service.saldoCredora(req.params.credora)); }
+    try { res.json(await service.saldoCredora(req.params.comprador_id)); }
     catch (e) { res.status(e.status || 500).json({ message: e.message }); }
   },
   async resumo(req, res) {

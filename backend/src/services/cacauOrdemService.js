@@ -12,9 +12,9 @@ const cacauOrdemService = {
   },
 
   async create(data, usuarioId) {
-    if (!data.data)    throw { status: 400, message: 'Data é obrigatória' };
-    if (!data.kg)      throw { status: 400, message: 'KG é obrigatório' };
-    if (!data.credora) throw { status: 400, message: 'Credora é obrigatória' };
+    if (!data.data)         throw { status: 400, message: 'Data é obrigatória' };
+    if (!data.kg)           throw { status: 400, message: 'KG é obrigatório' };
+    if (!data.comprador_id) throw { status: 400, message: 'Credora é obrigatória' };
 
     // Calcula QTD @ a partir do KG (1 @ = 15 kg)
     const qtd_arrobas = (parseFloat(data.kg) / 15).toFixed(3);

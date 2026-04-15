@@ -21,8 +21,8 @@ import OrdemPrint from './OrdemPrint';
 import s from './CacauOrdemPage.module.css';
 
 /* ─── constantes ─── */
-const EMPTY_ENTREGA = { data: '', kg: '', qtd_arrobas: '', credora: '', observacao: '' };
-const EMPTY_BAIXA   = { data: '', credora: '', kg: '', qtd_arrobas: '', preco_arroba: '', valor_total: '', observacao: '' };
+const EMPTY_ENTREGA = { data: '', kg: '', qtd_arrobas: '', comprador_id: '', observacao: '' };
+const EMPTY_BAIXA   = { data: '', comprador_id: '', kg: '', qtd_arrobas: '', preco_arroba: '', valor_total: '', observacao: '' };
 
 const TABS = [
   { id: 'entrega', label: 'Ordem de Entrega', icon: <IcoEntrega /> },
@@ -130,7 +130,7 @@ function TabEntrega({ toast, ano }) {
   const [quickCredora, setQuickCredora] = useState(false);
   const [novaCredora, setNovaCredora]   = useState('');
   const [savingCredora, setSavingCredora] = useState(false);
-  const [filtros, setFiltros] = useState({ data_inicio: '', data_fim: '', credora: '' });
+  const [filtros, setFiltros] = useState({ data_inicio: '', data_fim: '', comprador_id: '' });
   const [saldoEntrega, setSaldoEntrega]     = useState(null);
   const [loadingSaldoEnt, setLoadingSaldoEnt] = useState(false);
 
@@ -157,13 +157,13 @@ function TabEntrega({ toast, ano }) {
   }, [modalOpen]);
 
   useEffect(() => {
-    if (!form.credora) { setSaldoEntrega(null); return; }
+    if (!form.comprador_id) { setSaldoEntrega(null); return; }
     setLoadingSaldoEnt(true);
-    cacauOrdemService.getSaldoDisponivel(form.credora, ano)
+    cacauOrdemService.getSaldoDisponivel(form.comprador_id, ano)
       .then(s => setSaldoEntrega(s))
       .catch(() => setSaldoEntrega(null))
       .finally(() => setLoadingSaldoEnt(false));
-  }, [form.credora, ano]);
+  }, [form.comprador_id, ano]);
 
   const set = (k, v) => setForm(p => {
     const next = { ...p, [k]: v };
@@ -176,10 +176,10 @@ function TabEntrega({ toast, ano }) {
     if (!novaCredora.trim()) return;
     setSavingCredora(true);
     try {
-      await compradorService.create({ nome: novaCredora.trim() });
+      const nova = await compradorService.create({ nome: novaCredora.trim() });
       const lista = await compradorService.getAll();
       setCompradores(lista);
-      set('credora', novaCredora.trim());
+      set('comprador_id', String(nova.id));
       setNovaCredora(''); setQuickCredora(false);
       toast?.success(`Credora "${novaCredora.trim()}" cadastrada`);
     } catch { toast?.error('Erro ao cadastrar credora'); }
@@ -189,7 +189,7 @@ function TabEntrega({ toast, ano }) {
   const openNew  = () => { setEditing(null); setForm(EMPTY_ENTREGA); setModalOpen(true); };
   const openEdit = (row) => {
     setEditing(row);
-    setForm({ data: formatDateInput(row.data), kg: row.kg, qtd_arrobas: row.qtd_arrobas, credora: row.credora || '', observacao: row.observacao || '' });
+    setForm({ data: formatDateInput(row.data), kg: row.kg, qtd_arrobas: row.qtd_arrobas, comprador_id: String(row.comprador_id || ''), observacao: row.observacao || '' });
     setModalOpen(true);
   };
 
@@ -257,12 +257,12 @@ function TabEntrega({ toast, ano }) {
         <div className={s.toolbarLeft}>
           <input type="date" className={s.filterInput} value={filtros.data_inicio} onChange={e => setFiltros(p => ({ ...p, data_inicio: e.target.value }))} />
           <input type="date" className={s.filterInput} value={filtros.data_fim}    onChange={e => setFiltros(p => ({ ...p, data_fim: e.target.value }))} />
-          <select className={s.filterInput} value={filtros.credora} onChange={e => setFiltros(p => ({ ...p, credora: e.target.value }))}>
+          <select className={s.filterInput} value={filtros.comprador_id} onChange={e => setFiltros(p => ({ ...p, comprador_id: e.target.value }))}>
             <option value="">Todas as credoras</option>
-            {compradores.map(c => <option key={c.id} value={c.nome}>{c.nome}</option>)}
+            {compradores.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
           </select>
-          {(filtros.data_inicio || filtros.data_fim || filtros.credora) && (
-            <button className={s.clearBtn} onClick={() => setFiltros({ data_inicio: '', data_fim: '', credora: '' })}>✕ Limpar</button>
+          {(filtros.data_inicio || filtros.data_fim || filtros.comprador_id) && (
+            <button className={s.clearBtn} onClick={() => setFiltros({ data_inicio: '', data_fim: '', comprador_id: '' })}>✕ Limpar</button>
           )}
         </div>
         <Button variant="primary" onClick={openNew}>
@@ -298,9 +298,9 @@ function TabEntrega({ toast, ano }) {
               Nova
             </button>
           }>
-            <select className={s.ordemSelect} value={form.credora} onChange={e => set('credora', e.target.value)} required={!quickCredora}>
+            <select className={s.ordemSelect} value={form.comprador_id} onChange={e => set('comprador_id', e.target.value)} required={!quickCredora}>
               <option value="">Selecione a credora...</option>
-              {compradores.map(c => <option key={c.id} value={c.nome}>{c.nome}</option>)}
+              {compradores.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
             </select>
             <AnimatePresence>
               {quickCredora && (
@@ -326,7 +326,7 @@ function TabEntrega({ toast, ano }) {
                 value={form.kg} onChange={e => set('kg', e.target.value)} placeholder="0.000" required />
               <span className={s.ordemKgUnit}>kg</span>
             </div>
-            {form.credora && !loadingSaldoEnt && saldoEntrega && (
+            {form.comprador_id && !loadingSaldoEnt && saldoEntrega && (
               <div className={`${s.saldoEntregaInfo} ${saldoEntrega.saldo_kg <= 0 ? s.saldoEntregaZero : ''}`}>
                 <span>Saldo disponível:</span>
                 <strong className={parseFloat(form.kg) > saldoEntrega.saldo_kg ? s.saldoEntregaExcede : saldoEntrega.saldo_kg <= 0 ? s.saldoEntregaZeroVal : s.saldoEntregaOk}>
@@ -370,7 +370,7 @@ function TabEntrega({ toast, ano }) {
 
       <ConfirmDialog isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete}
         loading={deleting} title="Excluir Ordem"
-        message={`Excluir a ordem de "${deleteTarget?.credora}" em ${formatDate(deleteTarget?.data)}?`} />
+        message={`Excluir a ordem de "${deleteTarget?.credora || '—'}" em ${formatDate(deleteTarget?.data)}?`} />
     </>
   );
 }
@@ -388,7 +388,7 @@ function TabBaixa({ toast, ano }) {
   const [deleting, setDeleting]   = useState(false);
   const [form, setForm]           = useState(EMPTY_BAIXA);
   const [compradores, setCompradores] = useState([]);
-  const [filtros, setFiltros]     = useState({ data_inicio: '', data_fim: '', credora: '' });
+  const [filtros, setFiltros]     = useState({ data_inicio: '', data_fim: '', comprador_id: '' });
   const [totalKgBaixado, setTotalKgBaixado] = useState(0);
   const [saldoCredora, setSaldoCredora]     = useState(null);
   const [loadingSaldo, setLoadingSaldo]     = useState(false);
@@ -431,13 +431,13 @@ function TabBaixa({ toast, ano }) {
 
   // Busca saldo quando credora muda no modal
   useEffect(() => {
-    if (!form.credora) { setSaldoCredora(null); return; }
+    if (!form.comprador_id) { setSaldoCredora(null); return; }
     setLoadingSaldo(true);
-    cacauBaixaService.getSaldoCredora(form.credora)
+    cacauBaixaService.getSaldoCredora(form.comprador_id)
       .then(s => setSaldoCredora(s))
       .catch(() => setSaldoCredora(null))
       .finally(() => setLoadingSaldo(false));
-  }, [form.credora]);
+  }, [form.comprador_id]);
 
   const set = (k, v) => {
     setForm(p => {
@@ -457,7 +457,7 @@ function TabBaixa({ toast, ano }) {
   const openNew  = () => { setEditing(null); setForm(EMPTY_BAIXA); setSaldoCredora(null); setModalOpen(true); };
   const openEdit = (row) => {
     setEditing(row);
-    setForm({ data: formatDateInput(row.data), credora: row.credora, kg: row.kg, qtd_arrobas: row.qtd_arrobas, preco_arroba: row.preco_arroba || '', valor_total: row.valor_total || '', observacao: row.observacao || '' });
+    setForm({ data: formatDateInput(row.data), comprador_id: String(row.comprador_id || ''), kg: row.kg, qtd_arrobas: row.qtd_arrobas, preco_arroba: row.preco_arroba || '', valor_total: row.valor_total || '', observacao: row.observacao || '' });
     setModalOpen(true);
   };
 
@@ -585,12 +585,12 @@ function TabBaixa({ toast, ano }) {
         <div className={s.toolbarLeft}>
           <input type="date" className={s.filterInput} value={filtros.data_inicio} onChange={e => setFiltros(p => ({ ...p, data_inicio: e.target.value }))} />
           <input type="date" className={s.filterInput} value={filtros.data_fim}    onChange={e => setFiltros(p => ({ ...p, data_fim: e.target.value }))} />
-          <select className={s.filterInput} value={filtros.credora} onChange={e => setFiltros(p => ({ ...p, credora: e.target.value }))}>
+          <select className={s.filterInput} value={filtros.comprador_id} onChange={e => setFiltros(p => ({ ...p, comprador_id: e.target.value }))}>
             <option value="">Todas as credoras</option>
-            {compradores.map(c => <option key={c.id} value={c.nome}>{c.nome}</option>)}
+            {compradores.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
           </select>
-          {(filtros.data_inicio || filtros.data_fim || filtros.credora) && (
-            <button className={s.clearBtn} onClick={() => setFiltros({ data_inicio: '', data_fim: '', credora: '' })}>✕ Limpar</button>
+          {(filtros.data_inicio || filtros.data_fim || filtros.comprador_id) && (
+            <button className={s.clearBtn} onClick={() => setFiltros({ data_inicio: '', data_fim: '', comprador_id: '' })}>✕ Limpar</button>
           )}
         </div>
         <Button variant="primary" onClick={openNew}>
@@ -618,15 +618,15 @@ function TabBaixa({ toast, ano }) {
           </FieldGroup>
 
           <FieldGroup label="Credora" required delay={0.10}>
-            <select className={s.ordemSelect} value={form.credora} onChange={e => set('credora', e.target.value)} required>
+            <select className={s.ordemSelect} value={form.comprador_id} onChange={e => set('comprador_id', e.target.value)} required>
               <option value="">Selecione a credora...</option>
-              {compradores.map(c => <option key={c.id} value={c.nome}>{c.nome}</option>)}
+              {compradores.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
             </select>
           </FieldGroup>
 
           {/* Saldo da credora selecionada */}
           <AnimatePresence>
-            {form.credora && !loadingSaldo && saldoCredora && (
+            {form.comprador_id && !loadingSaldo && saldoCredora && (
               <motion.div
                 className={s.saldoInfoBox}
                 initial={{ opacity: 0, height: 0, marginBottom: 0 }}

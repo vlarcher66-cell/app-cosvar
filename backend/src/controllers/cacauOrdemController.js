@@ -45,7 +45,7 @@ const cacauOrdemController = {
 
   async saldoDisponivel(req, res) {
     try {
-      const data = await service.saldoDisponivel(req.params.credora, req.query.ano);
+      const data = await service.saldoDisponivel(req.params.comprador_id, req.query.ano);
       res.json(data);
     } catch (e) { res.status(e.status || 500).json({ message: e.message }); }
   },

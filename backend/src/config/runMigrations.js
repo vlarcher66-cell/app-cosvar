@@ -33,6 +33,32 @@ const migrations = [
         ON DELETE CASCADE ON UPDATE CASCADE
     `,
   },
+  {
+    name: 'add_comprador_id_to_cacau_ordem',
+    sql: `ALTER TABLE cacau_ordem ADD COLUMN IF NOT EXISTS comprador_id INT DEFAULT NULL AFTER credora`,
+  },
+  {
+    name: 'add_fk_cacau_ordem_comprador',
+    sql: `
+      ALTER TABLE cacau_ordem
+        ADD CONSTRAINT fk_cacau_ordem_comprador
+        FOREIGN KEY (comprador_id) REFERENCES comprador (id)
+        ON DELETE RESTRICT ON UPDATE CASCADE
+    `,
+  },
+  {
+    name: 'add_comprador_id_to_cacau_baixa',
+    sql: `ALTER TABLE cacau_baixa ADD COLUMN IF NOT EXISTS comprador_id INT DEFAULT NULL AFTER credora`,
+  },
+  {
+    name: 'add_fk_cacau_baixa_comprador',
+    sql: `
+      ALTER TABLE cacau_baixa
+        ADD CONSTRAINT fk_cacau_baixa_comprador
+        FOREIGN KEY (comprador_id) REFERENCES comprador (id)
+        ON DELETE RESTRICT ON UPDATE CASCADE
+    `,
+  },
 ];
 
 const runMigrations = async () => {

@@ -2,7 +2,7 @@ const router = require('express').Router();
 const ctrl = require('../controllers/cacauOrdemController');
 
 router.get('/resumo',              ctrl.resumo);
-router.get('/saldo/:credora',      ctrl.saldoDisponivel);
+router.get('/saldo/:comprador_id', ctrl.saldoDisponivel);
 router.get('/',                    ctrl.index);
 router.get('/:id',    ctrl.show);
 router.post('/',      ctrl.store);

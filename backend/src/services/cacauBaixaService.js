@@ -31,10 +31,10 @@ const cacauBaixaService = {
 
   // Cria venda + lança receita no financeiro numa única transação
   async vendaCompleta(data, usuarioId) {
-    if (!data.data)    throw { status: 400, message: 'Data é obrigatória' };
-    if (!data.credora) throw { status: 400, message: 'Credora é obrigatória' };
+    if (!data.data)         throw { status: 400, message: 'Data é obrigatória' };
+    if (!data.comprador_id) throw { status: 400, message: 'Credora é obrigatória' };
     if (!data.kg || parseFloat(data.kg) <= 0) throw { status: 400, message: 'KG deve ser maior que zero' };
-    if (!data.conta_id) throw { status: 400, message: 'Conta de recebimento é obrigatória' };
+    if (!data.conta_id)     throw { status: 400, message: 'Conta de recebimento é obrigatória' };
 
     const conn = await db.getConnection();
     try {
@@ -50,9 +50,9 @@ const cacauBaixaService = {
 
       // 2. Insere a baixa
       const [baixaResult] = await conn.query(
-        `INSERT INTO cacau_baixa (numero_ordem, data, credora, kg, qtd_arrobas, preco_arroba, valor_total, observacao, usuario_id)
+        `INSERT INTO cacau_baixa (numero_ordem, data, comprador_id, kg, qtd_arrobas, preco_arroba, valor_total, observacao, usuario_id)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [numero_ordem, data.data, data.credora, data.kg, qtd_arrobas,
+        [numero_ordem, data.data, data.comprador_id, data.kg, qtd_arrobas,
          data.preco_arroba || null, data.valor_total || null,
          data.observacao || null, usuarioId]
       );

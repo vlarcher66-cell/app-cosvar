@@ -2,7 +2,7 @@ const router = require('express').Router();
 const ctrl   = require('../controllers/cacauBaixaController');
 
 router.get('/saldo',            ctrl.saldo);
-router.get('/saldo/:credora',   ctrl.saldoCredora);
+router.get('/saldo/:comprador_id', ctrl.saldoCredora);
 router.get('/resumo',           ctrl.resumo);
 router.get('/saldo-financeiro', ctrl.saldoFinanceiro);
 router.get('/vendas-por-mes',   ctrl.vendasPorMes);
