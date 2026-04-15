@@ -312,11 +312,13 @@ function TabAPagar({ toast }) {
       return;
     }
 
-    // Novo — batch
-    const invalidos = carrinho.filter(r => !r.item_id || !r.valor || Number(r.valor) <= 0);
-    if (invalidos.length > 0) { toast?.error('Preencha item e valor em todas as linhas'); return; }
+    // Novo — batch: ignora linhas completamente vazias, valida as parcialmente preenchidas
+    const preenchidas = carrinho.filter(r => r.item_id || (r.valor && Number(r.valor) > 0));
+    if (preenchidas.length === 0) { toast?.error('Adicione pelo menos um item'); return; }
+    const invalidos = preenchidas.filter(r => !r.item_id || !r.valor || Number(r.valor) <= 0);
+    if (invalidos.length > 0) { toast?.error('Preencha item e valor em todas as linhas adicionadas'); return; }
     if (shared.status === 'pago' && !shared.conta_id) { toast?.error('Selecione a conta para despesa paga'); return; }
-    if (!shared.data)         { toast?.error('Informe a data'); return; }
+    if (!shared.data) { toast?.error('Informe a data'); return; }
 
     setSaving(true);
     try {
@@ -331,12 +333,12 @@ function TabAPagar({ toast }) {
           descricao: shared.descricao || null,
           status: shared.status,
         },
-        itens: carrinho.map(r => ({
+        itens: preenchidas.map(r => ({
           item_id: r.item_id, subgrupo_id: r.subgrupo_id,
           grupo_id: r.grupo_id, valor: r.valor,
         })),
       });
-      toast?.success(`${carrinho.length} despesa(s) lançada(s)`);
+      toast?.success(`${preenchidas.length} despesa(s) lançada(s)`);
       setModalOpen(false); load();
     } catch (err) { toast?.error(err.response?.data?.message || 'Erro ao salvar'); }
     finally { setSaving(false); }
@@ -350,7 +352,7 @@ function TabAPagar({ toast }) {
   };
 
   const temFiltro = Object.values(filtros).some(v => v);
-  const totalCarrinho = carrinho.reduce((a, r) => a + Number(r.valor || 0), 0);
+  const totalCarrinho = carrinho.filter(r => r.item_id && r.valor).reduce((a, r) => a + Number(r.valor || 0), 0);
 
   const columns = [
     { key: 'data',            label: 'Data',       width: 105, render: v => <span className={s.cellDate}>{formatDate(v)}</span> },
