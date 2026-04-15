@@ -219,15 +219,13 @@ function NavSection({ sec, onClose }) {
 }
 
 /* ── Grupo colapsável ── */
-function NavGroup({ item, collapsed, onClose, isOpen, onToggle, onOpen }) {
+function NavGroup({ item, collapsed, onClose, isOpen, onToggle }) {
   const location = useLocation();
   const allPaths = item.children?.flatMap(c =>
     c.section ? c.children?.flatMap(s => s.children?.map(x => x.path) ?? [s.path]) ?? []
               : [c.path]
   ) ?? [];
   const isActive = allPaths.some(p => p && location.pathname.startsWith(p));
-
-  useEffect(() => { if (isActive) onOpen(); }, [location.pathname]);
 
   if (collapsed) {
     return (
@@ -304,10 +302,28 @@ function NavGroup({ item, collapsed, onClose, isOpen, onToggle, onOpen }) {
 
 /* ── Conteúdo interno do sidebar ── */
 function SidebarContent({ collapsed, onToggleCollapse, onMobileClose, isMobile }) {
-  const [openGroup, setOpenGroup] = useState(null);
+  const location = useLocation();
+
+  const getActiveGroup = () => {
+    for (const item of NAV) {
+      if (!item.children) continue;
+      const allPaths = item.children.flatMap(c =>
+        c.section ? c.children?.flatMap(s => s.children?.map(x => x.path) ?? [s.path]) ?? []
+                  : [c.path]
+      );
+      if (allPaths.some(p => p && location.pathname.startsWith(p))) return item.id;
+    }
+    return null;
+  };
+
+  const [openGroup, setOpenGroup] = useState(() => getActiveGroup());
+
+  useEffect(() => {
+    const active = getActiveGroup();
+    if (active) setOpenGroup(active);
+  }, [location.pathname]);
 
   const handleToggle = (id) => setOpenGroup(prev => prev === id ? null : id);
-  const handleOpen   = (id) => setOpenGroup(id);
 
   return (
     <>
@@ -415,7 +431,6 @@ function SidebarContent({ collapsed, onToggleCollapse, onMobileClose, isMobile }
               onClose={onMobileClose}
               isOpen={openGroup === item.id}
               onToggle={() => handleToggle(item.id)}
-              onOpen={() => handleOpen(item.id)}
             />
           );
         })}
