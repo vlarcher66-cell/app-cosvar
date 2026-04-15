@@ -161,9 +161,139 @@ function NavGroup({ item, collapsed, onClose }) {
   );
 }
 
+/* ── Conteúdo interno do sidebar ── */
+function SidebarContent({ collapsed, onToggleCollapse, onMobileClose, isMobile }) {
+  return (
+    <>
+      {/* ── Brand ── */}
+      <div className={`${s.brand} ${collapsed && !isMobile ? s.brandCollapsed : ''}`}>
+        <motion.div
+          className={s.brandMark}
+          whileHover={{ scale: 1.08 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 18 }}
+        >
+          <img src="/logo.png" alt="Cosvar" className={s.brandLogoIcon} />
+        </motion.div>
+
+        <AnimatePresence initial={false}>
+          {(!collapsed || isMobile) && (
+            <motion.div
+              style={{ display: 'flex', flexDirection: 'column', gap: 1, overflow: 'hidden', minWidth: 0, flex: 1 }}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={fade}
+            >
+              <span className={s.brandName}>Cosvar</span>
+              <span className={s.brandVersion}>Sistema Financeiro</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence initial={false}>
+          {(!collapsed || isMobile) && !isMobile && (
+            <motion.button
+              className={s.collapseIconBtn}
+              onClick={onToggleCollapse}
+              whileHover={{ scale: 1.15 }}
+              whileTap={{ scale: 0.88 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              aria-label="Recolher menu"
+              title="Recolher"
+            >
+              {Icon.left}
+            </motion.button>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Botão expandir — só desktop colapsado */}
+      <AnimatePresence initial={false}>
+        {collapsed && !isMobile && (
+          <motion.button
+            className={s.expandBtn}
+            onClick={onToggleCollapse}
+            whileHover={{ scale: 1.15 }}
+            whileTap={{ scale: 0.88 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            aria-label="Expandir menu"
+            title="Expandir"
+          >
+            {Icon.right}
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* ── Nav ── */}
+      <nav className={s.nav}>
+        {NAV.map((item) => {
+          if (item.path) {
+            if (collapsed && !isMobile) {
+              return (
+                <Tooltip key={item.id} label={item.label}>
+                  <NavLink
+                    to={item.path}
+                    className={({ isActive }) => `${s.iconBtn} ${isActive ? s.iconBtnActive : ''}`}
+                    onClick={onMobileClose}
+                  >
+                    <span className={s.navIcon}>{item.icon}</span>
+                  </NavLink>
+                </Tooltip>
+              );
+            }
+            return (
+              <NavLink
+                key={item.id}
+                to={item.path}
+                className={({ isActive }) => `${s.navItem} ${isActive ? s.navItemActive : ''}`}
+                onClick={onMobileClose}
+              >
+                <span className={s.navIcon}>{item.icon}</span>
+                <AnimatePresence initial={false}>
+                  {(!collapsed || isMobile) && <NavLabel>{item.label}</NavLabel>}
+                </AnimatePresence>
+              </NavLink>
+            );
+          }
+          return (
+            <NavGroup
+              key={item.id}
+              item={item}
+              collapsed={collapsed && !isMobile}
+              onClose={onMobileClose}
+            />
+          );
+        })}
+      </nav>
+    </>
+  );
+}
+
 /* ── Sidebar principal ── */
 export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onMobileClose }) {
-  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+
+  const content = (
+    <SidebarContent
+      collapsed={collapsed}
+      onToggleCollapse={onToggleCollapse}
+      onMobileClose={onMobileClose}
+      isMobile={isMobile}
+    />
+  );
+
   return (
     <>
       {/* Overlay mobile */}
@@ -180,121 +310,22 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onMob
         )}
       </AnimatePresence>
 
-      <motion.aside
-        className={`${s.sidebar} ${mobileOpen ? s.sidebarMobileOpen : ''}`}
-        initial={false}
-        animate={isMobile ? {} : { width: collapsed ? W_CLOSED : W_OPEN }}
-        transition={spring}
-      >
-        {/* ── Brand ── */}
-        <div className={`${s.brand} ${collapsed ? s.brandCollapsed : ''}`}>
-          <motion.div
-            className={s.brandMark}
-            whileHover={{ scale: 1.08 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 18 }}
-          >
-            <img src="/logo.png" alt="Cosvar" className={s.brandLogoIcon} />
-          </motion.div>
-
-          <AnimatePresence initial={false}>
-            {!collapsed && (
-              <motion.div
-                style={{ display: 'flex', flexDirection: 'column', gap: 1, overflow: 'hidden', minWidth: 0, flex: 1 }}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                transition={fade}
-              >
-                <span className={s.brandName}>Cosvar</span>
-                <span className={s.brandVersion}>Sistema Financeiro</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <AnimatePresence initial={false}>
-            {!collapsed && (
-              <motion.button
-                className={s.collapseIconBtn}
-                onClick={onToggleCollapse}
-                whileHover={{ scale: 1.15 }}
-                whileTap={{ scale: 0.88 }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                aria-label="Recolher menu"
-                title="Recolher"
-              >
-                {Icon.left}
-              </motion.button>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* Botão expandir — só aparece quando colapsado, centralizado */}
-        <AnimatePresence initial={false}>
-          {collapsed && (
-            <motion.button
-              className={s.expandBtn}
-              onClick={onToggleCollapse}
-              whileHover={{ scale: 1.15 }}
-              whileTap={{ scale: 0.88 }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              aria-label="Expandir menu"
-              title="Expandir"
-            >
-              {Icon.right}
-            </motion.button>
-          )}
-        </AnimatePresence>
-
-        {/* ── Nav ── */}
-        <nav className={s.nav}>
-          {NAV.map((item) => {
-            if (item.path) {
-              if (collapsed) {
-                return (
-                  <Tooltip key={item.id} label={item.label}>
-                    <NavLink
-                      to={item.path}
-                      className={({ isActive }) => `${s.iconBtn} ${isActive ? s.iconBtnActive : ''}`}
-                      onClick={onMobileClose}
-                    >
-                      <span className={s.navIcon}>{item.icon}</span>
-                    </NavLink>
-                  </Tooltip>
-                );
-              }
-              return (
-                <NavLink
-                  key={item.id}
-                  to={item.path}
-                  className={({ isActive }) => `${s.navItem} ${isActive ? s.navItemActive : ''}`}
-                  onClick={onMobileClose}
-                >
-                  <span className={s.navIcon}>{item.icon}</span>
-                  <AnimatePresence initial={false}>
-                    {!collapsed && <NavLabel>{item.label}</NavLabel>}
-                  </AnimatePresence>
-                </NavLink>
-              );
-            }
-            return (
-              <NavGroup
-                key={item.id}
-                item={item}
-                collapsed={collapsed}
-                onClose={onMobileClose}
-              />
-            );
-          })}
-        </nav>
-
-      </motion.aside>
-
+      {isMobile ? (
+        /* Mobile: aside puro, controlado só por CSS transform */
+        <aside className={`${s.sidebar} ${mobileOpen ? s.sidebarMobileOpen : ''}`}>
+          {content}
+        </aside>
+      ) : (
+        /* Desktop: Framer Motion controla a largura */
+        <motion.aside
+          className={s.sidebar}
+          initial={false}
+          animate={{ width: collapsed ? W_CLOSED : W_OPEN }}
+          transition={spring}
+        >
+          {content}
+        </motion.aside>
+      )}
     </>
   );
 }
