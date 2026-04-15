@@ -674,7 +674,7 @@ function TabAPagar({ toast }) {
               <div className={s.carrinhoBox}>
                 <div className={s.carrinhoHeader}>
                   <span className={s.carrinhoTitle}>Itens da Despesa</span>
-                  {carrinho.length > 1 && (
+                  {totalCarrinho > 0 && (
                     <span className={s.carrinhoTotal}>
                       Total: <strong>{formatCurrency(totalCarrinho)}</strong>
                     </span>
