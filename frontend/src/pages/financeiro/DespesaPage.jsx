@@ -35,6 +35,39 @@ const IcoEdit     = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentCo
 const IcoDelete   = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>;
 const IcoPlus     = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
 const IcoFilter   = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>;
+const IcoAPagar   = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+const IcoPagas    = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>;
+const IcoAnalise  = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>;
+
+const TABS = [
+  { id: 'apagar',   label: 'A Pagar',  icon: <IcoAPagar /> },
+  { id: 'pagas',    label: 'Pagas',    icon: <IcoPagas />  },
+  { id: 'analises', label: 'Análises', icon: <IcoAnalise /> },
+];
+
+function TabBar({ tab, setTab }) {
+  const refs = useRef([]);
+  const [ink, setInk] = useState({ left: 0, width: 0 });
+  useEffect(() => {
+    const idx = TABS.findIndex(t => t.id === tab);
+    const el = refs.current[idx];
+    if (el) setInk({ left: el.offsetLeft, width: el.offsetWidth });
+  }, [tab]);
+  return (
+    <div className={s.tabBar}>
+      <div className={s.tabList}>
+        <motion.div className={s.tabInk} animate={ink} transition={{ type: 'spring', stiffness: 380, damping: 32 }} />
+        {TABS.map((t, i) => (
+          <button key={t.id} ref={el => refs.current[i] = el}
+            className={`${s.tabBtn} ${tab === t.id ? s.tabBtnActive : ''}`}
+            onClick={() => setTab(t.id)}>
+            <span className={s.tabIcon}>{t.icon}</span>{t.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -151,10 +184,38 @@ function ItemSearchRow({ row, todosItens, onChange, onRemove, canRemove }) {
 
 export default function DespesaPage() {
   const toast = useGlobalToast();
+  const [tab, setTab] = useState('apagar');
+  return (
+    <div className={s.page}>
+      <div className={s.header}>
+        <div className={s.headerLeft}>
+          <div className={s.headerIcon}><IcoTotal /></div>
+          <div>
+            <h1 className={s.pageTitle}>Despesas</h1>
+            <p className={s.pageSub}>Lançamentos financeiros e controle de pagamentos</p>
+          </div>
+        </div>
+      </div>
+      <TabBar tab={tab} setTab={setTab} />
+      <AnimatePresence mode="wait">
+        <motion.div key={tab}
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}>
+          {tab === 'apagar'   && <TabAPagar   toast={toast} />}
+          {tab === 'pagas'    && <TabPagas    toast={toast} />}
+          {tab === 'analises' && <TabAnalises toast={toast} />}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ══ TAB A PAGAR ══ */
+function TabAPagar({ toast }) {
   const [rows, setRows]           = useState([]);
   const [loading, setLoading]     = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing]     = useState(null);   // linha única para edição
+  const [editing, setEditing]     = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [saving, setSaving]       = useState(false);
   const [deleting, setDeleting]   = useState(false);
@@ -175,12 +236,12 @@ export default function DespesaPage() {
   const [projetos, setProjetos]         = useState([]);
   const [contas, setContas]             = useState([]);
 
-  const [filtros, setFiltros] = useState({ data_inicio: '', data_fim: '', status: '', grupo_id: '' });
+  const [filtros, setFiltros] = useState({ data_inicio: '', data_fim: '', grupo_id: '' });
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const params = Object.fromEntries(Object.entries(filtros).filter(([, v]) => v));
+      const params = { ...Object.fromEntries(Object.entries(filtros).filter(([, v]) => v)), status: 'pendente' };
       setRows(await despesaService.getAll(params));
     } catch { toast?.error('Erro ao carregar despesas'); }
     finally { setLoading(false); }
@@ -289,10 +350,6 @@ export default function DespesaPage() {
   };
 
   const temFiltro = Object.values(filtros).some(v => v);
-  const totalPago     = rows.filter(r => r.status === 'pago').reduce((a, r) => a + Number(r.valor || 0), 0);
-  const totalPendente = rows.filter(r => r.status === 'pendente').reduce((a, r) => a + Number(r.valor || 0), 0);
-  const totalGeral    = rows.reduce((a, r) => a + Number(r.valor || 0), 0);
-
   const totalCarrinho = carrinho.reduce((a, r) => a + Number(r.valor || 0), 0);
 
   const columns = [
@@ -382,29 +439,14 @@ export default function DespesaPage() {
   };
 
   return (
-    <div className={s.page}>
-
-      {/* ── Header ── */}
-      <div className={s.header}>
-        <div className={s.headerLeft}>
-          <div className={s.headerIcon}><IcoTotal /></div>
-          <div>
-            <h1 className={s.pageTitle}>Despesas</h1>
-            <p className={s.pageSub}>Lançamentos financeiros e controle de pagamentos</p>
-          </div>
-        </div>
-        <motion.button className={s.newBtn} onClick={openNew} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-          <IcoPlus /> Nova Despesa
-        </motion.button>
-      </div>
+    <div className={s.tabContent}>
 
       {/* ── KPI Cards ── */}
       <div className={s.kpis}>
         {[
-          { label: 'Total Pago',     value: formatCurrency(totalPago),     icon: <IcoPago />,     variant: 'pago'     },
-          { label: 'Total a Pagar',  value: formatCurrency(totalPendente), icon: <IcoPendente />, variant: 'pendente' },
-          { label: 'Total Geral',    value: formatCurrency(totalGeral),    icon: <IcoTotal />,    variant: 'total'    },
-          { label: 'Lançamentos',    value: rows.length,                   icon: <IcoCount />,    variant: 'count'    },
+          { label: 'Total a Pagar', value: formatCurrency(rows.reduce((a, r) => a + Number(r.valor||0), 0)), icon: <IcoAPagar />, variant: 'pendente' },
+          { label: 'Vencendo Hoje', value: formatCurrency(rows.filter(r => r.data === new Date().toISOString().slice(0,10)).reduce((a,r) => a + Number(r.valor||0), 0)), icon: <IcoPendente />, variant: 'pago' },
+          { label: 'Lançamentos',   value: rows.length, icon: <IcoCount />, variant: 'count' },
         ].map((card, i) => (
           <motion.div key={card.label} className={`${s.kpi} ${s[`kpi_${card.variant}`]}`}
             custom={i} variants={cardVariants} initial="hidden" animate="visible">
@@ -418,10 +460,10 @@ export default function DespesaPage() {
         ))}
       </div>
 
-      {/* ── Filter Bar ── */}
+      {/* ── Filter Bar + Nova Despesa ── */}
       <motion.div className={s.filterBar}
         initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.35, duration: 0.25 }}>
+        transition={{ delay: 0.2, duration: 0.25 }}>
         <div className={s.filterIcon}><IcoFilter /></div>
         <div className={s.filterGroup}>
           <input type="date" className={s.filterInput} value={filtros.data_inicio}
@@ -430,12 +472,6 @@ export default function DespesaPage() {
           <input type="date" className={s.filterInput} value={filtros.data_fim}
             onChange={e => setFiltros(p => ({ ...p, data_fim: e.target.value }))} />
         </div>
-        <select className={s.filterSelect} value={filtros.status}
-          onChange={e => setFiltros(p => ({ ...p, status: e.target.value }))}>
-          <option value="">Todos os status</option>
-          <option value="pago">Pago</option>
-          <option value="pendente">Pendente</option>
-        </select>
         <select className={s.filterSelect} value={filtros.grupo_id}
           onChange={e => setFiltros(p => ({ ...p, grupo_id: e.target.value }))}>
           <option value="">Todos os grupos</option>
@@ -444,13 +480,16 @@ export default function DespesaPage() {
         <AnimatePresence>
           {temFiltro && (
             <motion.button className={s.clearBtn}
-              onClick={() => setFiltros({ data_inicio: '', data_fim: '', status: '', grupo_id: '' })}
+              onClick={() => setFiltros({ data_inicio: '', data_fim: '', grupo_id: '' })}
               initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.85 }} transition={{ duration: 0.15 }}>
               ✕ Limpar
             </motion.button>
           )}
         </AnimatePresence>
+        <motion.button className={s.newBtn} onClick={openNew} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} style={{ marginLeft: 'auto' }}>
+          <IcoPlus /> Nova Despesa
+        </motion.button>
       </motion.div>
 
       {/* ── Table ── */}
@@ -693,6 +732,193 @@ export default function DespesaPage() {
         title="Excluir Despesa"
         message={`Excluir despesa de ${formatCurrency(deleteTarget?.valor)} em ${formatDate(deleteTarget?.data)}?`}
       />
+    </div>
+  );
+}
+
+/* ══ TAB PAGAS ══ */
+function TabPagas({ toast }) {
+  const [rows, setRows]     = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [grupos, setGrupos] = useState([]);
+  const [filtros, setFiltros] = useState({ data_inicio: '', data_fim: '', grupo_id: '' });
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = { ...Object.fromEntries(Object.entries(filtros).filter(([, v]) => v)), status: 'pago' };
+      setRows(await despesaService.getAll(params));
+    } catch { toast?.error('Erro ao carregar despesas'); }
+    finally { setLoading(false); }
+  }, [filtros]);
+
+  useEffect(() => { load(); }, [load]);
+  useEffect(() => { grupoDespesaService.getAll().then(setGrupos); }, []);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try { await despesaService.remove(deleteTarget.id); toast?.success('Despesa excluída'); setDeleteTarget(null); load(); }
+    catch { toast?.error('Erro ao excluir'); }
+    finally { setDeleting(false); }
+  };
+
+  const total = rows.reduce((a, r) => a + Number(r.valor || 0), 0);
+  const temFiltro = Object.values(filtros).some(v => v);
+
+  const columns = [
+    { key: 'data',            label: 'Data',       width: 105, render: v => <span className={s.cellDate}>{formatDate(v)}</span> },
+    { key: 'grupo_nome',      label: 'Grupo',      render: v => <span className={s.cellGrupo}>{v || '—'}</span> },
+    { key: 'item_nome',       label: 'Item',       render: v => v || '—' },
+    { key: 'fornecedor_nome', label: 'Fornecedor', render: v => v || '—' },
+    { key: 'conta_numero',    label: 'Conta',      width: 110, render: v => v ? <span className={s.cellConta}>{v}</span> : '—' },
+    { key: 'valor', label: 'Valor', width: 130, align: 'right',
+      render: v => <span className={s.cellValor}>{formatCurrency(v)}</span> },
+    { key: '_actions', label: '', width: 50, align: 'center',
+      render: (_, row) => (
+        <button className={s.btnDelete} onClick={() => setDeleteTarget(row)} title="Excluir"><IcoDelete /></button>
+      )},
+  ];
+
+  return (
+    <div className={s.tabContent}>
+      <div className={s.kpis}>
+        {[
+          { label: 'Total Pago',  value: formatCurrency(total), icon: <IcoPagas />,  variant: 'pago'  },
+          { label: 'Lançamentos', value: rows.length,           icon: <IcoCount />, variant: 'count' },
+        ].map((card, i) => (
+          <motion.div key={card.label} className={`${s.kpi} ${s[`kpi_${card.variant}`]}`}
+            custom={i} variants={cardVariants} initial="hidden" animate="visible">
+            <div className={s.kpiBar} />
+            <div className={s.kpiIcon}>{card.icon}</div>
+            <div className={s.kpiBody}>
+              <div className={s.kpiValue}>{card.value}</div>
+              <div className={s.kpiLabel}>{card.label}</div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      <motion.div className={s.filterBar} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.25 }}>
+        <div className={s.filterIcon}><IcoFilter /></div>
+        <div className={s.filterGroup}>
+          <input type="date" className={s.filterInput} value={filtros.data_inicio} onChange={e => setFiltros(p => ({ ...p, data_inicio: e.target.value }))} />
+          <span className={s.filterSep}>—</span>
+          <input type="date" className={s.filterInput} value={filtros.data_fim} onChange={e => setFiltros(p => ({ ...p, data_fim: e.target.value }))} />
+        </div>
+        <select className={s.filterSelect} value={filtros.grupo_id} onChange={e => setFiltros(p => ({ ...p, grupo_id: e.target.value }))}>
+          <option value="">Todos os grupos</option>
+          {grupos.map(g => <option key={g.id} value={g.id}>{g.nome}</option>)}
+        </select>
+        <AnimatePresence>
+          {temFiltro && (
+            <motion.button className={s.clearBtn} onClick={() => setFiltros({ data_inicio: '', data_fim: '', grupo_id: '' })}
+              initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }} transition={{ duration: 0.15 }}>
+              ✕ Limpar
+            </motion.button>
+          )}
+        </AnimatePresence>
+      </motion.div>
+
+      <DataTable columns={columns} data={rows} loading={loading} emptyMessage="Nenhuma despesa paga registrada" />
+
+      <ConfirmDialog isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} loading={deleting}
+        title="Excluir Despesa" message={`Excluir despesa de ${formatCurrency(deleteTarget?.valor)}?`} />
+    </div>
+  );
+}
+
+/* ══ TAB ANÁLISES ══ */
+function TabAnalises({ toast }) {
+  const [rows, setRows]     = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filtros, setFiltros] = useState({ data_inicio: '', data_fim: '' });
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = Object.fromEntries(Object.entries(filtros).filter(([, v]) => v));
+      setRows(await despesaService.getAll(params));
+    } catch { toast?.error('Erro ao carregar'); }
+    finally { setLoading(false); }
+  }, [filtros]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const totalPago     = rows.filter(r => r.status === 'pago').reduce((a, r) => a + Number(r.valor||0), 0);
+  const totalPendente = rows.filter(r => r.status === 'pendente').reduce((a, r) => a + Number(r.valor||0), 0);
+  const totalGeral    = totalPago + totalPendente;
+
+  // Agrupa por grupo
+  const porGrupo = Object.values(rows.reduce((acc, r) => {
+    const g = r.grupo_nome || 'Sem grupo';
+    if (!acc[g]) acc[g] = { grupo: g, pago: 0, pendente: 0 };
+    if (r.status === 'pago') acc[g].pago += Number(r.valor||0);
+    else acc[g].pendente += Number(r.valor||0);
+    return acc;
+  }, {})).sort((a, b) => (b.pago + b.pendente) - (a.pago + a.pendente));
+
+  return (
+    <div className={s.tabContent}>
+      <div className={s.kpis}>
+        {[
+          { label: 'Total Geral',   value: formatCurrency(totalGeral),    icon: <IcoTotal />,   variant: 'total'    },
+          { label: 'Total Pago',    value: formatCurrency(totalPago),     icon: <IcoPagas />,   variant: 'pago'     },
+          { label: 'Total a Pagar', value: formatCurrency(totalPendente), icon: <IcoAPagar />,  variant: 'pendente' },
+          { label: 'Lançamentos',   value: rows.length,                   icon: <IcoCount />,   variant: 'count'    },
+        ].map((card, i) => (
+          <motion.div key={card.label} className={`${s.kpi} ${s[`kpi_${card.variant}`]}`}
+            custom={i} variants={cardVariants} initial="hidden" animate="visible">
+            <div className={s.kpiBar} />
+            <div className={s.kpiIcon}>{card.icon}</div>
+            <div className={s.kpiBody}>
+              <div className={s.kpiValue}>{card.value}</div>
+              <div className={s.kpiLabel}>{card.label}</div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      <motion.div className={s.filterBar} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.25 }}>
+        <div className={s.filterIcon}><IcoFilter /></div>
+        <div className={s.filterGroup}>
+          <input type="date" className={s.filterInput} value={filtros.data_inicio} onChange={e => setFiltros(p => ({ ...p, data_inicio: e.target.value }))} />
+          <span className={s.filterSep}>—</span>
+          <input type="date" className={s.filterInput} value={filtros.data_fim} onChange={e => setFiltros(p => ({ ...p, data_fim: e.target.value }))} />
+        </div>
+        <AnimatePresence>
+          {Object.values(filtros).some(v => v) && (
+            <motion.button className={s.clearBtn} onClick={() => setFiltros({ data_inicio: '', data_fim: '' })}
+              initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }}>
+              ✕ Limpar
+            </motion.button>
+          )}
+        </AnimatePresence>
+      </motion.div>
+
+      {loading ? (
+        <div className={s.emptyState}>Carregando...</div>
+      ) : porGrupo.length === 0 ? (
+        <div className={s.emptyState}>Nenhum dado para exibir</div>
+      ) : (
+        <div className={s.analiseGrid}>
+          {porGrupo.map(g => (
+            <div key={g.grupo} className={s.analiseCard}>
+              <div className={s.analiseCardTitle}>{g.grupo}</div>
+              <div className={s.analiseCardTotal}>{formatCurrency(g.pago + g.pendente)}</div>
+              <div className={s.analiseBar}>
+                <div className={s.analiseBarPago}   style={{ width: `${totalGeral ? ((g.pago) / totalGeral * 100) : 0}%` }} />
+                <div className={s.analiseBarPendente} style={{ width: `${totalGeral ? ((g.pendente) / totalGeral * 100) : 0}%` }} />
+              </div>
+              <div className={s.analiseCardDetail}>
+                <span className={s.analiseTagPago}>Pago: {formatCurrency(g.pago)}</span>
+                <span className={s.analiseTagPendente}>A pagar: {formatCurrency(g.pendente)}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

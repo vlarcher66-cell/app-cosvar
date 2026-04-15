@@ -686,3 +686,95 @@
 
   .grid3 { grid-template-columns: 1fr; }
 }
+
+/* ══ TABS ══ */
+.tabBar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 5px;
+  box-shadow: var(--shadow-xs);
+}
+.tabList { display: flex; position: relative; gap: 2px; }
+.tabBtn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 9px 20px;
+  border: none; background: none;
+  border-radius: calc(var(--r-lg) - 3px);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  font-family: var(--font-display);
+  font-weight: 600;
+  cursor: pointer; position: relative; z-index: 1;
+  white-space: nowrap; transition: color 0.18s;
+  letter-spacing: -0.01em;
+}
+.tabBtn:hover { color: var(--text-2); }
+.tabBtnActive { color: #dc2626 !important; }
+.tabIcon { display: flex; align-items: center; opacity: 0.7; }
+.tabBtnActive .tabIcon { opacity: 1; }
+.tabInk {
+  position: absolute; top: 0; bottom: 0;
+  background: rgba(220,38,38,0.08);
+  border-radius: calc(var(--r-lg) - 4px);
+  border: 1px solid rgba(220,38,38,0.16);
+  z-index: 0; pointer-events: none;
+}
+
+/* ── Tab Content ── */
+.tabContent { display: flex; flex-direction: column; gap: 16px; }
+
+/* ══ ANÁLISES ══ */
+.emptyState {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.analiseGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.analiseCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: var(--shadow-xs);
+}
+
+.analiseCardTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.analiseCardTotal {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.analiseBar {
+  height: 6px;
+  background: var(--surface-2);
+  border-radius: 6px;
+  overflow: hidden;
+  display: flex;
+}
+.analiseBarPago    { height: 100%; background: #10b981; border-radius: 6px 0 0 6px; transition: width 0.5s ease; }
+.analiseBarPendente { height: 100%; background: #f59e0b; border-radius: 0 6px 6px 0; transition: width 0.5s ease; }
+
+.analiseCardDetail { display: flex; gap: 10px; flex-wrap: wrap; }
+.analiseTagPago    { font-size: var(--text-xs); color: #10b981; font-weight: 600; }
+.analiseTagPendente { font-size: var(--text-xs); color: #f59e0b; font-weight: 600; }
