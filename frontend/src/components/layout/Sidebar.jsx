@@ -53,7 +53,12 @@ const NAV = [
           { label: 'Comprador', path: '/cadastros/compradores' },
         ],
       },
-      { label: 'Projetos', path: '/cadastros/projetos' },
+      {
+        label: 'Gerais', section: true,
+        children: [
+          { label: 'Projetos', path: '/cadastros/projetos' },
+        ],
+      },
       {
         label: 'Financeiro', section: true,
         children: [
