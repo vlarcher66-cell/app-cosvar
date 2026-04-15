@@ -339,6 +339,84 @@
 }
 .childIcon svg { width: 14px; height: 14px; }
 
+/* ── Seção (2º nível com filhos) ── */
+.section {
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 5px 8px;
+  border-radius: var(--r-sm);
+  background: none;
+  border: none;
+  color: rgba(200,215,240,0.55);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color var(--dur);
+}
+.sectionBtn:hover { color: rgba(200,215,240,0.85); }
+.sectionBtnActive { color: var(--accent-light); }
+
+.sectionChildren {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 2px 0 4px 8px;
+  border-left: 1px solid rgba(37,99,235,0.15);
+  margin-left: 4px;
+}
+
+/* ── Subseção (3º nível) ── */
+.subsection {
+  display: flex;
+  flex-direction: column;
+}
+
+.subsectionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 5px 8px;
+  border-radius: var(--r-sm);
+  background: none;
+  border: none;
+  color: rgba(200,215,240,0.45);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: color var(--dur);
+}
+.subsectionBtn:hover { color: rgba(200,215,240,0.80); }
+.subsectionBtnActive { color: rgba(147,197,253,0.80); }
+
+.subsectionChildren {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 2px 0 3px 8px;
+  border-left: 1px solid rgba(37,99,235,0.10);
+  margin-left: 4px;
+}
+
+.chevronSm {
+  width: 11px; height: 11px;
+  min-width: 11px;
+  color: rgba(200,215,240,0.28);
+  display: flex; align-items: center;
+  flex-shrink: 0;
+}
+.chevronSm svg { width: 11px; height: 11px; }
+
 /* ── Botão recolher (aparece no brand quando expandido) ── */
 .collapseIconBtn {
   display: flex;

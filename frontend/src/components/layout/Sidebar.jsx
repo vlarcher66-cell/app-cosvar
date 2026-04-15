@@ -26,11 +26,26 @@ const NAV = [
   {
     id: 'cadastros', label: 'Cadastros', icon: Icon.register,
     children: [
-      { label: 'Grupo',           path: '/cadastros/grupos' },
-      { label: 'Subgrupo',        path: '/cadastros/subgrupos' },
-      { label: 'Item',            path: '/cadastros/itens' },
-      { label: 'Categoria',       path: '/cadastros/categorias' },
-      { label: 'Descrição',       path: '/cadastros/descricoes' },
+      {
+        label: 'Plano de Contas', section: true,
+        children: [
+          {
+            label: 'Receita', subsection: true,
+            children: [
+              { label: 'Categoria', path: '/cadastros/categorias' },
+              { label: 'Descrição', path: '/cadastros/descricoes' },
+            ],
+          },
+          {
+            label: 'Despesa', subsection: true,
+            children: [
+              { label: 'Grupo',    path: '/cadastros/grupos' },
+              { label: 'Subgrupo', path: '/cadastros/subgrupos' },
+              { label: 'Item',     path: '/cadastros/itens' },
+            ],
+          },
+        ],
+      },
       { label: 'Produtor',        path: '/cadastros/produtores' },
       { label: 'Fornecedor',      path: '/cadastros/fornecedores' },
       { label: 'Comprador',       path: '/cadastros/compradores' },
@@ -84,10 +99,118 @@ function Tooltip({ label, children }) {
   );
 }
 
+/* ── Subseção dentro de seção (3º nível) ── */
+function NavSubsection({ sub, onClose }) {
+  const location = useLocation();
+  const isActive = sub.children?.some(c => location.pathname.startsWith(c.path));
+  const [open, setOpen] = useState(isActive);
+
+  useEffect(() => { if (isActive) setOpen(true); }, [location.pathname]);
+
+  return (
+    <div className={s.subsection}>
+      <button
+        className={`${s.subsectionBtn} ${isActive ? s.subsectionBtnActive : ''}`}
+        onClick={() => setOpen(p => !p)}
+      >
+        <span>{sub.label}</span>
+        <motion.span
+          className={s.chevronSm}
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
+          style={{ display: 'flex', alignItems: 'center' }}
+        >
+          {Icon.chevron}
+        </motion.span>
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
+            style={{ overflow: 'hidden' }}
+          >
+            <div className={s.subsectionChildren}>
+              {sub.children.map((c, i) => (
+                <motion.div key={c.path} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03, duration: 0.13 }}>
+                  <NavLink to={c.path} className={({ isActive }) => `${s.child} ${isActive ? s.childActive : ''}`} onClick={onClose}>
+                    <span className={s.childDot} />
+                    <span>{c.label}</span>
+                  </NavLink>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ── Seção dentro de grupo (2º nível com filhos) ── */
+function NavSection({ sec, onClose }) {
+  const location = useLocation();
+  const allPaths = sec.children?.flatMap(s => s.children?.map(c => c.path) ?? [s.path]) ?? [];
+  const isActive = allPaths.some(p => p && location.pathname.startsWith(p));
+  const [open, setOpen] = useState(isActive);
+
+  useEffect(() => { if (isActive) setOpen(true); }, [location.pathname]);
+
+  return (
+    <div className={s.section}>
+      <button
+        className={`${s.sectionBtn} ${isActive ? s.sectionBtnActive : ''}`}
+        onClick={() => setOpen(p => !p)}
+      >
+        <span>{sec.label}</span>
+        <motion.span
+          className={s.chevronSm}
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
+          style={{ display: 'flex', alignItems: 'center' }}
+        >
+          {Icon.chevron}
+        </motion.span>
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+            style={{ overflow: 'hidden' }}
+          >
+            <div className={s.sectionChildren}>
+              {sec.children.map((sub, i) =>
+                sub.subsection
+                  ? <NavSubsection key={i} sub={sub} onClose={onClose} />
+                  : (
+                    <motion.div key={sub.path} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03, duration: 0.13 }}>
+                      <NavLink to={sub.path} className={({ isActive }) => `${s.child} ${isActive ? s.childActive : ''}`} onClick={onClose}>
+                        <span className={s.childDot} /><span>{sub.label}</span>
+                      </NavLink>
+                    </motion.div>
+                  )
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 /* ── Grupo colapsável ── */
 function NavGroup({ item, collapsed, onClose }) {
-  const location  = useLocation();
-  const isActive  = item.children?.some(c => location.pathname.startsWith(c.path));
+  const location = useLocation();
+  const allPaths = item.children?.flatMap(c =>
+    c.section ? c.children?.flatMap(s => s.children?.map(x => x.path) ?? [s.path]) ?? []
+              : [c.path]
+  ) ?? [];
+  const isActive = allPaths.some(p => p && location.pathname.startsWith(p));
   const [open, setOpen] = useState(isActive);
 
   useEffect(() => { if (isActive) setOpen(true); }, [location.pathname]);
@@ -133,26 +256,30 @@ function NavGroup({ item, collapsed, onClose }) {
             style={{ overflow: 'hidden' }}
           >
             <div className={s.groupChildren}>
-              {item.children.map((child, i) => (
-                <motion.div
-                  key={child.path}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.03, duration: 0.15 }}
-                >
-                  <NavLink
-                    to={child.path}
-                    className={({ isActive }) => `${s.child} ${isActive ? s.childActive : ''}`}
-                    onClick={onClose}
-                  >
-                    {child.icon
-                      ? <span className={s.childIcon} style={{ color: child.color }}>{child.icon}</span>
-                      : <span className={s.childDot} />
-                    }
-                    <span>{child.label}</span>
-                  </NavLink>
-                </motion.div>
-              ))}
+              {item.children.map((child, i) =>
+                child.section
+                  ? <NavSection key={i} sec={child} onClose={onClose} />
+                  : (
+                    <motion.div
+                      key={child.path}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.03, duration: 0.15 }}
+                    >
+                      <NavLink
+                        to={child.path}
+                        className={({ isActive }) => `${s.child} ${isActive ? s.childActive : ''}`}
+                        onClick={onClose}
+                      >
+                        {child.icon
+                          ? <span className={s.childIcon} style={{ color: child.color }}>{child.icon}</span>
+                          : <span className={s.childDot} />
+                        }
+                        <span>{child.label}</span>
+                      </NavLink>
+                    </motion.div>
+                  )
+              )}
             </div>
           </motion.div>
         )}
