@@ -105,6 +105,25 @@ const runMigrations = async () => {
     // 14. credora nullable em cacau_baixa (campo legado, substituído por comprador_id)
     await makeColumnNullable('cacau_baixa', 'credora', 'VARCHAR(120)');
 
+    // 15. Remove categorias_receita duplicadas sem vínculo com receitas
+    // Primeiro remove descrições filhas das categorias sem uso, depois a categoria
+    await db.query(`
+      DELETE dr FROM descricao_receita dr
+      INNER JOIN categoria_receita cr ON cr.id = dr.categoria_id
+      WHERE cr.nome = 'Cacau' AND cr.tipo = 'Venda'
+        AND cr.id NOT IN (
+          SELECT DISTINCT categoria_id FROM receita WHERE categoria_id IS NOT NULL
+        )
+    `).catch(e => console.log('⏭️  Limpeza descrições órfãs:', e.message));
+
+    await db.query(`
+      DELETE cr FROM categoria_receita cr
+      WHERE cr.nome = 'Cacau' AND cr.tipo = 'Venda'
+        AND cr.id NOT IN (
+          SELECT DISTINCT categoria_id FROM receita WHERE categoria_id IS NOT NULL
+        )
+    `).catch(e => console.log('⏭️  Limpeza duplicatas categoria:', e.message));
+
     console.log('🎉 Todas as migrations concluídas');
   } catch (err) {
     console.error('❌ Erro fatal nas migrations:', err.message);
