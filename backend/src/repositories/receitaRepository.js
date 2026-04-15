@@ -120,7 +120,8 @@ const lancarReceitaVenda = async ({ baixa_id, valor, data, conta_id, observacao,
 const getProcesso = async (cacau_baixa_id, usuario_id) => {
   const [[baixa]] = await db.query(`
     SELECT b.*,
-      cp.nome AS credora_nome
+      cp.nome AS credora_nome,
+      cp.nome AS credora
     FROM cacau_baixa b
     LEFT JOIN comprador cp ON cp.id = b.comprador_id
     WHERE b.id = ?

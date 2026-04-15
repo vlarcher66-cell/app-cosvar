@@ -410,7 +410,7 @@ export default function ReceitaPage() {
               <div className={s.processoGrid}>
                 <div className={s.processoField}>
                   <span className={s.processoFieldLabel}>Comprador</span>
-                  <span className={s.processoFieldValue}>{processo.baixa?.credora_nome || '—'}</span>
+                  <span className={s.processoFieldValue}>{processo.baixa?.credora_nome || processo.baixa?.credora || '—'}</span>
                 </div>
                 <div className={s.processoField}>
                   <span className={s.processoFieldLabel}>Data</span>
@@ -418,7 +418,7 @@ export default function ReceitaPage() {
                 </div>
                 <div className={s.processoField}>
                   <span className={s.processoFieldLabel}>Quantidade (kg)</span>
-                  <span className={s.processoFieldValue}>{processo.baixa?.quantidade_kg ? `${Number(processo.baixa.quantidade_kg).toFixed(1)} kg` : '—'}</span>
+                  <span className={s.processoFieldValue}>{processo.baixa?.kg ? `${Number(processo.baixa.kg).toFixed(1)} kg` : '—'}</span>
                 </div>
                 <div className={s.processoField}>
                   <span className={s.processoFieldLabel}>Arrobas</span>
