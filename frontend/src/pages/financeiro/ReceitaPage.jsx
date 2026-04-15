@@ -125,30 +125,27 @@ export default function ReceitaPage() {
 
   const columns = [
     { key: 'data',           label: 'Data',      width: 105, render: v => <span className={s.cellDate}>{formatDate(v)}</span> },
+    { key: '_origem', label: 'Origem', width: 150,
+      render: (_, row) => row.cacau_baixa_id
+        ? <span className={s.cellVinculada} title="Gerada automaticamente pela venda de cacau">🔒 {row.cacau_venda_numero || 'Cacau'}</span>
+        : <span className={s.cellOrigemManual}>Manual</span> },
     { key: 'categoria_nome', label: 'Categoria', render: v => <span className={s.cellCategoria}>{v || '—'}</span> },
     { key: 'descricao_nome', label: 'Descrição', render: v => v || '—' },
-    { key: 'conta_numero',        label: 'Conta',    width: 120, render: v => v ? <span className={s.cellConta}>{v}</span> : '—' },
-    { key: 'forma_pagamento_nome', label: 'Forma',   width: 110, render: v => v ? <span className={s.cellForma}>{v}</span> : <span className={s.cellVazio}>—</span> },
+    { key: 'conta_numero',         label: 'Conta',  width: 120, render: v => v ? <span className={s.cellConta}>{v}</span> : '—' },
+    { key: 'forma_pagamento_nome', label: 'Forma',  width: 110, render: v => v ? <span className={s.cellForma}>{v}</span> : <span className={s.cellVazio}>—</span> },
     { key: 'valor', label: 'Valor', width: 130, align: 'right',
       render: v => <span className={s.cellValor}>{formatCurrency(v)}</span> },
     { key: 'status', label: 'Status', width: 120, align: 'center',
       render: v => <span className={`${s.badge} ${v === 'recebido' ? s.badgeRecebido : s.badgePendente}`}>
         {v === 'recebido' ? 'Recebido' : 'Pendente'}
       </span> },
-    { key: '_actions', label: 'Ações', width: 160, align: 'center',
-      render: (_, row) => {
-        const vinculada = !!row.cacau_baixa_id;
-        return vinculada ? (
-          <span className={s.cellVinculada} title={`Gerada pela venda ${row.cacau_venda_numero} — edite/exclua pela venda de cacau`}>
-            🔒 {row.cacau_venda_numero || 'Cacau'}
-          </span>
-        ) : (
-          <div className={s.actions}>
-            <button className={s.btnEdit}   onClick={() => openEdit(row)}        title="Editar"><IcoEdit /></button>
-            <button className={s.btnDelete} onClick={() => setDeleteTarget(row)} title="Excluir"><IcoDelete /></button>
-          </div>
-        );
-      }},
+    { key: '_actions', label: 'Ações', width: 80, align: 'center',
+      render: (_, row) => row.cacau_baixa_id ? null : (
+        <div className={s.actions}>
+          <button className={s.btnEdit}   onClick={() => openEdit(row)}        title="Editar"><IcoEdit /></button>
+          <button className={s.btnDelete} onClick={() => setDeleteTarget(row)} title="Excluir"><IcoDelete /></button>
+        </div>
+      )},
   ];
 
   return (

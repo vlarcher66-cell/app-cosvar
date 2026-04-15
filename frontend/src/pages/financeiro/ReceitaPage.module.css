@@ -248,6 +248,13 @@
   display: inline-block;
 }
 
+.cellOrigemManual {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
 .cellVinculada {
   font-size: 0.72rem;
   font-weight: 600;
