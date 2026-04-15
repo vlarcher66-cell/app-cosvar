@@ -9,6 +9,10 @@ const cacauBaixaController = {
     try { res.status(201).json(await service.create(req.body, req.user.id)); }
     catch (e) { res.status(e.status || 500).json({ message: e.message }); }
   },
+  async vendaCompleta(req, res) {
+    try { res.status(201).json(await service.vendaCompleta(req.body, req.user.id)); }
+    catch (e) { res.status(e.status || 500).json({ message: e.message }); }
+  },
   async update(req, res) {
     try { res.json(await service.update(req.params.id, req.body)); }
     catch (e) { res.status(e.status || 500).json({ message: e.message }); }

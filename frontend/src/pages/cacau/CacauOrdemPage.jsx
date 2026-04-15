@@ -469,22 +469,16 @@ function TabBaixa({ toast, ano }) {
         toast?.success('Venda atualizada');
         setModalOpen(false); load();
       } else {
-        const nova = await cacauBaixaService.create(form);
-        setModalOpen(false); load();
-        // Abre modal de recebimento somente se tem valor_total
-        if (nova?.valor_total) {
-          setRecebimentoVenda(nova);
-          setContaSel('');
-          setFormaSel('');
-          setNovaForma('');
-          Promise.all([
-            contaService.getAll(),
-            formaPagamentoService.getAll(),
-          ]).then(([c, f]) => { setContas(c); setFormas(f); });
-          setRecebimentoOpen(true);
-        } else {
-          toast?.success('Venda registrada');
-        }
+        // Apenas abre o modal de recebimento — nada é salvo ainda
+        setContaSel('');
+        setFormaSel('');
+        setNovaForma('');
+        Promise.all([
+          contaService.getAll(),
+          formaPagamentoService.getAll(),
+        ]).then(([c, f]) => { setContas(c); setFormas(f); });
+        setModalOpen(false);
+        setRecebimentoOpen(true);
       }
     } catch (err) {
       toast?.error(err.response?.data?.message || err.message || 'Erro ao salvar');
@@ -505,25 +499,24 @@ function TabBaixa({ toast, ano }) {
   };
 
   const handleLancarReceita = async () => {
+    if (!contaSel) { toast?.error('Selecione a conta de recebimento'); return; }
     setSavingReceita(true);
     try {
-      await receitaService.lancarReceitaVenda({
-        baixa_id:           recebimentoVenda.id,
-        valor:              recebimentoVenda.valor_total,
-        data:               recebimentoVenda.data,
+      await cacauBaixaService.vendaCompleta({
+        ...form,
         conta_id:           contaSel,
         forma_pagamento_id: formaSel || null,
-        observacao:         `Venda de cacau — ${recebimentoVenda.numero_ordem} — ${recebimentoVenda.credora}`,
       });
-      toast?.success('Venda registrada e receita lançada!');
+      toast?.success('Venda e recebimento registrados com sucesso!');
       setRecebimentoOpen(false);
+      load();
     } catch (err) {
-      toast?.error(err.response?.data?.message || 'Erro ao lançar receita');
+      toast?.error(err.response?.data?.message || 'Erro ao registrar venda');
     } finally { setSavingReceita(false); }
   };
 
   const handlePularReceita = () => {
-    toast?.success('Venda registrada');
+    // Fecha sem salvar — nada foi gravado no banco
     setRecebimentoOpen(false);
   };
 
@@ -754,25 +747,25 @@ function TabBaixa({ toast, ano }) {
               </svg>
             </div>
             <div>
-              <div className={s.recebimentoTitulo}>Venda registrada com sucesso!</div>
-              <div className={s.recebimentoSub}>Deseja lançar o recebimento no financeiro?</div>
+              <div className={s.recebimentoTitulo}>Confirmar Recebimento</div>
+              <div className={s.recebimentoSub}>Informe a forma e a conta para registrar a venda.</div>
             </div>
           </div>
 
           <div className={s.recebimentoValorBox}>
             <span className={s.recebimentoValorLabel}>Valor da venda</span>
             <span className={s.recebimentoValor}>
-              R$ {Number(recebimentoVenda?.valor_total || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              R$ {Number(form.valor_total || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </span>
           </div>
 
           <div className={s.recebimentoRow}>
             <span className={s.recebimentoLabel}>Credora</span>
-            <span className={s.recebimentoValorSm}>{recebimentoVenda?.credora}</span>
+            <span className={s.recebimentoValorSm}>{form.credora}</span>
           </div>
           <div className={s.recebimentoRow}>
-            <span className={s.recebimentoLabel}>Nº da Venda</span>
-            <span className={s.ordemTag}>{recebimentoVenda?.numero_ordem}</span>
+            <span className={s.recebimentoLabel}>Data</span>
+            <span className={s.recebimentoValorSm}>{form.data}</span>
           </div>
 
           <div className={s.ordemDivider} style={{ margin: '12px 0' }} />
