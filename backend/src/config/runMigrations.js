@@ -15,6 +15,12 @@ async function addColumnIfNotExists(table, column, definition) {
   console.log(`✅ Coluna adicionada: ${table}.${column}`);
 }
 
+// Helper: modifica coluna para nullable (MODIFY COLUMN é idempotente no MySQL)
+async function makeColumnNullable(table, column, columnDef) {
+  await db.query(`ALTER TABLE ${table} MODIFY COLUMN ${column} ${columnDef} DEFAULT NULL`);
+  console.log(`✅ Coluna tornada nullable: ${table}.${column}`);
+}
+
 // Helper: adiciona FK só se não existir
 async function addFkIfNotExists(table, constraintName, fkSql) {
   const [rows] = await db.query(
@@ -92,6 +98,12 @@ const runMigrations = async () => {
     await addFkIfNotExists('producao_cacau', 'fk_prod_cacau_projeto',
       `FOREIGN KEY (projeto_id) REFERENCES projeto (id) ON DELETE RESTRICT ON UPDATE CASCADE`
     );
+
+    // 13. credora nullable em cacau_ordem (campo legado, substituído por comprador_id)
+    await makeColumnNullable('cacau_ordem', 'credora', 'VARCHAR(120)');
+
+    // 14. credora nullable em cacau_baixa (campo legado, substituído por comprador_id)
+    await makeColumnNullable('cacau_baixa', 'credora', 'VARCHAR(120)');
 
     console.log('🎉 Todas as migrations concluídas');
   } catch (err) {
