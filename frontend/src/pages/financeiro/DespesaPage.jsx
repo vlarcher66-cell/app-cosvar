@@ -912,7 +912,9 @@ function TabPagas({ toast }) {
     finally { setDeleting(false); }
   };
 
-  const total = rows.reduce((a, r) => a + Number(r.valor || 0), 0);
+  const total          = rows.reduce((a, r) => a + Number(r.valor_pago || r.valor || 0), 0);
+  const totalJuros     = rows.reduce((a, r) => a + Number(r.acrescimo || 0), 0);
+  const totalDescontos = rows.reduce((a, r) => a + Number(r.desconto_pagamento || 0), 0);
   const temFiltro = Object.values(filtros).some(v => v);
 
   const columns = [
@@ -920,9 +922,21 @@ function TabPagas({ toast }) {
     { key: 'grupo_nome',      label: 'Grupo',      render: v => <span className={s.cellGrupo}>{v || '—'}</span> },
     { key: 'item_nome',       label: 'Item',       render: v => v || '—' },
     { key: 'fornecedor_nome', label: 'Fornecedor', render: v => v || '—' },
-    { key: 'conta_numero',    label: 'Conta',      width: 110, render: v => v ? <span className={s.cellConta}>{v}</span> : '—' },
-    { key: 'valor', label: 'Valor', width: 130, align: 'right',
-      render: v => <span className={s.cellValor}>{formatCurrency(v)}</span> },
+    { key: 'conta_numero', label: 'Conta', width: 110, render: v => v ? <span className={s.cellConta}>{v}</span> : '—' },
+    { key: 'data_pagamento', label: 'Dt. Pagamento', width: 115, render: v => v ? <span className={s.cellDate}>{formatDate(v)}</span> : '—' },
+    { key: 'valor_pago', label: 'Valor Pago', width: 150, align: 'right',
+      render: (v, row) => {
+        const pago     = Number(v || row.valor || 0);
+        const acres    = Number(row.acrescimo || 0);
+        const desc     = Number(row.desconto_pagamento || 0);
+        return (
+          <div className={s.valorPagoCell}>
+            <span className={s.cellValor}>{formatCurrency(pago)}</span>
+            {acres > 0 && <span className={s.tagAcrescimo}>+{formatCurrency(acres)} juros</span>}
+            {desc  > 0 && <span className={s.tagDesconto}>-{formatCurrency(desc)} desc</span>}
+          </div>
+        );
+      }},
     { key: '_actions', label: '', width: 50, align: 'center',
       render: (_, row) => (
         <button className={s.btnDelete} onClick={() => setDeleteTarget(row)} title="Excluir"><IcoDelete /></button>
@@ -933,8 +947,10 @@ function TabPagas({ toast }) {
     <div className={s.tabContent}>
       <div className={s.kpis}>
         {[
-          { label: 'Total Pago',  value: formatCurrency(total), icon: <IcoPagas />,  variant: 'pago'  },
-          { label: 'Lançamentos', value: rows.length,           icon: <IcoCount />, variant: 'count' },
+          { label: 'Total Pago',    value: formatCurrency(total),         icon: <IcoPagas />,   variant: 'pago'     },
+          { label: 'Total Juros',   value: formatCurrency(totalJuros),    icon: <IcoPendente />, variant: 'pendente' },
+          { label: 'Total Descontos', value: formatCurrency(totalDescontos), icon: <IcoPago />,  variant: 'total'    },
+          { label: 'Lançamentos',   value: rows.length,                   icon: <IcoCount />,   variant: 'count'    },
         ].map((card, i) => (
           <motion.div key={card.label} className={`${s.kpi} ${s[`kpi_${card.variant}`]}`}
             custom={i} variants={cardVariants} initial="hidden" animate="visible">
