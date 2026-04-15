@@ -248,6 +248,23 @@
   display: inline-block;
 }
 
+.cellForma {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary);
+  background: rgba(37,99,235,0.08);
+  border: 1px solid rgba(37,99,235,0.18);
+  border-radius: var(--r-sm);
+  padding: 2px 8px;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.cellVazio {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
 .cellValor {
   font-family: var(--font-mono);
   font-size: var(--text-sm);
