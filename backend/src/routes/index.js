@@ -28,6 +28,9 @@ router.use('/centros-custo', authMiddleware, require('./centroCustoRoutes'));
 router.use('/bancos',        authMiddleware, require('./bancoRoutes'));
 router.use('/contas',        authMiddleware, require('./contaRoutes'));
 
+// Forma de pagamento
+router.use('/formas-pagamento', authMiddleware, require('./formaPagamentoRoutes'));
+
 // Cacau
 router.use('/producao-cacau', authMiddleware, require('./producaoCacauRoutes'));
 router.use('/cacau-ordem',    authMiddleware, require('./cacauOrdemRoutes'));

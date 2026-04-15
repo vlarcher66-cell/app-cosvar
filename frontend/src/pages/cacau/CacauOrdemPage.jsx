@@ -10,6 +10,7 @@ import cacauBaixaService from '../../services/cacauBaixaService';
 import compradorService from '../../services/compradorService';
 import contaService from '../../services/contaService';
 import receitaService from '../../services/receitaService';
+import formaPagamentoService from '../../services/formaPagamentoService';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
@@ -395,10 +396,14 @@ function TabBaixa({ toast, ano }) {
 
   // Modal de recebimento pós-venda
   const [recebimentoOpen, setRecebimentoOpen]   = useState(false);
-  const [recebimentoVenda, setRecebimentoVenda] = useState(null); // baixa recém criada
+  const [recebimentoVenda, setRecebimentoVenda] = useState(null);
   const [contas, setContas]                     = useState([]);
   const [contaSel, setContaSel]                 = useState('');
   const [savingReceita, setSavingReceita]        = useState(false);
+  const [formas, setFormas]                     = useState([]);
+  const [formaSel, setFormaSel]                 = useState('');
+  const [novaForma, setNovaForma]               = useState('');
+  const [savingForma, setSavingForma]           = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -470,7 +475,12 @@ function TabBaixa({ toast, ano }) {
         if (nova?.valor_total) {
           setRecebimentoVenda(nova);
           setContaSel('');
-          contaService.getAll().then(c => setContas(c));
+          setFormaSel('');
+          setNovaForma('');
+          Promise.all([
+            contaService.getAll(),
+            formaPagamentoService.getAll(),
+          ]).then(([c, f]) => { setContas(c); setFormas(f); });
           setRecebimentoOpen(true);
         } else {
           toast?.success('Venda registrada');
@@ -481,15 +491,29 @@ function TabBaixa({ toast, ano }) {
     } finally { setSaving(false); }
   };
 
+  const handleCadastrarForma = async () => {
+    if (!novaForma.trim()) return;
+    setSavingForma(true);
+    try {
+      const criada = await formaPagamentoService.create({ nome: novaForma.trim() });
+      const lista = await formaPagamentoService.getAll();
+      setFormas(lista);
+      setFormaSel(String(criada.id));
+      setNovaForma('');
+    } catch { toast?.error('Erro ao cadastrar forma de pagamento'); }
+    finally { setSavingForma(false); }
+  };
+
   const handleLancarReceita = async () => {
     setSavingReceita(true);
     try {
       await receitaService.lancarReceitaVenda({
-        baixa_id:  recebimentoVenda.id,
-        valor:     recebimentoVenda.valor_total,
-        data:      recebimentoVenda.data,
-        conta_id:  contaSel,
-        observacao: `Venda de cacau — ${recebimentoVenda.numero_ordem} — ${recebimentoVenda.credora}`,
+        baixa_id:           recebimentoVenda.id,
+        valor:              recebimentoVenda.valor_total,
+        data:               recebimentoVenda.data,
+        conta_id:           contaSel,
+        forma_pagamento_id: formaSel || null,
+        observacao:         `Venda de cacau — ${recebimentoVenda.numero_ordem} — ${recebimentoVenda.credora}`,
       });
       toast?.success('Venda registrada e receita lançada!');
       setRecebimentoOpen(false);
@@ -756,13 +780,42 @@ function TabBaixa({ toast, ano }) {
           <div className={s.ordemFieldGroup}>
             <label className={s.ordemLabel}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+              Forma de pagamento
+            </label>
+            <select className={s.ordemSelect} value={formaSel} onChange={e => setFormaSel(e.target.value)}>
+              <option value="">Selecione...</option>
+              {formas.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
+            </select>
+            <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+              <input
+                className={s.ordemInput}
+                placeholder="Nova forma (ex: PIX, Dinheiro...)"
+                value={novaForma}
+                onChange={e => setNovaForma(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleCadastrarForma()}
+                style={{ flex: 1, fontSize: '0.8rem' }}
+              />
+              <button
+                type="button"
+                className={s.btnAddInline}
+                onClick={handleCadastrarForma}
+                disabled={savingForma || !novaForma.trim()}
+              >
+                {savingForma ? '...' : '+ Add'}
+              </button>
+            </div>
+          </div>
+
+          <div className={s.ordemFieldGroup}>
+            <label className={s.ordemLabel}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
               Conta de recebimento
             </label>
             <select className={s.ordemSelect} value={contaSel} onChange={e => setContaSel(e.target.value)}>
               <option value="">Selecione a conta...</option>
               {contas.map(c => (
                 <option key={c.id} value={c.id}>
-                  {c.tipo === 'caixa' ? '🏦 Caixa' : c.banco_nome ? `${c.banco_nome} — ${c.numero}` : c.numero}
+                  {c.tipo === 'caixa' ? 'Caixa' : c.banco_nome ? `${c.banco_nome} — ${c.numero}` : c.numero}
                 </option>
               ))}
             </select>
