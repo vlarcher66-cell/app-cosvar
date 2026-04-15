@@ -404,6 +404,12 @@ function TabBaixa({ toast, ano }) {
   const [formaSel, setFormaSel]                 = useState('');
   const [novaForma, setNovaForma]               = useState('');
   const [savingForma, setSavingForma]           = useState(false);
+  const [formaDropOpen, setFormaDropOpen]       = useState(false);
+  const [editingForma, setEditingForma]         = useState(null); // { id, nome }
+  const [editFormaVal, setEditFormaVal]         = useState('');
+  const [savingEditForma, setSavingEditForma]   = useState(false);
+  const [deletingForma, setDeletingForma]       = useState(null);
+  const formaDropRef                            = useRef(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -497,6 +503,36 @@ function TabBaixa({ toast, ano }) {
     } catch { toast?.error('Erro ao cadastrar forma de pagamento'); }
     finally { setSavingForma(false); }
   };
+
+  const handleEditForma = async (f) => {
+    setSavingEditForma(true);
+    try {
+      await formaPagamentoService.update(f.id, { nome: editFormaVal.trim() });
+      const lista = await formaPagamentoService.getAll();
+      setFormas(lista);
+      setEditingForma(null);
+    } catch { toast?.error('Erro ao editar forma de pagamento'); }
+    finally { setSavingEditForma(false); }
+  };
+
+  const handleDeleteForma = async (id) => {
+    setDeletingForma(id);
+    try {
+      await formaPagamentoService.remove(id);
+      const lista = await formaPagamentoService.getAll();
+      setFormas(lista);
+      if (String(formaSel) === String(id)) setFormaSel('');
+    } catch { toast?.error('Erro ao excluir forma de pagamento'); }
+    finally { setDeletingForma(null); }
+  };
+
+  // Fecha dropdown de forma ao clicar fora
+  useEffect(() => {
+    if (!formaDropOpen) return;
+    const handler = (e) => { if (formaDropRef.current && !formaDropRef.current.contains(e.target)) setFormaDropOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [formaDropOpen]);
 
   const handleLancarReceita = async () => {
     if (!contaSel) { toast?.error('Selecione a conta de recebimento'); return; }
@@ -770,33 +806,63 @@ function TabBaixa({ toast, ano }) {
 
           <div className={s.ordemDivider} style={{ margin: '12px 0' }} />
 
-          <div className={s.ordemFieldGroup}>
+          <div className={s.ordemFieldGroup} ref={formaDropRef} style={{ position: 'relative' }}>
             <label className={s.ordemLabel}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
               Forma de pagamento
             </label>
-            <select className={s.ordemSelect} value={formaSel} onChange={e => setFormaSel(e.target.value)}>
-              <option value="">Selecione...</option>
-              {formas.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
-            </select>
-            <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-              <input
-                className={s.ordemInput}
-                placeholder="Nova forma (ex: PIX, Dinheiro...)"
-                value={novaForma}
-                onChange={e => setNovaForma(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleCadastrarForma()}
-                style={{ flex: 1, fontSize: '0.8rem' }}
-              />
-              <button
-                type="button"
-                className={s.btnAddInline}
-                onClick={handleCadastrarForma}
-                disabled={savingForma || !novaForma.trim()}
-              >
-                {savingForma ? '...' : '+ Add'}
-              </button>
-            </div>
+            {/* Trigger */}
+            <button type="button" className={s.fpTrigger} onClick={() => setFormaDropOpen(v => !v)}>
+              <span>{formaSel ? (formas.find(f => String(f.id) === String(formaSel))?.nome || 'Selecione...') : 'Selecione...'}</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: formaDropOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.18s' }}><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <AnimatePresence>
+              {formaDropOpen && (
+                <motion.div className={s.fpDropdown}
+                  initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.15 }}>
+                  {formas.length === 0 && (
+                    <div className={s.fpEmpty}>Nenhuma forma cadastrada</div>
+                  )}
+                  {formas.map(f => (
+                    <div key={f.id} className={`${s.fpItem} ${String(formaSel) === String(f.id) ? s.fpItemSel : ''}`}>
+                      {editingForma?.id === f.id ? (
+                        <div className={s.fpEditRow}>
+                          <input autoFocus className={s.fpEditInput} value={editFormaVal}
+                            onChange={e => setEditFormaVal(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') handleEditForma(f); if (e.key === 'Escape') setEditingForma(null); }} />
+                          <button type="button" className={s.fpBtnSave} onClick={() => handleEditForma(f)} disabled={savingEditForma || !editFormaVal.trim()}>
+                            {savingEditForma ? '...' : '✓'}
+                          </button>
+                          <button type="button" className={s.fpBtnCancel} onClick={() => setEditingForma(null)}>✕</button>
+                        </div>
+                      ) : (
+                        <>
+                          <span className={s.fpItemNome} onClick={() => { setFormaSel(String(f.id)); setFormaDropOpen(false); }}>{f.nome}</span>
+                          <div className={s.fpActions}>
+                            <button type="button" className={s.fpBtnEdit} title="Editar" onClick={() => { setEditingForma(f); setEditFormaVal(f.nome); }}>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            </button>
+                            <button type="button" className={s.fpBtnDel} title="Excluir" disabled={deletingForma === f.id} onClick={() => handleDeleteForma(f.id)}>
+                              {deletingForma === f.id ? '...' : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>}
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                  {/* Adicionar nova */}
+                  <div className={s.fpAddRow}>
+                    <input className={s.fpAddInput} placeholder="Nova forma (ex: PIX)..."
+                      value={novaForma} onChange={e => setNovaForma(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleCadastrarForma()} />
+                    <button type="button" className={s.fpBtnAdd} onClick={handleCadastrarForma} disabled={savingForma || !novaForma.trim()}>
+                      {savingForma ? '...' : '+ Add'}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           <div className={s.ordemFieldGroup}>

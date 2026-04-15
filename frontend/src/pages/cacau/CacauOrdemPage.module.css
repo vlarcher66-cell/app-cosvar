@@ -672,6 +672,159 @@
 .recebimentoPularBtn:hover { color: var(--text-2); }
 .recebimentoPularBtn:disabled { opacity: 0.4; cursor: not-allowed; }
 
+/* ══ FORMA DE PAGAMENTO DROPDOWN CUSTOMIZADO ══ */
+.fpTrigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  font-size: var(--text-sm);
+  color: var(--text-2);
+  font-family: var(--font);
+  cursor: pointer;
+  transition: border-color var(--dur), box-shadow var(--dur);
+}
+.fpTrigger:hover { border-color: var(--primary); }
+.fpTrigger:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+
+.fpDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0; right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.13);
+  z-index: 200;
+  overflow: hidden;
+}
+
+.fpEmpty {
+  padding: 10px 14px;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.fpItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px 0 12px;
+  min-height: 36px;
+  border-bottom: 1px solid var(--border);
+  transition: background var(--dur);
+}
+.fpItem:last-child { border-bottom: none; }
+.fpItem:hover { background: var(--surface-2); }
+.fpItemSel { background: rgba(37,99,235,0.06); }
+
+.fpItemNome {
+  flex: 1;
+  font-size: var(--text-sm);
+  color: var(--text-2);
+  cursor: pointer;
+  padding: 8px 0;
+}
+.fpItemSel .fpItemNome { color: var(--primary); font-weight: 600; }
+
+.fpActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.fpBtnEdit,
+.fpBtnDel,
+.fpBtnSave,
+.fpBtnCancel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px; height: 26px;
+  border-radius: var(--r-sm);
+  border: none;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-family: var(--font);
+  transition: background var(--dur), color var(--dur);
+  background: transparent;
+}
+.fpBtnEdit { color: var(--text-muted); }
+.fpBtnEdit:hover { background: rgba(37,99,235,0.1); color: var(--primary); }
+.fpBtnDel { color: var(--text-muted); }
+.fpBtnDel:hover { background: rgba(220,38,38,0.1); color: var(--danger); }
+.fpBtnDel:disabled { opacity: 0.4; cursor: not-allowed; }
+.fpBtnSave { color: #059669; font-weight: 700; }
+.fpBtnSave:hover { background: rgba(5,150,105,0.1); }
+.fpBtnSave:disabled { opacity: 0.4; cursor: not-allowed; }
+.fpBtnCancel { color: var(--text-muted); font-weight: 700; }
+.fpBtnCancel:hover { background: var(--surface-2); }
+
+.fpEditRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  padding: 4px 0;
+}
+
+.fpEditInput {
+  flex: 1;
+  padding: 5px 8px;
+  font-size: var(--text-sm);
+  font-family: var(--font);
+  background: var(--surface-2);
+  border: 1px solid var(--primary);
+  border-radius: var(--r-sm);
+  color: var(--text-2);
+  outline: none;
+}
+
+.fpAddRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.fpAddInput {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  font-family: var(--font);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text-2);
+  outline: none;
+  transition: border-color var(--dur);
+}
+.fpAddInput:focus { border-color: var(--primary); }
+
+.fpBtnAdd {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-family: var(--font);
+  font-weight: 600;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--dur);
+}
+.fpBtnAdd:hover { background: #1d4ed8; }
+.fpBtnAdd:disabled { opacity: 0.45; cursor: not-allowed; }
+
 /* ══ MOBILE RESPONSIVE ══ */
 @media (max-width: 768px) {
   /* Page */
