@@ -18,9 +18,19 @@ const migrations = [
   },
   {
     name: 'add_forma_pagamento_id_to_receita',
+    sql: `ALTER TABLE receita ADD COLUMN IF NOT EXISTS forma_pagamento_id INT DEFAULT NULL AFTER conta_id`,
+  },
+  {
+    name: 'add_cacau_baixa_id_to_receita',
+    sql: `ALTER TABLE receita ADD COLUMN IF NOT EXISTS cacau_baixa_id INT DEFAULT NULL AFTER forma_pagamento_id`,
+  },
+  {
+    name: 'add_fk_receita_cacau_baixa',
     sql: `
       ALTER TABLE receita
-        ADD COLUMN IF NOT EXISTS forma_pagamento_id INT DEFAULT NULL AFTER conta_id
+        ADD CONSTRAINT fk_receita_cacau_baixa
+        FOREIGN KEY (cacau_baixa_id) REFERENCES cacau_baixa (id)
+        ON DELETE CASCADE ON UPDATE CASCADE
     `,
   },
 ];
@@ -32,7 +42,7 @@ const runMigrations = async () => {
       console.log(`✅ Migration OK: ${migration.name}`);
     } catch (err) {
       // Ignora erro de coluna/tabela já existente
-      if (err.code === 'ER_DUP_FIELDNAME' || err.code === 'ER_TABLE_EXISTS_ERROR') {
+      if (err.code === 'ER_DUP_FIELDNAME' || err.code === 'ER_TABLE_EXISTS_ERROR' || err.code === 'ER_FK_DUP_NAME' || err.code === 'ER_DUP_KEY') {
         console.log(`⏭️  Migration já aplicada: ${migration.name}`);
       } else {
         console.error(`❌ Migration falhou: ${migration.name} —`, err.message);

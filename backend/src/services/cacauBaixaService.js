@@ -72,10 +72,10 @@ const cacauBaixaService = {
 
       const observacao = `Venda de cacau — ${numero_ordem} — ${data.credora}`;
       await conn.query(
-        `INSERT INTO receita (categoria_id, descricao_id, projeto_id, conta_id, valor, data, descricao, status, forma_pagamento_id, usuario_id)
-         VALUES (?, ?, NULL, ?, ?, ?, ?, 'recebido', ?, ?)`,
-        [cat.id, desc.id, data.conta_id, data.valor_total, data.data,
-         observacao, data.forma_pagamento_id || null, usuarioId]
+        `INSERT INTO receita (categoria_id, descricao_id, projeto_id, conta_id, forma_pagamento_id, cacau_baixa_id, valor, data, descricao, status, usuario_id)
+         VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, 'recebido', ?)`,
+        [cat.id, desc.id, data.conta_id, data.forma_pagamento_id || null,
+         baixaId, data.valor_total, data.data, observacao, usuarioId]
       );
 
       await conn.commit();
