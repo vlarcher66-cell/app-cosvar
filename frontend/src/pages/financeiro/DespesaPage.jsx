@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import despesaService from '../../services/despesaService';
 import grupoDespesaService from '../../services/grupoDespesaService';
@@ -47,7 +48,9 @@ const newKey = () => ++_keyCounter;
 function ItemSearchRow({ row, todosItens, onChange, onRemove, canRemove }) {
   const [query, setQuery]       = useState('');
   const [dropOpen, setDropOpen] = useState(false);
-  const ref = useRef(null);
+  const [dropPos, setDropPos]   = useState({ top: 0, left: 0, width: 0 });
+  const ref     = useRef(null);
+  const inputRef = useRef(null);
 
   useEffect(() => {
     const h = e => { if (ref.current && !ref.current.contains(e.target)) setDropOpen(false); };
@@ -61,6 +64,14 @@ function ItemSearchRow({ row, todosItens, onChange, onRemove, canRemove }) {
     it.grupo_nome?.toLowerCase().includes(query.toLowerCase())
   );
 
+  const abrirDrop = () => {
+    if (inputRef.current) {
+      const r = inputRef.current.getBoundingClientRect();
+      setDropPos({ top: r.bottom + 4, left: r.left, width: r.width });
+    }
+    setDropOpen(true);
+  };
+
   const selecionar = (item) => {
     onChange({ ...row, item_id: item.id, subgrupo_id: item.subgrupo_id, grupo_id: item.grupo_id, item });
     setQuery(''); setDropOpen(false);
@@ -69,6 +80,36 @@ function ItemSearchRow({ row, todosItens, onChange, onRemove, canRemove }) {
   const limpar = () => {
     onChange({ ...row, item_id: '', subgrupo_id: '', grupo_id: '', item: null });
   };
+
+  const dropdown = (
+    <AnimatePresence>
+      {dropOpen && filtrados.length > 0 && createPortal(
+        <motion.ul
+          className={s.itemDropdown}
+          style={{ position: 'fixed', top: dropPos.top, left: dropPos.left, width: dropPos.width, zIndex: 9999 }}
+          initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.15 }}>
+          {filtrados.slice(0, 10).map(it => (
+            <li key={it.id} className={s.itemDropItem} onMouseDown={() => selecionar(it)}>
+              <span className={s.itemDropNome}>{it.nome}</span>
+              <span className={s.itemDropPath}>{it.grupo_nome}{it.subgrupo_nome ? ` › ${it.subgrupo_nome}` : ''}</span>
+            </li>
+          ))}
+        </motion.ul>,
+        document.body
+      )}
+      {dropOpen && query && filtrados.length === 0 && createPortal(
+        <motion.ul
+          className={s.itemDropdown}
+          style={{ position: 'fixed', top: dropPos.top, left: dropPos.left, width: dropPos.width, zIndex: 9999 }}
+          initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.15 }}>
+          <li className={s.itemDropEmpty}>Nenhum item encontrado</li>
+        </motion.ul>,
+        document.body
+      )}
+    </AnimatePresence>
+  );
 
   return (
     <div className={s.carrinhoRow}>
@@ -87,34 +128,15 @@ function ItemSearchRow({ row, todosItens, onChange, onRemove, canRemove }) {
         ) : (
           <div className={s.itemSearch}>
             <input
+              ref={inputRef}
               className={s.input}
               placeholder="Buscar item..."
               value={query}
-              onChange={e => { setQuery(e.target.value); setDropOpen(true); }}
-              onFocus={() => setDropOpen(true)}
+              onChange={e => { setQuery(e.target.value); abrirDrop(); }}
+              onFocus={abrirDrop}
               autoComplete="off"
             />
-            <AnimatePresence>
-              {dropOpen && filtrados.length > 0 && (
-                <motion.ul className={s.itemDropdown}
-                  initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.15 }}>
-                  {filtrados.slice(0, 10).map(it => (
-                    <li key={it.id} className={s.itemDropItem} onMouseDown={() => selecionar(it)}>
-                      <span className={s.itemDropNome}>{it.nome}</span>
-                      <span className={s.itemDropPath}>{it.grupo_nome}{it.subgrupo_nome ? ` › ${it.subgrupo_nome}` : ''}</span>
-                    </li>
-                  ))}
-                </motion.ul>
-              )}
-              {dropOpen && query && filtrados.length === 0 && (
-                <motion.ul className={s.itemDropdown}
-                  initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.15 }}>
-                  <li className={s.itemDropEmpty}>Nenhum item encontrado</li>
-                </motion.ul>
-              )}
-            </AnimatePresence>
+            {dropdown}
           </div>
         )}
       </div>

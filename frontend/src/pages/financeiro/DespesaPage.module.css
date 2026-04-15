@@ -527,9 +527,6 @@
 }
 
 .itemDropdown {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0; right: 0;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-md);
@@ -537,7 +534,6 @@
   list-style: none;
   margin: 0;
   padding: 4px;
-  z-index: 200;
   max-height: 220px;
   overflow-y: auto;
 }
