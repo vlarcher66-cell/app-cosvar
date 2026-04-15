@@ -120,10 +120,10 @@ export default function ReceitaPage() {
   };
 
   const openProcesso = async (cacau_baixa_id) => {
+    if (loadingProcesso) return;
     setLoadingProcesso(true); setProcesso(null);
     try { setProcesso(await receitaService.getProcesso(cacau_baixa_id)); }
-    catch { toast?.error('Erro ao carregar processo'); }
-    finally { setLoadingProcesso(false); }
+    catch (err) { toast?.error(err.response?.data?.message || 'Erro ao carregar processo'); setLoadingProcesso(false); }
   };
 
   const temFiltro = Object.values(filtros).some(v => v);
@@ -151,7 +151,7 @@ export default function ReceitaPage() {
       </span> },
     { key: '_actions', label: 'Ações', width: 80, align: 'center',
       render: (_, row) => row.cacau_baixa_id ? (
-        <button className={s.btnView} onClick={() => openProcesso(row.cacau_baixa_id)} title="Ver processo">
+        <button className={s.btnView} onClick={e => { e.stopPropagation(); openProcesso(row.cacau_baixa_id); }} title="Ver processo">
           <IcoView />
         </button>
       ) : (
