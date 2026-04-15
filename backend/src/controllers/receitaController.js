@@ -66,8 +66,11 @@ const lancarReceitaVenda = async (req, res, next) => {
 const getProcesso = async (req, res, next) => {
   try {
     const data = await service.getProcesso(req.params.cacau_baixa_id, req.user.id);
+    console.log('[getProcesso] baixa:', JSON.stringify(data.baixa));
+    console.log('[getProcesso] parcelas:', data.parcelas.length);
     return success(res, data);
   } catch (err) {
+    console.error('[getProcesso] erro:', err);
     if (err.statusCode) return error(res, err.message, err.statusCode);
     next(err);
   }
