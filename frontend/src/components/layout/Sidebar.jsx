@@ -53,11 +53,11 @@ const NAV = [
           { label: 'Comprador', path: '/cadastros/compradores' },
         ],
       },
-      { label: 'Fornecedor', path: '/cadastros/fornecedores' },
-      { label: 'Projetos',   path: '/cadastros/projetos' },
+      { label: 'Projetos', path: '/cadastros/projetos' },
       {
         label: 'Financeiro', section: true,
         children: [
+          { label: 'Fornecedor',      path: '/cadastros/fornecedores' },
           { label: 'Banco',           path: '/cadastros/bancos' },
           { label: 'Conta',           path: '/cadastros/contas' },
           { label: 'Centro de Custo', path: '/cadastros/centros-custo' },
