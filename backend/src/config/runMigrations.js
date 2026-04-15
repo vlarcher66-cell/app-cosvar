@@ -32,7 +32,7 @@ async function addFkIfNotExists(table, constraintName, fkSql) {
 
 const runMigrations = async () => {
   try {
-    // 1. forma_pagamento
+    // 1. forma_pagamento — cria sem FK inline para evitar ER_FK_DUP_NAME mascarando a criação
     await db.query(`
       CREATE TABLE IF NOT EXISTS forma_pagamento (
         id          INT          NOT NULL AUTO_INCREMENT,
@@ -41,11 +41,14 @@ const runMigrations = async () => {
         created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         PRIMARY KEY (id),
-        KEY idx_forma_pagamento_usuario (usuario_id),
-        CONSTRAINT fk_forma_pagamento_usuario FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE
+        KEY idx_forma_pagamento_usuario (usuario_id)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-    `).catch(e => { if (e.code !== 'ER_TABLE_EXISTS_ERROR' && e.code !== 'ER_FK_DUP_NAME') throw e; });
+    `).catch(e => { if (e.code !== 'ER_TABLE_EXISTS_ERROR') throw e; });
     console.log('✅ Migration OK: create_forma_pagamento');
+    // FK separada para não bloquear criação da tabela
+    await addFkIfNotExists('forma_pagamento', 'fk_forma_pagamento_usuario',
+      `FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE`
+    );
 
     // 2. receita — forma_pagamento_id
     await addColumnIfNotExists('receita', 'forma_pagamento_id', 'INT DEFAULT NULL AFTER conta_id');

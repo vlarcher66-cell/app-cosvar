@@ -765,7 +765,7 @@ function TabBaixa({ toast, ano }) {
           </div>
           <div className={s.recebimentoRow}>
             <span className={s.recebimentoLabel}>Data</span>
-            <span className={s.recebimentoValorSm}>{form.data}</span>
+            <span className={s.recebimentoValorSm}>{formatDate(form.data)}</span>
           </div>
 
           <div className={s.ordemDivider} style={{ margin: '12px 0' }} />
