@@ -3,15 +3,19 @@ const db = require('../config/database');
 const findAll = async (usuario_id, filters = {}) => {
   let sql = `
     SELECT r.*,
-      c.nome AS categoria_nome,
-      d.nome AS descricao_nome,
-      p.nome AS projeto_nome,
-      ct.numero AS conta_numero
+      c.nome  AS categoria_nome,
+      d.nome  AS descricao_nome,
+      p.nome  AS projeto_nome,
+      ct.numero AS conta_numero,
+      fp.nome AS forma_pagamento_nome,
+      cb.numero_ordem AS cacau_venda_numero
     FROM receita r
-    LEFT JOIN categoria_receita c ON c.id = r.categoria_id
-    LEFT JOIN descricao_receita d ON d.id = r.descricao_id
-    LEFT JOIN projeto p ON p.id = r.projeto_id
-    LEFT JOIN conta ct ON ct.id = r.conta_id
+    LEFT JOIN categoria_receita c  ON c.id  = r.categoria_id
+    LEFT JOIN descricao_receita d  ON d.id  = r.descricao_id
+    LEFT JOIN projeto p            ON p.id  = r.projeto_id
+    LEFT JOIN conta ct             ON ct.id = r.conta_id
+    LEFT JOIN forma_pagamento fp   ON fp.id = r.forma_pagamento_id
+    LEFT JOIN cacau_baixa cb       ON cb.id = r.cacau_baixa_id
     WHERE r.usuario_id = ?
   `;
   const params = [usuario_id];
@@ -30,7 +34,19 @@ const findAll = async (usuario_id, filters = {}) => {
 
 const findById = async (id, usuario_id) => {
   const [rows] = await db.query(
-    'SELECT * FROM receita WHERE id = ? AND usuario_id = ? LIMIT 1',
+    `SELECT r.*,
+      c.nome  AS categoria_nome,
+      d.nome  AS descricao_nome,
+      ct.numero AS conta_numero,
+      fp.nome AS forma_pagamento_nome,
+      cb.numero_ordem AS cacau_venda_numero
+     FROM receita r
+     LEFT JOIN categoria_receita c ON c.id = r.categoria_id
+     LEFT JOIN descricao_receita d ON d.id = r.descricao_id
+     LEFT JOIN conta ct            ON ct.id = r.conta_id
+     LEFT JOIN forma_pagamento fp  ON fp.id = r.forma_pagamento_id
+     LEFT JOIN cacau_baixa cb      ON cb.id = r.cacau_baixa_id
+     WHERE r.id = ? AND r.usuario_id = ? LIMIT 1`,
     [id, usuario_id]
   );
   return rows[0] || null;
@@ -38,26 +54,28 @@ const findById = async (id, usuario_id) => {
 
 const create = async (data) => {
   const { categoria_id, descricao_id, projeto_id, conta_id,
+          forma_pagamento_id, cacau_baixa_id,
           valor, data: dt, descricao, status, usuario_id } = data;
   const [result] = await db.query(
     `INSERT INTO receita
-     (categoria_id, descricao_id, projeto_id, conta_id, valor, data, descricao, status, usuario_id)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [categoria_id, descricao_id, projeto_id || null, conta_id, valor, dt,
-     descricao, status || 'pendente', usuario_id]
+     (categoria_id, descricao_id, projeto_id, conta_id, forma_pagamento_id, cacau_baixa_id, valor, data, descricao, status, usuario_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [categoria_id, descricao_id, projeto_id || null, conta_id,
+     forma_pagamento_id || null, cacau_baixa_id || null,
+     valor, dt, descricao, status || 'pendente', usuario_id]
   );
   return result.insertId;
 };
 
 const update = async (id, data) => {
   const { categoria_id, descricao_id, projeto_id, conta_id,
-          valor, data: dt, descricao, status, usuario_id } = data;
+          forma_pagamento_id, valor, data: dt, descricao, status, usuario_id } = data;
   await db.query(
     `UPDATE receita SET categoria_id=?, descricao_id=?, projeto_id=?,
-     conta_id=?, valor=?, data=?, descricao=?, status=?
+     conta_id=?, forma_pagamento_id=?, valor=?, data=?, descricao=?, status=?
      WHERE id=? AND usuario_id=?`,
     [categoria_id, descricao_id, projeto_id || null, conta_id,
-     valor, dt, descricao, status, id, usuario_id]
+     forma_pagamento_id || null, valor, dt, descricao, status, id, usuario_id]
   );
 };
 
