@@ -16,6 +16,11 @@ import RelatoriosPage    from './pages/relatorios/RelatoriosPage';
 import ProducaoCacauPage from './pages/cacau/ProducaoCacauPage';
 import CacauOrdemPage    from './pages/cacau/CacauOrdemPage';
 
+// Imóveis
+import LoteamentosPage   from './pages/imoveis/LoteamentosPage';
+import MapaLoteamentoPage from './pages/imoveis/MapaLoteamentoPage';
+import ContratosPage     from './pages/imoveis/ContratosPage';
+
 // Cadastros
 import GrupoPage       from './pages/cadastros/GrupoPage';
 import SubgrupoPage    from './pages/cadastros/SubgrupoPage';
@@ -63,6 +68,11 @@ export default function App() {
             <Route path="/cadastros/centros-custo" element={<CentroCustoPage />} />
             <Route path="/cadastros/bancos"        element={<BancoPage />} />
             <Route path="/cadastros/contas"        element={<ContaPage />} />
+
+            {/* Imóveis */}
+            <Route path="/imoveis/loteamentos"     element={<LoteamentosPage />} />
+            <Route path="/imoveis/mapa/:id"        element={<MapaLoteamentoPage />} />
+            <Route path="/imoveis/contratos"       element={<ContratosPage />} />
           </Route>
 
           {/* Fallback */}

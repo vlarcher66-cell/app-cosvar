@@ -318,6 +318,190 @@ const runMigrations = async () => {
       `FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE`
     );
 
+    // 25. Tabela empreendimento (loteamentos)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS empreendimento (
+        id          INT          NOT NULL AUTO_INCREMENT,
+        nome        VARCHAR(120) NOT NULL,
+        cidade      VARCHAR(80)  DEFAULT NULL,
+        bairro      VARCHAR(80)  DEFAULT NULL,
+        descricao   TEXT         DEFAULT NULL,
+        usuario_id  INT          NOT NULL,
+        created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        KEY idx_emp_usuario (usuario_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `).catch(e => { if (e.code !== 'ER_TABLE_EXISTS_ERROR') throw e; });
+    console.log('✅ Migration 25: tabela empreendimento criada');
+    await addFkIfNotExists('empreendimento', 'fk_emp_usuario',
+      `FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE`
+    );
+
+    // 26. Tabela quadra
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS quadra (
+        id                INT          NOT NULL AUTO_INCREMENT,
+        empreendimento_id INT          NOT NULL,
+        nome              VARCHAR(20)  NOT NULL,
+        usuario_id        INT          NOT NULL,
+        created_at        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        KEY idx_quadra_emp (empreendimento_id),
+        KEY idx_quadra_usuario (usuario_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `).catch(e => { if (e.code !== 'ER_TABLE_EXISTS_ERROR') throw e; });
+    console.log('✅ Migration 26: tabela quadra criada');
+    await addFkIfNotExists('quadra', 'fk_quadra_emp',
+      `FOREIGN KEY (empreendimento_id) REFERENCES empreendimento (id) ON DELETE CASCADE ON UPDATE CASCADE`
+    );
+    await addFkIfNotExists('quadra', 'fk_quadra_usuario',
+      `FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE`
+    );
+
+    // 27. Tabela lote
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS lote (
+        id         INT            NOT NULL AUTO_INCREMENT,
+        quadra_id  INT            NOT NULL,
+        numero     VARCHAR(20)    NOT NULL,
+        area       DECIMAL(10,2)  DEFAULT NULL,
+        dimensoes  VARCHAR(60)    DEFAULT NULL,
+        valor      DECIMAL(12,2)  DEFAULT NULL,
+        status     ENUM('disponivel','reservado','vendido','rescindido') NOT NULL DEFAULT 'disponivel',
+        observacao TEXT           DEFAULT NULL,
+        usuario_id INT            NOT NULL,
+        created_at DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        KEY idx_lote_quadra (quadra_id),
+        KEY idx_lote_usuario (usuario_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `).catch(e => { if (e.code !== 'ER_TABLE_EXISTS_ERROR') throw e; });
+    console.log('✅ Migration 27: tabela lote criada');
+    await addFkIfNotExists('lote', 'fk_lote_quadra',
+      `FOREIGN KEY (quadra_id) REFERENCES quadra (id) ON DELETE CASCADE ON UPDATE CASCADE`
+    );
+    await addFkIfNotExists('lote', 'fk_lote_usuario',
+      `FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE`
+    );
+
+    // 28. Tabela contrato_lote
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS contrato_lote (
+        id              INT            NOT NULL AUTO_INCREMENT,
+        lote_id         INT            NOT NULL,
+        comprador_id    INT            NOT NULL,
+        data_contrato   DATE           NOT NULL,
+        valor_total     DECIMAL(12,2)  NOT NULL,
+        entrada_valor   DECIMAL(12,2)  DEFAULT 0,
+        entrada_data    DATE           DEFAULT NULL,
+        num_parcelas    INT            NOT NULL DEFAULT 1,
+        dia_vencimento  INT            NOT NULL DEFAULT 10,
+        observacao      TEXT           DEFAULT NULL,
+        status          ENUM('ativo','quitado','rescindido') NOT NULL DEFAULT 'ativo',
+        usuario_id      INT            NOT NULL,
+        created_at      DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at      DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        KEY idx_cl_lote      (lote_id),
+        KEY idx_cl_comprador (comprador_id),
+        KEY idx_cl_usuario   (usuario_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `).catch(e => { if (e.code !== 'ER_TABLE_EXISTS_ERROR') throw e; });
+    console.log('✅ Migration 28: tabela contrato_lote criada');
+    await addFkIfNotExists('contrato_lote', 'fk_cl_lote',
+      `FOREIGN KEY (lote_id) REFERENCES lote (id) ON DELETE RESTRICT ON UPDATE CASCADE`
+    );
+    await addFkIfNotExists('contrato_lote', 'fk_cl_comprador',
+      `FOREIGN KEY (comprador_id) REFERENCES comprador (id) ON DELETE RESTRICT ON UPDATE CASCADE`
+    );
+    await addFkIfNotExists('contrato_lote', 'fk_cl_usuario',
+      `FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE`
+    );
+
+    // 29. Tabela parcela_lote
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS parcela_lote (
+        id                 INT            NOT NULL AUTO_INCREMENT,
+        contrato_id        INT            NOT NULL,
+        numero             INT            NOT NULL,
+        valor              DECIMAL(12,2)  NOT NULL,
+        data_vencimento    DATE           NOT NULL,
+        data_pagamento     DATE           DEFAULT NULL,
+        conta_id           INT            DEFAULT NULL,
+        forma_pagamento_id INT            DEFAULT NULL,
+        status             ENUM('pendente','pago','vencido') NOT NULL DEFAULT 'pendente',
+        observacao         TEXT           DEFAULT NULL,
+        usuario_id         INT            NOT NULL,
+        created_at         DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at         DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        KEY idx_pl_contrato (contrato_id),
+        KEY idx_pl_usuario  (usuario_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `).catch(e => { if (e.code !== 'ER_TABLE_EXISTS_ERROR') throw e; });
+    console.log('✅ Migration 29: tabela parcela_lote criada');
+    await addFkIfNotExists('parcela_lote', 'fk_pl_contrato',
+      `FOREIGN KEY (contrato_id) REFERENCES contrato_lote (id) ON DELETE CASCADE ON UPDATE CASCADE`
+    );
+    await addFkIfNotExists('parcela_lote', 'fk_pl_conta',
+      `FOREIGN KEY (conta_id) REFERENCES conta (id) ON DELETE SET NULL ON UPDATE CASCADE`
+    );
+    await addFkIfNotExists('parcela_lote', 'fk_pl_forma',
+      `FOREIGN KEY (forma_pagamento_id) REFERENCES forma_pagamento (id) ON DELETE SET NULL ON UPDATE CASCADE`
+    );
+
+    // 30. Semeia o empreendimento São José se não existir
+    const [[empExiste]] = await db.query(
+      `SELECT id FROM empreendimento WHERE nome = 'Loteamento São José' LIMIT 1`
+    );
+    if (!empExiste) {
+      const [[primeiroUsuario]] = await db.query(`SELECT id FROM usuario LIMIT 1`);
+      if (primeiroUsuario) {
+        const [empResult] = await db.query(
+          `INSERT INTO empreendimento (nome, cidade, descricao, usuario_id) VALUES (?, ?, ?, ?)`,
+          ['Loteamento São José', 'Bahia', 'Loteamento São José — Cosvar Imobiliária', primeiroUsuario.id]
+        );
+        const empId = empResult.insertId;
+        // Cria as 12 quadras
+        for (let q = 1; q <= 12; q++) {
+          await db.query(
+            `INSERT INTO quadra (empreendimento_id, nome, usuario_id) VALUES (?, ?, ?)`,
+            [empId, String(q), primeiroUsuario.id]
+          );
+        }
+        console.log(`✅ Migration 30: Loteamento São José criado com 12 quadras`);
+      }
+    } else {
+      console.log(`⏭️  Migration 30: Loteamento São José já existe`);
+    }
+
+    // 31. Semeia o empreendimento São Francisco se não existir
+    const [[empSF]] = await db.query(
+      `SELECT id FROM empreendimento WHERE nome = 'Loteamento São Francisco' LIMIT 1`
+    );
+    if (!empSF) {
+      const [[primeiroUsuario]] = await db.query(`SELECT id FROM usuario LIMIT 1`);
+      if (primeiroUsuario) {
+        const [empResult] = await db.query(
+          `INSERT INTO empreendimento (nome, cidade, descricao, usuario_id) VALUES (?, ?, ?, ?)`,
+          ['Loteamento São Francisco', null, 'Loteamento São Francisco', primeiroUsuario.id]
+        );
+        const empId = empResult.insertId;
+        // Cria as 6 quadras A-F
+        for (const q of ['A','B','C','D','E','F']) {
+          await db.query(
+            `INSERT INTO quadra (empreendimento_id, nome, usuario_id) VALUES (?, ?, ?)`,
+            [empId, q, primeiroUsuario.id]
+          );
+        }
+        console.log(`✅ Migration 31: Loteamento São Francisco criado com quadras A-F`);
+      }
+    } else {
+      console.log(`⏭️  Migration 31: Loteamento São Francisco já existe`);
+    }
+
     console.log('🎉 Todas as migrations concluídas');
   } catch (err) {
     console.error('❌ Erro fatal nas migrations:', err.message);

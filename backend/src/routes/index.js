@@ -42,4 +42,10 @@ router.use('/conciliacao',   authMiddleware, require('./conciliacaoRoutes'));
 // Transferências
 router.use('/transferencias', authMiddleware, require('./transferenciaRoutes'));
 
+// Imóveis / Loteamento
+router.use('/empreendimentos',  authMiddleware, require('./empreendimentoRoutes'));
+router.use('/lotes',            authMiddleware, require('./loteRoutes'));
+router.use('/contratos-lote',   authMiddleware, require('./contratoLoteRoutes'));
+router.use('/parcelas-lote',    authMiddleware, require('./parcelaLoteRoutes'));
+
 module.exports = router;
