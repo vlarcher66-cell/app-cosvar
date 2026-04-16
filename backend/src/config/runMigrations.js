@@ -597,6 +597,52 @@ const runMigrations = async () => {
       }
     }
 
+    // 36. Corrige quadras do São José: de números para letras + recria lotes
+    const [[empSJ4]] = await db.query(`SELECT id FROM empreendimento WHERE nome = 'Loteamento São José' LIMIT 1`);
+    if (empSJ4) {
+      const [[u]] = await db.query(`SELECT id FROM usuario LIMIT 1`);
+      // Verifica se quadras ainda têm nomes numéricos (errado)
+      const [[q1]] = await db.query(`SELECT id FROM quadra WHERE empreendimento_id = ? AND nome = '1' LIMIT 1`, [empSJ4.id]);
+      if (q1 && u) {
+        // Apaga lotes e quadras antigas
+        await db.query(`DELETE l FROM lote l JOIN quadra q ON q.id = l.quadra_id WHERE q.empreendimento_id = ?`, [empSJ4.id]);
+        await db.query(`DELETE FROM quadra WHERE empreendimento_id = ?`, [empSJ4.id]);
+
+        // São José — quadras com letras e quantidade de lotes por quadra
+        // Baseado na planta: quadras A-L (12 quadras) com lotes numerados
+        const quadrasSJ = [
+          { nome: 'A', lotes: 20 },
+          { nome: 'B', lotes: 20 },
+          { nome: 'C', lotes: 18 },
+          { nome: 'D', lotes: 20 },
+          { nome: 'E', lotes: 20 },
+          { nome: 'F', lotes: 20 },
+          { nome: 'G', lotes: 18 },
+          { nome: 'H', lotes: 16 },
+          { nome: 'I', lotes: 16 },
+          { nome: 'J', lotes: 14 },
+          { nome: 'K', lotes: 14 },
+          { nome: 'L', lotes: 12 },
+        ];
+
+        for (const { nome, lotes } of quadrasSJ) {
+          const [qResult] = await db.query(
+            `INSERT INTO quadra (empreendimento_id, nome, usuario_id) VALUES (?, ?, ?)`,
+            [empSJ4.id, nome, u.id]
+          );
+          const qId = qResult.insertId;
+          const values = [];
+          for (let i = 1; i <= lotes; i++) {
+            values.push([qId, String(i).padStart(2, '0'), 'disponivel', u.id]);
+          }
+          await db.query(`INSERT INTO lote (quadra_id, numero, status, usuario_id) VALUES ?`, [values]);
+        }
+        console.log(`✅ Migration 36: quadras do São José corrigidas para letras A-L`);
+      } else {
+        console.log(`⏭️  Migration 36: quadras do São José já têm letras`);
+      }
+    }
+
     // 33. Log do estado atual das tabelas imobiliárias
     const [emps]   = await db.query(`SELECT id, nome FROM empreendimento ORDER BY id`).catch(() => [[]]);;
     const [quadrs] = await db.query(`SELECT id, empreendimento_id, nome FROM quadra ORDER BY id`).catch(() => [[]]);;
