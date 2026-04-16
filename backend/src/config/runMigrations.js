@@ -248,6 +248,46 @@ const runMigrations = async () => {
       `FOREIGN KEY (forma_pagamento_id) REFERENCES forma_pagamento (id) ON DELETE CASCADE ON UPDATE CASCADE`
     );
 
+    // 23. Garante que a categoria "Cacau / Venda" e descrição "Venda de Cacau" existem
+    // (podem ter sido removidas pela migration 15 se não havia receitas vinculadas)
+    const [[catExiste]] = await db.query(
+      `SELECT id FROM categoria_receita WHERE nome = 'Cacau' AND tipo = 'Venda' LIMIT 1`
+    );
+    let catId;
+    if (!catExiste) {
+      // Busca o usuario_id do primeiro usuário para criar a categoria
+      const [[primeiroUsuario]] = await db.query(`SELECT id FROM usuario LIMIT 1`);
+      if (primeiroUsuario) {
+        const [catResult] = await db.query(
+          `INSERT INTO categoria_receita (nome, tipo, usuario_id) VALUES ('Cacau', 'Venda', ?)`,
+          [primeiroUsuario.id]
+        );
+        catId = catResult.insertId;
+        console.log(`✅ Migration 23: categoria "Cacau / Venda" recriada (id=${catId})`);
+      }
+    } else {
+      catId = catExiste.id;
+      console.log(`⏭️  Migration 23: categoria "Cacau / Venda" já existe (id=${catId})`);
+    }
+    if (catId) {
+      const [[descExiste]] = await db.query(
+        `SELECT id FROM descricao_receita WHERE nome = 'Venda de Cacau' AND categoria_id = ? LIMIT 1`,
+        [catId]
+      );
+      if (!descExiste) {
+        const [[primeiroUsuario]] = await db.query(`SELECT id FROM usuario LIMIT 1`);
+        if (primeiroUsuario) {
+          await db.query(
+            `INSERT INTO descricao_receita (nome, categoria_id, usuario_id) VALUES ('Venda de Cacau', ?, ?)`,
+            [catId, primeiroUsuario.id]
+          );
+          console.log(`✅ Migration 23: descrição "Venda de Cacau" recriada`);
+        }
+      } else {
+        console.log(`⏭️  Migration 23: descrição "Venda de Cacau" já existe`);
+      }
+    }
+
     console.log('🎉 Todas as migrations concluídas');
   } catch (err) {
     console.error('❌ Erro fatal nas migrations:', err.message);
