@@ -46,15 +46,15 @@ const create = async ({ nome, cidade, bairro, descricao, usuario_id }) => {
   return result.insertId;
 };
 
-const update = async (id, { nome, cidade, bairro, descricao, usuario_id }) => {
+const update = async (id, { nome, cidade, bairro, descricao }) => {
   await db.query(
-    `UPDATE empreendimento SET nome=?, cidade=?, bairro=?, descricao=? WHERE id=? AND usuario_id=?`,
-    [nome, cidade || null, bairro || null, descricao || null, id, usuario_id]
+    `UPDATE empreendimento SET nome=?, cidade=?, bairro=?, descricao=? WHERE id=?`,
+    [nome, cidade || null, bairro || null, descricao || null, id]
   );
 };
 
-const remove = async (id, usuario_id) => {
-  await db.query(`DELETE FROM empreendimento WHERE id=? AND usuario_id=?`, [id, usuario_id]);
+const remove = async (id) => {
+  await db.query(`DELETE FROM empreendimento WHERE id=?`, [id]);
 };
 
 module.exports = { findAll, findById, create, update, remove };
