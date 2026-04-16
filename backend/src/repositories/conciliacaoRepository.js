@@ -97,7 +97,36 @@ const getMovimentos = async (usuario_id, conta_id, mes, ano) => {
     ORDER BY dp.data_pagamento ASC, dp.id ASC
   `, [usuario_id, conta_id, dataInicio, dataFim]);
 
-  return [...receitas, ...despesas].sort((a, b) => {
+  // Transferências — saída na origem, entrada no destino
+  const [transferencias] = await db.query(`
+    SELECT
+      t.id,
+      CASE WHEN t.conta_origem_id = ? THEN 'transferencia_saida' ELSE 'transferencia_entrada' END AS tipo,
+      t.data,
+      t.valor,
+      0                       AS conciliado,
+      CONCAT(
+        CASE WHEN t.conta_origem_id = ? THEN 'Transf. para ' ELSE 'Transf. de ' END,
+        CASE WHEN t.conta_origem_id = ? THEN
+          CONCAT(COALESCE(bd.nome, ''), ' — ', cd.numero)
+        ELSE
+          CONCAT(COALESCE(bo.nome, ''), ' — ', co.numero)
+        END
+      )                       AS descricao,
+      NULL                    AS forma_pagamento_nome,
+      NULL                    AS receita_id
+    FROM transferencia t
+    JOIN conta co  ON co.id = t.conta_origem_id
+    JOIN banco bo  ON bo.id = co.banco_id
+    JOIN conta cd  ON cd.id = t.conta_destino_id
+    JOIN banco bd  ON bd.id = cd.banco_id
+    WHERE t.usuario_id = ?
+      AND (t.conta_origem_id = ? OR t.conta_destino_id = ?)
+      AND t.data BETWEEN ? AND ?
+    ORDER BY t.data ASC, t.id ASC
+  `, [conta_id, conta_id, conta_id, usuario_id, conta_id, conta_id, dataInicio, dataFim]);
+
+  return [...receitas, ...despesas, ...transferencias].sort((a, b) => {
     const d = new Date(a.data) - new Date(b.data);
     return d !== 0 ? d : (a.tipo === 'receita' ? -1 : 1);
   });

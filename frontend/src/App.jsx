@@ -11,6 +11,7 @@ import Dashboard      from './pages/dashboard/Dashboard';
 import DespesaPage       from './pages/financeiro/DespesaPage';
 import ReceitaPage       from './pages/financeiro/ReceitaPage';
 import ConciliacaoPage   from './pages/financeiro/ConciliacaoPage';
+import TransferenciaPage from './pages/financeiro/TransferenciaPage';
 import RelatoriosPage    from './pages/relatorios/RelatoriosPage';
 import ProducaoCacauPage from './pages/cacau/ProducaoCacauPage';
 import CacauOrdemPage    from './pages/cacau/CacauOrdemPage';
@@ -44,6 +45,7 @@ export default function App() {
             <Route path="/despesas"                element={<DespesaPage />} />
             <Route path="/receitas"                element={<ReceitaPage />} />
             <Route path="/conciliacao"             element={<ConciliacaoPage />} />
+            <Route path="/transferencias"          element={<TransferenciaPage />} />
             <Route path="/relatorios"              element={<RelatoriosPage />} />
             <Route path="/cacau/producao"          element={<ProducaoCacauPage />} />
             <Route path="/cacau/ordens"            element={<CacauOrdemPage />} />

@@ -288,6 +288,36 @@ const runMigrations = async () => {
       }
     }
 
+    // 24. Tabela transferencia (movimentos internos entre contas)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS transferencia (
+        id               INT          NOT NULL AUTO_INCREMENT,
+        conta_origem_id  INT          NOT NULL,
+        conta_destino_id INT          NOT NULL,
+        valor            DECIMAL(12,2) NOT NULL,
+        data             DATE         NOT NULL,
+        observacao       TEXT         DEFAULT NULL,
+        usuario_id       INT          NOT NULL,
+        created_at       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        KEY idx_transf_origem  (conta_origem_id),
+        KEY idx_transf_destino (conta_destino_id),
+        KEY idx_transf_usuario (usuario_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `).catch(e => { if (e.code !== 'ER_TABLE_EXISTS_ERROR') throw e; });
+    console.log('✅ Migration 24: tabela transferencia criada');
+
+    await addFkIfNotExists('transferencia', 'fk_transf_origem',
+      `FOREIGN KEY (conta_origem_id) REFERENCES conta (id) ON DELETE RESTRICT ON UPDATE CASCADE`
+    );
+    await addFkIfNotExists('transferencia', 'fk_transf_destino',
+      `FOREIGN KEY (conta_destino_id) REFERENCES conta (id) ON DELETE RESTRICT ON UPDATE CASCADE`
+    );
+    await addFkIfNotExists('transferencia', 'fk_transf_usuario',
+      `FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE`
+    );
+
     console.log('🎉 Todas as migrations concluídas');
   } catch (err) {
     console.error('❌ Erro fatal nas migrations:', err.message);

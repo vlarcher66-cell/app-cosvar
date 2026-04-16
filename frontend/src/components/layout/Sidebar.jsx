@@ -13,6 +13,7 @@ const Icon = {
   expense:   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>,
   income:    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>,
   bank:      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>,
+  transfer:  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>,
   register:  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>,
   reports:   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
   cacau:     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="12" rx="4" ry="6"/><path d="M12 6C9 4 5 5 4 9s1 8 5 9"/><path d="M12 6c3-2 7-1 8 3s-1 8-5 9"/><line x1="12" y1="2" x2="12" y2="6"/></svg>,
@@ -83,7 +84,8 @@ const NAV = [
     children: [
       { label: 'Lançar Despesa',   path: '/despesas',     icon: Icon.expense, color: '#ef4444' },
       { label: 'Lançar Receita',   path: '/receitas',     icon: Icon.income,  color: '#10b981' },
-      { label: 'Conciliação',      path: '/conciliacao',  icon: Icon.bank,    color: '#2563eb' },
+      { label: 'Conciliação',      path: '/conciliacao',   icon: Icon.bank,     color: '#2563eb' },
+      { label: 'Transferências',   path: '/transferencias', icon: Icon.transfer, color: '#7c3aed' },
     ],
   },
   { id: 'relatorios', label: 'Relatórios', icon: Icon.reports, path: '/relatorios' },
