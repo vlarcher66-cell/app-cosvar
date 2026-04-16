@@ -188,18 +188,22 @@ export default function TransferenciaPage() {
                 <option key={c.id} value={c.id}>{c.tipo === 'caixa' ? 'Caixa' : `${c.banco_nome || ''} — ${c.numero}`}</option>
               ))}
             </select>
-            {form.conta_origem_id && (
-              <div className={s.saldoInfo}>
-                {loadingSaldo
-                  ? <span className={s.saldoLoading}>Calculando saldo…</span>
-                  : saldoOrigem !== null
-                    ? <span className={saldoOrigem < 0 ? s.saldoNeg : s.saldoPos}>
-                        Saldo disponível: {formatCurrency(saldoOrigem)}
+            <AnimatePresence>
+              {form.conta_origem_id && (
+                <motion.div
+                  className={s.saldoCard}
+                  initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+                >
+                  <span className={s.saldoCardLabel}>Saldo disponível</span>
+                  {loadingSaldo
+                    ? <span className={s.saldoLoading}>calculando…</span>
+                    : <span className={saldoOrigem !== null && saldoOrigem < 0 ? s.saldoNeg : s.saldoPos}>
+                        {saldoOrigem !== null ? formatCurrency(saldoOrigem) : '—'}
                       </span>
-                    : null
-                }
-              </div>
-            )}
+                  }
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           <div className={s.field}>

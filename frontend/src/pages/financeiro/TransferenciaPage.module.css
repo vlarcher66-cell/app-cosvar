@@ -64,10 +64,16 @@
 .select:focus, .input:focus { outline: none; border-color: var(--primary); }
 .textarea { padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); color: var(--text); font-size: var(--text-sm); resize: vertical; width: 100%; }
 /* Saldo da conta de origem */
-.saldoInfo { margin-top: 5px; min-height: 18px; }
-.saldoLoading { font-size: 0.72rem; color: var(--text-muted); font-style: italic; }
-.saldoPos { font-size: 0.75rem; font-weight: 700; color: #16a34a; font-family: var(--font-mono); }
-.saldoNeg { font-size: 0.75rem; font-weight: 700; color: #dc2626; font-family: var(--font-mono); }
+.saldoCard {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 6px; padding: 8px 12px;
+  background: rgba(124,58,237,0.06); border: 1px solid rgba(124,58,237,0.18);
+  border-radius: var(--r-md);
+}
+.saldoCardLabel { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.saldoLoading { font-size: 0.75rem; color: var(--text-muted); font-style: italic; }
+.saldoPos { font-size: 0.82rem; font-weight: 800; color: #16a34a; font-family: var(--font-mono); }
+.saldoNeg { font-size: 0.82rem; font-weight: 800; color: #dc2626; font-family: var(--font-mono); }
 
 .inputWrap { position: relative; display: flex; align-items: center; }
 .inputPrefix { position: absolute; left: 10px; font-size: var(--text-sm); color: var(--text-muted); font-weight: 600; pointer-events: none; }
