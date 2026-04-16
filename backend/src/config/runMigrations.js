@@ -538,6 +538,65 @@ const runMigrations = async () => {
       console.log(`✅ Migration 32: quadras São Francisco verificadas`);
     }
 
+    // 34. Semeia lotes do São José baseado na planta (se ainda não existem)
+    const [[empSJ3]] = await db.query(`SELECT id FROM empreendimento WHERE nome = 'Loteamento São José' LIMIT 1`);
+    if (empSJ3) {
+      const [[lotesExistem]] = await db.query(`SELECT COUNT(*) AS cnt FROM lote l JOIN quadra q ON q.id = l.quadra_id WHERE q.empreendimento_id = ?`, [empSJ3.id]);
+      if (lotesExistem.cnt === 0) {
+        const [[u]] = await db.query(`SELECT id FROM usuario LIMIT 1`);
+        if (u) {
+          // Lotes por quadra baseado na planta do São José
+          // Quadras 1-12 com quantidade aproximada de lotes identificados na planta
+          const lotesPorQuadra = {
+            '1':  20, '2':  18, '3':  20, '4':  18,
+            '5':  20, '6':  20, '7':  20, '8':  18,
+            '9':  16, '10': 16, '11': 14, '12': 12,
+          };
+          for (const [qNome, qtd] of Object.entries(lotesPorQuadra)) {
+            const [[quadra]] = await db.query(`SELECT id FROM quadra WHERE empreendimento_id = ? AND nome = ? LIMIT 1`, [empSJ3.id, qNome]);
+            if (quadra) {
+              const values = [];
+              for (let i = 1; i <= qtd; i++) {
+                values.push([quadra.id, String(i).padStart(2,'0'), 'disponivel', u.id]);
+              }
+              await db.query(`INSERT INTO lote (quadra_id, numero, status, usuario_id) VALUES ?`, [values]);
+            }
+          }
+          console.log(`✅ Migration 34: lotes do São José semeados`);
+        }
+      } else {
+        console.log(`⏭️  Migration 34: lotes do São José já existem (${lotesExistem.cnt})`);
+      }
+    }
+
+    // 35. Semeia lotes do São Francisco baseado na planta (se ainda não existem)
+    const [[empSF3]] = await db.query(`SELECT id FROM empreendimento WHERE nome = 'Loteamento São Francisco' LIMIT 1`);
+    if (empSF3) {
+      const [[lotesExistem]] = await db.query(`SELECT COUNT(*) AS cnt FROM lote l JOIN quadra q ON q.id = l.quadra_id WHERE q.empreendimento_id = ?`, [empSF3.id]);
+      if (lotesExistem.cnt === 0) {
+        const [[u]] = await db.query(`SELECT id FROM usuario LIMIT 1`);
+        if (u) {
+          // Lotes por quadra baseado na planta do São Francisco
+          const lotesPorQuadra = {
+            'A': 45, 'B': 30, 'C': 28, 'D': 30, 'E': 20, 'F': 12,
+          };
+          for (const [qNome, qtd] of Object.entries(lotesPorQuadra)) {
+            const [[quadra]] = await db.query(`SELECT id FROM quadra WHERE empreendimento_id = ? AND nome = ? LIMIT 1`, [empSF3.id, qNome]);
+            if (quadra) {
+              const values = [];
+              for (let i = 1; i <= qtd; i++) {
+                values.push([quadra.id, String(i).padStart(2,'0'), 'disponivel', u.id]);
+              }
+              await db.query(`INSERT INTO lote (quadra_id, numero, status, usuario_id) VALUES ?`, [values.map(v => v)]);
+            }
+          }
+          console.log(`✅ Migration 35: lotes do São Francisco semeados`);
+        }
+      } else {
+        console.log(`⏭️  Migration 35: lotes do São Francisco já existem (${lotesExistem.cnt})`);
+      }
+    }
+
     // 33. Log do estado atual das tabelas imobiliárias
     const [emps]   = await db.query(`SELECT id, nome FROM empreendimento ORDER BY id`).catch(() => [[]]);;
     const [quadrs] = await db.query(`SELECT id, empreendimento_id, nome FROM quadra ORDER BY id`).catch(() => [[]]);;
