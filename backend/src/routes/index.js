@@ -36,4 +36,7 @@ router.use('/producao-cacau', authMiddleware, require('./producaoCacauRoutes'));
 router.use('/cacau-ordem',    authMiddleware, require('./cacauOrdemRoutes'));
 router.use('/cacau-baixa',    authMiddleware, require('./cacauBaixaRoutes'));
 
+// Conciliação
+router.use('/conciliacao', authMiddleware, require('./conciliacaoRoutes'));
+
 module.exports = router;

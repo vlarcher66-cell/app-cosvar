@@ -8,8 +8,9 @@ import MainLayout from './components/layout/MainLayout';
 import Landing        from './pages/landing/Landing';
 import Login          from './pages/auth/Login';
 import Dashboard      from './pages/dashboard/Dashboard';
-import DespesaPage    from './pages/financeiro/DespesaPage';
-import ReceitaPage    from './pages/financeiro/ReceitaPage';
+import DespesaPage       from './pages/financeiro/DespesaPage';
+import ReceitaPage       from './pages/financeiro/ReceitaPage';
+import ConciliacaoPage   from './pages/financeiro/ConciliacaoPage';
 import RelatoriosPage    from './pages/relatorios/RelatoriosPage';
 import ProducaoCacauPage from './pages/cacau/ProducaoCacauPage';
 import CacauOrdemPage    from './pages/cacau/CacauOrdemPage';
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="/dashboard"               element={<Dashboard />} />
             <Route path="/despesas"                element={<DespesaPage />} />
             <Route path="/receitas"                element={<ReceitaPage />} />
+            <Route path="/conciliacao"             element={<ConciliacaoPage />} />
             <Route path="/relatorios"              element={<RelatoriosPage />} />
             <Route path="/cacau/producao"          element={<ProducaoCacauPage />} />
             <Route path="/cacau/ordens"            element={<CacauOrdemPage />} />

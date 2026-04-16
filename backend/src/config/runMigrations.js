@@ -206,6 +206,10 @@ const runMigrations = async () => {
       `FOREIGN KEY (forma_pagamento_id) REFERENCES forma_pagamento (id) ON DELETE SET NULL ON UPDATE CASCADE`
     );
 
+    // 19. Campo conciliado em receita e despesa_pagamento
+    await addColumnIfNotExists('receita',           'conciliado', "TINYINT(1) NOT NULL DEFAULT 0");
+    await addColumnIfNotExists('despesa_pagamento', 'conciliado', "TINYINT(1) NOT NULL DEFAULT 0");
+
     console.log('🎉 Todas as migrations concluídas');
   } catch (err) {
     console.error('❌ Erro fatal nas migrations:', err.message);

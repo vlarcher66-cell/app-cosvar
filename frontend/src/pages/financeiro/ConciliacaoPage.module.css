@@ -1,0 +1,285 @@
+/* ══════════════════════════════════════════════
+   CONCILIAÇÃO BANCÁRIA
+══════════════════════════════════════════════ */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.headerLeft { display: flex; align-items: center; gap: 14px; }
+.headerIcon {
+  width: 44px; height: 44px;
+  border-radius: var(--r-lg);
+  background: linear-gradient(135deg, rgba(37,99,235,0.14), rgba(37,99,235,0.06));
+  border: 1px solid rgba(37,99,235,0.22);
+  color: #2563eb;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.headerIcon svg { width: 20px; height: 20px; }
+.pageTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+.pageSub { font-size: var(--text-sm); color: var(--text-muted); margin-top: 3px; }
+
+/* ── Filter Bar ── */
+.filterBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 12px 16px;
+}
+.filterSelect {
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--text);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  min-width: 180px;
+}
+.filterSelect:focus { outline: none; border-color: var(--primary); }
+
+/* ── KPIs ── */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+.kpi {
+  position: relative;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 14px 16px 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+}
+.kpiBar {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  border-radius: var(--r-lg) 0 0 var(--r-lg);
+}
+.kpiIcon {
+  width: 34px; height: 34px;
+  border-radius: var(--r-md);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.kpiIcon svg { width: 17px; height: 17px; }
+.kpiBody { min-width: 0; }
+.kpiValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.kpiLabel { font-size: 0.68rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+
+/* variants */
+.kpi_entrada .kpiBar { background: #059669; }
+.kpi_entrada .kpiIcon { background: rgba(5,150,105,0.10); color: #059669; }
+
+.kpi_saida .kpiBar { background: #dc2626; }
+.kpi_saida .kpiIcon { background: rgba(220,38,38,0.10); color: #dc2626; }
+
+.kpi_neutro .kpiBar { background: #2563eb; }
+.kpi_neutro .kpiIcon { background: rgba(37,99,235,0.10); color: #2563eb; }
+
+.kpi_conciliado .kpiBar { background: #7c3aed; }
+.kpi_conciliado .kpiIcon { background: rgba(124,58,237,0.10); color: #7c3aed; }
+
+.kpi_pendente .kpiBar { background: #d97706; }
+.kpi_pendente .kpiIcon { background: rgba(217,119,6,0.10); color: #d97706; }
+
+/* ── Empty ── */
+.empty {
+  text-align: center;
+  padding: 60px 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  background: var(--surface-2);
+  border: 1px dashed var(--border);
+  border-radius: var(--r-lg);
+}
+
+/* ── Table Wrap ── */
+.tableWrap {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+/* ── Saldo Bar ── */
+.saldoBar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.saldoItem { display: flex; align-items: center; gap: 6px; }
+.saldoLabel { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.saldoVal { font-family: var(--font-mono); font-size: var(--text-sm); font-weight: 700; color: var(--text); }
+.saldoPos { color: #059669; }
+.saldoNeg { color: #dc2626; }
+.saldoDivider { width: 1px; height: 16px; background: var(--border); margin: 0 4px; }
+
+/* ── Table ── */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.th {
+  padding: 10px 14px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  white-space: nowrap;
+}
+.thCheck { width: 44px; padding: 10px 8px; border-bottom: 1px solid var(--border); background: var(--surface); }
+.thRight { text-align: right; }
+
+.tr {
+  transition: background 0.12s;
+  border-bottom: 1px solid var(--border);
+}
+.tr:last-child { border-bottom: none; }
+.tr:hover { background: var(--surface); }
+.trConciliado { opacity: 0.65; }
+.trConciliado:hover { opacity: 0.85; }
+.trReceita { border-left: 3px solid rgba(5,150,105,0.35); }
+.trDespesa { border-left: 3px solid rgba(220,38,38,0.35); }
+
+.td { padding: 10px 14px; color: var(--text); vertical-align: middle; }
+.tdCheck { padding: 10px 8px; vertical-align: middle; text-align: center; }
+.tdRight { text-align: right; }
+
+/* ── Check Button ── */
+.checkBtn {
+  width: 28px; height: 28px;
+  border-radius: var(--r-sm);
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.checkBtn svg { width: 13px; height: 13px; }
+.checkBtn:hover { border-color: #7c3aed; color: #7c3aed; }
+.checkBtnOn {
+  background: #7c3aed;
+  border-color: #7c3aed;
+  color: #fff;
+}
+.checkBtnOn:hover { background: #6d28d9; border-color: #6d28d9; }
+.checkBtn:disabled { opacity: 0.5; cursor: wait; }
+
+/* ── Células ── */
+.cellDate {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.cellDesc {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text);
+  display: block;
+}
+
+.cellTipoBadge {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: 1px 6px;
+  border-radius: var(--r-full);
+  margin-top: 2px;
+}
+.badgeReceita {
+  background: rgba(5,150,105,0.10);
+  color: #059669;
+  border: 1px solid rgba(5,150,105,0.20);
+}
+.badgeDespesa {
+  background: rgba(220,38,38,0.10);
+  color: #dc2626;
+  border: 1px solid rgba(220,38,38,0.20);
+}
+
+.cellForma {
+  font-size: 0.73rem;
+  color: var(--text-muted);
+}
+
+.cellEntrada {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  color: #059669;
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+.cellSaida {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  color: #dc2626;
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+.cellVazio { color: var(--text-faint); }
+
+.cellSaldoPos {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  color: #059669;
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+.cellSaldoNeg {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  color: #dc2626;
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
