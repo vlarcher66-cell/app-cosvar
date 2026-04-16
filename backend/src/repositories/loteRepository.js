@@ -1,6 +1,6 @@
 const db = require('../config/database');
 
-const findByEmpreendimento = async (empreendimento_id, usuario_id) => {
+const findByEmpreendimento = async (empreendimento_id) => {
   const [rows] = await db.query(
     `SELECT l.*, q.nome AS quadra_nome, q.empreendimento_id,
        c.id AS contrato_id,

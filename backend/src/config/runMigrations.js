@@ -538,9 +538,11 @@ const runMigrations = async () => {
       console.log(`✅ Migration 32: quadras São Francisco verificadas`);
     }
 
-    // 33. Log dos empreendimentos existentes para debug
-    const [emps] = await db.query(`SELECT id, nome FROM empreendimento ORDER BY id`);
-    console.log('📋 Empreendimentos no banco:', JSON.stringify(emps));
+    // 33. Log do estado atual das tabelas imobiliárias
+    const [emps]   = await db.query(`SELECT id, nome FROM empreendimento ORDER BY id`).catch(() => [[]]);;
+    const [quadrs] = await db.query(`SELECT id, empreendimento_id, nome FROM quadra ORDER BY id`).catch(() => [[]]);;
+    console.log('📋 Empreendimentos:', JSON.stringify(emps));
+    console.log('📋 Quadras:', JSON.stringify(quadrs));
 
     console.log('🎉 Todas as migrations concluídas');
   } catch (err) {

@@ -14,26 +14,32 @@ const findAll = async (usuario_id) => {
   return rows;
 };
 
-const findById = async (id, usuario_id) => {
+const findById = async (id) => {
   const [[emp]] = await db.query(
     `SELECT * FROM empreendimento WHERE id = ? LIMIT 1`,
     [id]
   );
   if (!emp) return null;
 
-  const [quadras] = await db.query(
-    `SELECT q.*,
-       COUNT(l.id) AS total_lotes,
-       SUM(l.status = 'disponivel') AS disponiveis,
-       SUM(l.status = 'vendido')    AS vendidos,
-       SUM(l.status = 'reservado')  AS reservados
-     FROM quadra q
-     LEFT JOIN lote l ON l.quadra_id = q.id
-     WHERE q.empreendimento_id = ?
-     GROUP BY q.id
-     ORDER BY q.nome`,
-    [id]
-  );
+  let quadras = [];
+  try {
+    const [rows] = await db.query(
+      `SELECT q.*,
+         COUNT(l.id) AS total_lotes,
+         SUM(l.status = 'disponivel') AS disponiveis,
+         SUM(l.status = 'vendido')    AS vendidos,
+         SUM(l.status = 'reservado')  AS reservados
+       FROM quadra q
+       LEFT JOIN lote l ON l.quadra_id = q.id
+       WHERE q.empreendimento_id = ?
+       GROUP BY q.id
+       ORDER BY q.nome`,
+      [id]
+    );
+    quadras = rows;
+  } catch (e) {
+    console.log('⚠️ quadra/lote ainda não existe:', e.message);
+  }
   emp.quadras = quadras;
   return emp;
 };
