@@ -7,7 +7,7 @@ const db = require('../config/database');
  */
 const getMovimentos = async (usuario_id, conta_id, mes, ano) => {
   const dataInicio = `${ano}-${String(mes).padStart(2, '0')}-01`;
-  const dataFim    = `${ano}-${String(mes).padStart(2, '0')}-31`;
+  const dataFim    = new Date(ano, mes, 0).toISOString().slice(0, 10); // último dia real do mês
 
   // Debug
   const [debugRp] = await db.query(`SELECT rp.*, r.data, r.status, r.usuario_id FROM receita_pagamento rp JOIN receita r ON r.id = rp.receita_id WHERE r.usuario_id = ?`, [usuario_id]);
