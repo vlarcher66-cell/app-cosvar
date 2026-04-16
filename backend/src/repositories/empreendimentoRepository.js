@@ -1,8 +1,8 @@
 const db = require('../config/database');
 
-const findAll = async (usuario_id) => {
+const findAll = async () => {
   const [rows] = await db.query(
-    `SELECT e.*,
+    `SELECT e.id, e.nome, e.cidade, e.bairro, e.descricao,
        (SELECT COUNT(*) FROM quadra q WHERE q.empreendimento_id = e.id) AS total_quadras,
        (SELECT COUNT(*) FROM lote l JOIN quadra q ON q.id = l.quadra_id WHERE q.empreendimento_id = e.id) AS total_lotes,
        (SELECT COUNT(*) FROM lote l JOIN quadra q ON q.id = l.quadra_id WHERE q.empreendimento_id = e.id AND l.status = 'disponivel') AS lotes_disponiveis,
@@ -24,21 +24,21 @@ const findById = async (id) => {
   let quadras = [];
   try {
     const [rows] = await db.query(
-      `SELECT q.*,
+      `SELECT q.id, q.nome, q.empreendimento_id,
          COUNT(l.id) AS total_lotes,
-         SUM(l.status = 'disponivel') AS disponiveis,
-         SUM(l.status = 'vendido')    AS vendidos,
-         SUM(l.status = 'reservado')  AS reservados
+         SUM(CASE WHEN l.status = 'disponivel' THEN 1 ELSE 0 END) AS disponiveis,
+         SUM(CASE WHEN l.status = 'vendido'    THEN 1 ELSE 0 END) AS vendidos,
+         SUM(CASE WHEN l.status = 'reservado'  THEN 1 ELSE 0 END) AS reservados
        FROM quadra q
        LEFT JOIN lote l ON l.quadra_id = q.id
        WHERE q.empreendimento_id = ?
-       GROUP BY q.id
+       GROUP BY q.id, q.nome, q.empreendimento_id
        ORDER BY q.nome`,
       [id]
     );
     quadras = rows;
   } catch (e) {
-    console.log('⚠️ quadra/lote ainda não existe:', e.message);
+    console.log('⚠️ erro ao buscar quadras:', e.message);
   }
   emp.quadras = quadras;
   return emp;
