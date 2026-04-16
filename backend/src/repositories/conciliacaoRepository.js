@@ -9,6 +9,12 @@ const getMovimentos = async (usuario_id, conta_id, mes, ano) => {
   const dataInicio = `${ano}-${String(mes).padStart(2, '0')}-01`;
   const dataFim    = `${ano}-${String(mes).padStart(2, '0')}-31`;
 
+  // Debug
+  const [debugRp] = await db.query(`SELECT rp.*, r.data, r.status, r.usuario_id FROM receita_pagamento rp JOIN receita r ON r.id = rp.receita_id WHERE r.usuario_id = ?`, [usuario_id]);
+  console.log('[conciliacao] receita_pagamento rows:', JSON.stringify(debugRp));
+  const [debugR] = await db.query(`SELECT id, conta_id, status, data, valor FROM receita WHERE usuario_id = ?`, [usuario_id]);
+  console.log('[conciliacao] receitas:', JSON.stringify(debugR));
+
   // Receitas via receita_pagamento (parcelas individuais por conta/forma)
   // Cada parcela vira um movimento separado na conciliação
   const [receitasParcelas] = await db.query(`
