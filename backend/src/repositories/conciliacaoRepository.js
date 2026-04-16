@@ -10,15 +10,18 @@ const getMovimentos = async (usuario_id, conta_id, mes, ano) => {
   const dataFim    = `${ano}-${String(mes).padStart(2, '0')}-31`;
 
   // Receitas da conta no período
+  // Busca receitas onde:
+  //   a) conta_id direto bate (receitas manuais ou cacau com 1 forma)
+  //   b) OU existe uma parcela em receita_pagamento para esta conta
   const [receitas] = await db.query(`
-    SELECT
+    SELECT DISTINCT
       r.id,
       'receita'               AS tipo,
       r.data,
       r.valor,
       r.conciliado,
       CONCAT(cr.nome, ' — ', COALESCE(dr.nome, '')) AS descricao,
-      NULL                    AS forma_pagamento_nome,
+      fp.nome                 AS forma_pagamento_nome,
       ct.numero               AS conta_numero,
       ct.tipo                 AS conta_tipo,
       b.nome                  AS banco_nome
@@ -27,12 +30,18 @@ const getMovimentos = async (usuario_id, conta_id, mes, ano) => {
     LEFT JOIN descricao_receita  dr ON dr.id = r.descricao_id
     LEFT JOIN conta ct              ON ct.id = r.conta_id
     LEFT JOIN banco b               ON b.id  = ct.banco_id
+    LEFT JOIN forma_pagamento fp    ON fp.id = r.forma_pagamento_id
     WHERE r.usuario_id = ?
-      AND r.conta_id   = ?
       AND r.status     = 'recebido'
       AND r.data BETWEEN ? AND ?
+      AND (
+        r.conta_id = ?
+        OR EXISTS (
+          SELECT 1 FROM receita_pagamento rp WHERE rp.receita_id = r.id AND rp.conta_id = ?
+        )
+      )
     ORDER BY r.data ASC, r.id ASC
-  `, [usuario_id, conta_id, dataInicio, dataFim]);
+  `, [usuario_id, dataInicio, dataFim, conta_id, conta_id]);
 
   // Pagamentos de despesa da conta no período
   const [despesas] = await db.query(`
