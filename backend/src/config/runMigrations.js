@@ -132,6 +132,13 @@ const runMigrations = async () => {
     );
     if (catCacau.length > 0) {
       const catId = catCacau[0].id;
+      // Debug: mostra o que existe
+      const [debug] = await db.query(
+        `SELECT r.id, r.cacau_baixa_id, r.descricao,
+           (SELECT COUNT(*) FROM cacau_baixa WHERE id = r.cacau_baixa_id) AS baixa_existe
+         FROM receita r WHERE r.categoria_id = ?`, [catId]
+      );
+      console.log('[Migration 16 debug]', JSON.stringify(debug));
       const [del] = await db.query(`
         DELETE FROM receita
         WHERE categoria_id = ?
