@@ -80,9 +80,10 @@ const newKey = () => ++_keyCounter;
 
 /* ── ItemSearchRow — linha do carrinho com busca de item ── */
 function ItemSearchRow({ row, todosItens, onChange, onRemove, canRemove }) {
-  const [query, setQuery]       = useState('');
-  const [dropOpen, setDropOpen] = useState(false);
-  const [dropPos, setDropPos]   = useState({ top: 0, left: 0, width: 0 });
+  const [query, setQuery]         = useState('');
+  const [subgrupoFiltro, setSubgrupoFiltro] = useState('');
+  const [dropOpen, setDropOpen]   = useState(false);
+  const [dropPos, setDropPos]     = useState({ top: 0, left: 0, width: 0 });
   const ref     = useRef(null);
   const inputRef = useRef(null);
 
@@ -92,11 +93,18 @@ function ItemSearchRow({ row, todosItens, onChange, onRemove, canRemove }) {
     return () => document.removeEventListener('mousedown', h);
   }, []);
 
-  const filtrados = todosItens.filter(it =>
-    !query || it.nome.toLowerCase().includes(query.toLowerCase()) ||
-    it.subgrupo_nome?.toLowerCase().includes(query.toLowerCase()) ||
-    it.grupo_nome?.toLowerCase().includes(query.toLowerCase())
-  );
+  // Lista única de subgrupos disponíveis nos itens
+  const subgrupos = [...new Map(
+    todosItens.filter(it => it.subgrupo_id).map(it => [it.subgrupo_id, { id: it.subgrupo_id, nome: it.subgrupo_nome }])
+  ).values()].sort((a, b) => a.nome.localeCompare(b.nome));
+
+  const filtrados = todosItens.filter(it => {
+    if (subgrupoFiltro && String(it.subgrupo_id) !== String(subgrupoFiltro)) return false;
+    if (!query) return true;
+    return it.nome.toLowerCase().includes(query.toLowerCase()) ||
+      it.subgrupo_nome?.toLowerCase().includes(query.toLowerCase()) ||
+      it.grupo_nome?.toLowerCase().includes(query.toLowerCase());
+  });
 
   const abrirDrop = () => {
     if (inputRef.current) {
@@ -148,6 +156,14 @@ function ItemSearchRow({ row, todosItens, onChange, onRemove, canRemove }) {
           </div>
         ) : (
           <div className={s.itemSearch}>
+            <select
+              className={s.itemSubgrupoSelect}
+              value={subgrupoFiltro}
+              onChange={e => { setSubgrupoFiltro(e.target.value); abrirDrop(); }}
+            >
+              <option value="">Todos os subgrupos</option>
+              {subgrupos.map(sg => <option key={sg.id} value={sg.id}>{sg.nome}</option>)}
+            </select>
             <input
               ref={inputRef}
               className={s.input}

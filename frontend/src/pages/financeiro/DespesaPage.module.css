@@ -524,7 +524,27 @@
 /* ── Item Search ── */
 .itemSearch {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
+
+.itemSubgrupoSelect {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text-muted);
+  padding: 5px 10px;
+  font-size: 0.72rem;
+  font-family: var(--font);
+  font-weight: 600;
+  outline: none;
+  width: 100%;
+  height: 30px;
+  cursor: pointer;
+  transition: border-color var(--dur);
+}
+.itemSubgrupoSelect:focus { border-color: var(--primary); }
 
 .itemDropdown {
   background: var(--surface);
