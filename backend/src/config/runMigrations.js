@@ -210,6 +210,16 @@ const runMigrations = async () => {
     await addColumnIfNotExists('receita',           'conciliado', "TINYINT(1) NOT NULL DEFAULT 0");
     await addColumnIfNotExists('despesa_pagamento', 'conciliado', "TINYINT(1) NOT NULL DEFAULT 0");
 
+    // 20. Garante CASCADE na FK receita → cacau_baixa (dropa e recria)
+    await db.query(`
+      ALTER TABLE receita DROP FOREIGN KEY fk_receita_baixa
+    `).catch(() => {}); // ignora se não existir
+    await db.query(`
+      ALTER TABLE receita ADD CONSTRAINT fk_receita_baixa
+        FOREIGN KEY (cacau_baixa_id) REFERENCES cacau_baixa (id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+    `).catch(e => console.log('fk_receita_baixa:', e.message));
+
     console.log('🎉 Todas as migrations concluídas');
   } catch (err) {
     console.error('❌ Erro fatal nas migrations:', err.message);
