@@ -2,6 +2,7 @@ const router = require('express').Router();
 const ctrl   = require('../controllers/contaController');
 
 router.get('/por-forma',      ctrl.findByForma);   // GET /contas/por-forma?forma_pagamento_id=X
+router.get('/:id/saldo',      ctrl.getSaldo);       // GET /contas/:id/saldo
 router.get('/:id/formas',     ctrl.getFormas);
 router.put('/:id/formas',     ctrl.setFormas);
 router.get('/',               ctrl.getAll);

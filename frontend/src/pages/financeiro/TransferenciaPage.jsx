@@ -34,6 +34,8 @@ export default function TransferenciaPage() {
   const [deleting,  setDeleting]      = useState(false);
   const [form,    setForm]    = useState(EMPTY);
   const [filtros, setFiltros] = useState({ data_inicio: '', data_fim: '' });
+  const [saldoOrigem, setSaldoOrigem] = useState(null);
+  const [loadingSaldo, setLoadingSaldo] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -49,7 +51,7 @@ export default function TransferenciaPage() {
 
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
-  const openNew = () => { setEditing(null); setForm(EMPTY); setModalOpen(true); };
+  const openNew = () => { setEditing(null); setForm(EMPTY); setSaldoOrigem(null); setModalOpen(true); };
   const openEdit = (row) => {
     setEditing(row);
     setForm({
@@ -59,7 +61,19 @@ export default function TransferenciaPage() {
       data:  formatDateInput(row.data),
       observacao: row.observacao || '',
     });
+    setSaldoOrigem(null);
+    buscarSaldoOrigem(row.conta_origem_id);
     setModalOpen(true);
+  };
+
+  const buscarSaldoOrigem = async (contaId) => {
+    if (!contaId) { setSaldoOrigem(null); return; }
+    setLoadingSaldo(true);
+    try {
+      const data = await contaService.getSaldo(contaId);
+      setSaldoOrigem(data?.saldo ?? null);
+    } catch { setSaldoOrigem(null); }
+    finally { setLoadingSaldo(false); }
   };
 
   const handleSave = async (e) => {
@@ -165,12 +179,27 @@ export default function TransferenciaPage() {
         <form onSubmit={handleSave} className={s.form}>
           <div className={s.field}>
             <label className={s.label}>Conta de Origem <span className={s.req}>*</span></label>
-            <select className={s.select} value={form.conta_origem_id} onChange={e => set('conta_origem_id', e.target.value)} required>
+            <select className={s.select} value={form.conta_origem_id} onChange={e => {
+              set('conta_origem_id', e.target.value);
+              buscarSaldoOrigem(e.target.value);
+            }} required>
               <option value="">Selecione...</option>
               {contas.filter(c => String(c.id) !== String(form.conta_destino_id)).map(c => (
                 <option key={c.id} value={c.id}>{c.tipo === 'caixa' ? 'Caixa' : `${c.banco_nome || ''} — ${c.numero}`}</option>
               ))}
             </select>
+            {form.conta_origem_id && (
+              <div className={s.saldoInfo}>
+                {loadingSaldo
+                  ? <span className={s.saldoLoading}>Calculando saldo…</span>
+                  : saldoOrigem !== null
+                    ? <span className={saldoOrigem < 0 ? s.saldoNeg : s.saldoPos}>
+                        Saldo disponível: {formatCurrency(saldoOrigem)}
+                      </span>
+                    : null
+                }
+              </div>
+            )}
           </div>
 
           <div className={s.field}>

@@ -81,4 +81,67 @@ const findByForma = async (usuario_id, forma_pagamento_id) => {
   return rows;
 };
 
-module.exports = { findAll, findById, create, update, remove, getFormas, setFormas, findByForma };
+/**
+ * Calcula o saldo atual de uma conta:
+ * saldo_inicial + receitas recebidas - despesas pagas - transferências saída + transferências entrada
+ */
+const getSaldo = async (id, usuario_id) => {
+  const conta = await findById(id, usuario_id);
+  if (!conta) return null;
+
+  const saldoInicial = Number(conta.saldo_inicial || 0);
+
+  // Receitas via receita_pagamento
+  const [[{ total: receitasRP }]] = await db.query(
+    `SELECT COALESCE(SUM(rp.valor), 0) AS total
+     FROM receita_pagamento rp
+     JOIN receita r ON r.id = rp.receita_id
+     WHERE rp.conta_id = ? AND r.status = 'recebido' AND r.usuario_id = ?`,
+    [id, usuario_id]
+  );
+
+  // Receitas diretas (sem parcelas em receita_pagamento)
+  const [[{ total: receitasDiretas }]] = await db.query(
+    `SELECT COALESCE(SUM(r.valor), 0) AS total
+     FROM receita r
+     WHERE r.conta_id = ? AND r.status = 'recebido' AND r.usuario_id = ?
+       AND NOT EXISTS (SELECT 1 FROM receita_pagamento rp2 WHERE rp2.receita_id = r.id)`,
+    [id, usuario_id]
+  );
+
+  // Despesas pagas
+  const [[{ total: despesas }]] = await db.query(
+    `SELECT COALESCE(SUM(dp.valor), 0) AS total
+     FROM despesa_pagamento dp
+     JOIN despesa d ON d.id = dp.despesa_id
+     WHERE dp.conta_id = ? AND d.usuario_id = ?`,
+    [id, usuario_id]
+  );
+
+  // Transferências saída
+  const [[{ total: transferenciasSaida }]] = await db.query(
+    `SELECT COALESCE(SUM(valor), 0) AS total
+     FROM transferencia
+     WHERE conta_origem_id = ? AND usuario_id = ?`,
+    [id, usuario_id]
+  );
+
+  // Transferências entrada
+  const [[{ total: transferenciasEntrada }]] = await db.query(
+    `SELECT COALESCE(SUM(valor), 0) AS total
+     FROM transferencia
+     WHERE conta_destino_id = ? AND usuario_id = ?`,
+    [id, usuario_id]
+  );
+
+  const saldo = saldoInicial
+    + Number(receitasRP)
+    + Number(receitasDiretas)
+    - Number(despesas)
+    - Number(transferenciasSaida)
+    + Number(transferenciasEntrada);
+
+  return { saldo, saldo_inicial: saldoInicial };
+};
+
+module.exports = { findAll, findById, create, update, remove, getFormas, setFormas, findByForma, getSaldo };

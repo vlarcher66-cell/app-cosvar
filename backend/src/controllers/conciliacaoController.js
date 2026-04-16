@@ -4,9 +4,7 @@ const { success, error } = require('../utils/apiResponse');
 const getMovimentos = async (req, res, next) => {
   try {
     const { conta_id, mes, ano } = req.query;
-    console.log('[conciliacao] params:', { conta_id, mes, ano, usuario_id: req.user.id });
     const data = await service.getMovimentos(req.user.id, conta_id, mes, ano);
-    console.log('[conciliacao] resultado:', JSON.stringify(data));
     return success(res, data);
   } catch (err) {
     if (err.statusCode) return error(res, err.message, err.statusCode);

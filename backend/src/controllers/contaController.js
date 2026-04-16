@@ -25,4 +25,12 @@ const findByForma = async (req, res, next) => {
   } catch (err) { if (err.statusCode) return error(res, err.message, err.statusCode); next(err); }
 };
 
-module.exports = { ...base, getFormas, setFormas, findByForma };
+const getSaldo = async (req, res, next) => {
+  try {
+    const data = await service.getSaldo(req.params.id, req.user.id);
+    if (!data) return error(res, 'Conta não encontrada', 404);
+    return success(res, data);
+  } catch (err) { if (err.statusCode) return error(res, err.message, err.statusCode); next(err); }
+};
+
+module.exports = { ...base, getFormas, setFormas, findByForma, getSaldo };
