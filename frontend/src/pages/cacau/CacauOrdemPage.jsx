@@ -395,6 +395,7 @@ function TabBaixa({ toast, ano }) {
   const [saldoCredora, setSaldoCredora]     = useState(null);
   const [loadingSaldo, setLoadingSaldo]     = useState(false);
   const [saldoDisponivel, setSaldoDisponivel] = useState(null);
+  const [saldosPorCredora, setSaldosPorCredora] = useState([]); // [{comprador_id, saldo_kg}]
 
   // Modal de recebimento pós-venda
   const [recebimentoOpen, setRecebimentoOpen]   = useState(false);
@@ -425,6 +426,7 @@ function TabBaixa({ toast, ano }) {
       setTotalKgBaixado(data.reduce((acc, r) => acc + Number(r.kg || 0), 0));
       const totalSaldo = saldos.reduce((acc, r) => acc + Number(r.saldo_kg || 0), 0);
       setSaldoDisponivel(totalSaldo);
+      setSaldosPorCredora(saldos);
     } catch { toast?.error('Erro ao carregar baixas'); }
     finally { setLoading(false); }
   }, [filtros, ano]);
@@ -661,7 +663,12 @@ function TabBaixa({ toast, ano }) {
           <FieldGroup label="Credora" required delay={0.10}>
             <select className={s.ordemSelect} value={form.comprador_id} onChange={e => set('comprador_id', e.target.value)} required>
               <option value="">Selecione a credora...</option>
-              {compradores.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+              {compradores
+                .filter(c => {
+                  const saldo = saldosPorCredora.find(s => String(s.comprador_id) === String(c.id));
+                  return saldo && Number(saldo.saldo_kg) > 0;
+                })
+                .map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
             </select>
           </FieldGroup>
 
