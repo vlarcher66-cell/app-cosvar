@@ -12,9 +12,9 @@ const findByEmpreendimento = async (empreendimento_id, usuario_id) => {
      JOIN quadra q ON q.id = l.quadra_id
      LEFT JOIN contrato_lote c ON c.lote_id = l.id AND c.status != 'rescindido'
      LEFT JOIN comprador comp ON comp.id = c.comprador_id
-     WHERE q.empreendimento_id = ? AND l.usuario_id = ?
+     WHERE q.empreendimento_id = ?
      ORDER BY q.nome, CAST(l.numero AS UNSIGNED), l.numero`,
-    [empreendimento_id, usuario_id]
+    [empreendimento_id]
   );
   return rows;
 };

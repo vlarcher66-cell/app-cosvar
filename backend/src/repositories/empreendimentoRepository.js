@@ -9,17 +9,15 @@ const findAll = async (usuario_id) => {
        (SELECT COUNT(*) FROM lote l JOIN quadra q ON q.id = l.quadra_id WHERE q.empreendimento_id = e.id AND l.status = 'vendido') AS lotes_vendidos,
        (SELECT COUNT(*) FROM lote l JOIN quadra q ON q.id = l.quadra_id WHERE q.empreendimento_id = e.id AND l.status = 'reservado') AS lotes_reservados
      FROM empreendimento e
-     WHERE e.usuario_id = ?
-     ORDER BY e.nome`,
-    [usuario_id]
+     ORDER BY e.nome`
   );
   return rows;
 };
 
 const findById = async (id, usuario_id) => {
   const [[emp]] = await db.query(
-    `SELECT * FROM empreendimento WHERE id = ? AND usuario_id = ? LIMIT 1`,
-    [id, usuario_id]
+    `SELECT * FROM empreendimento WHERE id = ? LIMIT 1`,
+    [id]
   );
   if (!emp) return null;
 

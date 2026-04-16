@@ -502,6 +502,42 @@ const runMigrations = async () => {
       console.log(`⏭️  Migration 31: Loteamento São Francisco já existe`);
     }
 
+    // 32. Garante quadras dos empreendimentos semeados (idempotente)
+    const [[empSJ2]] = await db.query(`SELECT id FROM empreendimento WHERE nome = 'Loteamento São José' LIMIT 1`);
+    if (empSJ2) {
+      for (let q = 1; q <= 12; q++) {
+        const [[exists]] = await db.query(
+          `SELECT id FROM quadra WHERE empreendimento_id = ? AND nome = ? LIMIT 1`,
+          [empSJ2.id, String(q)]
+        );
+        if (!exists) {
+          const [[u]] = await db.query(`SELECT id FROM usuario LIMIT 1`);
+          if (u) await db.query(
+            `INSERT INTO quadra (empreendimento_id, nome, usuario_id) VALUES (?, ?, ?)`,
+            [empSJ2.id, String(q), u.id]
+          );
+        }
+      }
+      console.log(`✅ Migration 32: quadras São José verificadas`);
+    }
+    const [[empSF2]] = await db.query(`SELECT id FROM empreendimento WHERE nome = 'Loteamento São Francisco' LIMIT 1`);
+    if (empSF2) {
+      for (const q of ['A','B','C','D','E','F']) {
+        const [[exists]] = await db.query(
+          `SELECT id FROM quadra WHERE empreendimento_id = ? AND nome = ? LIMIT 1`,
+          [empSF2.id, q]
+        );
+        if (!exists) {
+          const [[u]] = await db.query(`SELECT id FROM usuario LIMIT 1`);
+          if (u) await db.query(
+            `INSERT INTO quadra (empreendimento_id, nome, usuario_id) VALUES (?, ?, ?)`,
+            [empSF2.id, q, u.id]
+          );
+        }
+      }
+      console.log(`✅ Migration 32: quadras São Francisco verificadas`);
+    }
+
     console.log('🎉 Todas as migrations concluídas');
   } catch (err) {
     console.error('❌ Erro fatal nas migrations:', err.message);
