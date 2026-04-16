@@ -124,6 +124,15 @@ const runMigrations = async () => {
         )
     `).catch(e => console.log('⏭️  Limpeza duplicatas categoria:', e.message));
 
+    // 16. Remove receitas de venda de cacau que ficaram órfãs (cacau_baixa_id NULL)
+    // Só remove as que têm descrição do padrão automático de venda
+    await db.query(`
+      DELETE FROM receita
+      WHERE cacau_baixa_id IS NULL
+        AND descricao LIKE 'Venda de cacau%'
+    `).catch(e => console.log('⏭️  Limpeza receitas órfãs de cacau:', e.message));
+    console.log('✅ Migration 16: receitas órfãs de cacau removidas');
+
     console.log('🎉 Todas as migrations concluídas');
   } catch (err) {
     console.error('❌ Erro fatal nas migrations:', err.message);
