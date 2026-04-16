@@ -13,6 +13,7 @@ import receitaService from '../../services/receitaService';
 import formaPagamentoService from '../../services/formaPagamentoService';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
+import DateInput from '../../components/ui/DateInput';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import DataTable from '../../components/shared/DataTable';
 import { useGlobalToast } from '../../components/layout/MainLayout';
@@ -255,8 +256,8 @@ function TabEntrega({ toast, ano }) {
       {/* Filtros + botão */}
       <div className={s.toolbar}>
         <div className={s.toolbarLeft}>
-          <input type="date" className={s.filterInput} value={filtros.data_inicio} onChange={e => setFiltros(p => ({ ...p, data_inicio: e.target.value }))} />
-          <input type="date" className={s.filterInput} value={filtros.data_fim}    onChange={e => setFiltros(p => ({ ...p, data_fim: e.target.value }))} />
+          <DateInput className={s.filterInput} value={filtros.data_inicio} onChange={e => setFiltros(p => ({ ...p, data_inicio: e.target.value }))} />
+          <DateInput className={s.filterInput} value={filtros.data_fim}    onChange={e => setFiltros(p => ({ ...p, data_fim: e.target.value }))} />
           <select className={s.filterInput} value={filtros.comprador_id} onChange={e => setFiltros(p => ({ ...p, comprador_id: e.target.value }))}>
             <option value="">Todas as credoras</option>
             {compradores.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
@@ -286,7 +287,7 @@ function TabEntrega({ toast, ano }) {
           <div className={s.ordemDivider} />
 
           <FieldGroup label="Data" required delay={0.05}>
-            <input type="date" className={s.ordemInput} value={form.data} onChange={e => set('data', e.target.value)} required />
+            <DateInput className={s.ordemInput} value={form.data} onChange={e => set('data', e.target.value)} required />
           </FieldGroup>
 
           <FieldGroup label="Credora" required delay={0.10} extra={
@@ -622,8 +623,8 @@ function TabBaixa({ toast, ano }) {
       {/* Toolbar */}
       <div className={s.toolbar}>
         <div className={s.toolbarLeft}>
-          <input type="date" className={s.filterInput} value={filtros.data_inicio} onChange={e => setFiltros(p => ({ ...p, data_inicio: e.target.value }))} />
-          <input type="date" className={s.filterInput} value={filtros.data_fim}    onChange={e => setFiltros(p => ({ ...p, data_fim: e.target.value }))} />
+          <DateInput className={s.filterInput} value={filtros.data_inicio} onChange={e => setFiltros(p => ({ ...p, data_inicio: e.target.value }))} />
+          <DateInput className={s.filterInput} value={filtros.data_fim}    onChange={e => setFiltros(p => ({ ...p, data_fim: e.target.value }))} />
           <select className={s.filterInput} value={filtros.comprador_id} onChange={e => setFiltros(p => ({ ...p, comprador_id: e.target.value }))}>
             <option value="">Todas as credoras</option>
             {compradores.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
@@ -653,7 +654,7 @@ function TabBaixa({ toast, ano }) {
           <div className={s.ordemDivider} />
 
           <FieldGroup label="Data" required delay={0.05}>
-            <input type="date" className={s.ordemInput} value={form.data} onChange={e => set('data', e.target.value)} required />
+            <DateInput className={s.ordemInput} value={form.data} onChange={e => set('data', e.target.value)} required />
           </FieldGroup>
 
           <FieldGroup label="Credora" required delay={0.10}>

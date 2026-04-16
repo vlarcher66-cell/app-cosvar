@@ -6,6 +6,7 @@ import descricaoReceitaService from '../../services/descricaoReceitaService';
 import contaService from '../../services/contaService';
 import projetoService from '../../services/projetoService';
 import Modal from '../../components/ui/Modal';
+import DateInput from '../../components/ui/DateInput';
 import Button from '../../components/ui/Button';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import DataTable from '../../components/shared/DataTable';
@@ -221,14 +222,12 @@ export default function ReceitaPage() {
       >
         <div className={s.filterIcon}><IcoFilter /></div>
         <div className={s.filterGroup}>
-          <input
-            type="date" className={s.filterInput}
+          <DateInput className={s.filterInput}
             value={filtros.data_inicio}
             onChange={e => setFiltros(p => ({ ...p, data_inicio: e.target.value }))}
           />
           <span className={s.filterSep}>—</span>
-          <input
-            type="date" className={s.filterInput}
+          <DateInput className={s.filterInput}
             value={filtros.data_fim}
             onChange={e => setFiltros(p => ({ ...p, data_fim: e.target.value }))}
           />
@@ -341,7 +340,7 @@ export default function ReceitaPage() {
             </div>
             <div className={s.field}>
               <label className={s.label}>Data <span className={s.req}>*</span></label>
-              <input type="date" className={s.input} value={form.data} onChange={e => set('data', e.target.value)} required />
+              <DateInput className={s.input} value={form.data} onChange={e => set('data', e.target.value)} required />
             </div>
           </div>
 

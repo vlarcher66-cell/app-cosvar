@@ -10,6 +10,7 @@ import centroCustoService from '../../services/centroCustoService';
 import projetoService from '../../services/projetoService';
 import contaService from '../../services/contaService';
 import Modal from '../../components/ui/Modal';
+import DateInput from '../../components/ui/DateInput';
 import Button from '../../components/ui/Button';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import DataTable from '../../components/shared/DataTable';
@@ -544,10 +545,10 @@ function TabAPagar({ toast }) {
         transition={{ delay: 0.2, duration: 0.25 }}>
         <div className={s.filterIcon}><IcoFilter /></div>
         <div className={s.filterGroup}>
-          <input type="date" className={s.filterInput} value={filtros.data_inicio}
+          <DateInput className={s.filterInput} value={filtros.data_inicio}
             onChange={e => setFiltros(p => ({ ...p, data_inicio: e.target.value }))} />
           <span className={s.filterSep}>—</span>
-          <input type="date" className={s.filterInput} value={filtros.data_fim}
+          <DateInput className={s.filterInput} value={filtros.data_fim}
             onChange={e => setFiltros(p => ({ ...p, data_fim: e.target.value }))} />
         </div>
         <select className={s.filterSelect} value={filtros.grupo_id}
@@ -644,7 +645,7 @@ function TabAPagar({ toast }) {
                 </div>
                 <div className={s.field}>
                   <label className={s.label}>Data de Previsão <span className={s.req}>*</span></label>
-                  <input type="date" className={s.input} value={editForm.data}
+                  <DateInput className={s.input} value={editForm.data}
                     onChange={e => setE('data', e.target.value)} required />
                 </div>
               </div>
@@ -698,7 +699,7 @@ function TabAPagar({ toast }) {
                         {shared.status === 'pendente' ? 'Data de Previsão' : 'Data de Pagamento'}
                         <span className={s.req}>*</span>
                       </label>
-                      <input type="date" className={s.input} value={shared.data}
+                      <DateInput className={s.input} value={shared.data}
                         onChange={e => setS('data', e.target.value)} />
                     </div>
                     <div className={s.field}>
@@ -844,7 +845,7 @@ function TabAPagar({ toast }) {
             <div className={s.grid2}>
               <div className={s.field}>
                 <label className={s.label}>Data do Pagamento <span className={s.req}>*</span></label>
-                <input type="date" className={s.input} value={baixaForm.data_pagamento}
+                <DateInput className={s.input} value={baixaForm.data_pagamento}
                   onChange={e => setBaixaForm(p => ({ ...p, data_pagamento: e.target.value }))} required />
               </div>
               <div className={s.field}>
@@ -1005,9 +1006,9 @@ function TabPagas({ toast }) {
       <motion.div className={s.filterBar} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.25 }}>
         <div className={s.filterIcon}><IcoFilter /></div>
         <div className={s.filterGroup}>
-          <input type="date" className={s.filterInput} value={filtros.data_inicio} onChange={e => setFiltros(p => ({ ...p, data_inicio: e.target.value }))} />
+          <DateInput className={s.filterInput} value={filtros.data_inicio} onChange={e => setFiltros(p => ({ ...p, data_inicio: e.target.value }))} />
           <span className={s.filterSep}>—</span>
-          <input type="date" className={s.filterInput} value={filtros.data_fim} onChange={e => setFiltros(p => ({ ...p, data_fim: e.target.value }))} />
+          <DateInput className={s.filterInput} value={filtros.data_fim} onChange={e => setFiltros(p => ({ ...p, data_fim: e.target.value }))} />
         </div>
         <select className={s.filterSelect} value={filtros.grupo_id} onChange={e => setFiltros(p => ({ ...p, grupo_id: e.target.value }))}>
           <option value="">Todos os grupos</option>
@@ -1089,9 +1090,9 @@ function TabAnalises({ toast }) {
       <motion.div className={s.filterBar} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.25 }}>
         <div className={s.filterIcon}><IcoFilter /></div>
         <div className={s.filterGroup}>
-          <input type="date" className={s.filterInput} value={filtros.data_inicio} onChange={e => setFiltros(p => ({ ...p, data_inicio: e.target.value }))} />
+          <DateInput className={s.filterInput} value={filtros.data_inicio} onChange={e => setFiltros(p => ({ ...p, data_inicio: e.target.value }))} />
           <span className={s.filterSep}>—</span>
-          <input type="date" className={s.filterInput} value={filtros.data_fim} onChange={e => setFiltros(p => ({ ...p, data_fim: e.target.value }))} />
+          <DateInput className={s.filterInput} value={filtros.data_fim} onChange={e => setFiltros(p => ({ ...p, data_fim: e.target.value }))} />
         </div>
         <AnimatePresence>
           {Object.values(filtros).some(v => v) && (

@@ -8,6 +8,7 @@ import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Modal from '../../components/ui/Modal';
+import DateInput from '../../components/ui/DateInput';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import DataTable from '../../components/shared/DataTable';
 import { useGlobalToast } from '../../components/layout/MainLayout';
@@ -203,8 +204,8 @@ export default function ProducaoCacauPage() {
       {/* Filtros */}
       <div className={s.filtersBar}>
         <div className={s.filtersLeft}>
-          <input type="date" className={s.filterInput} value={filtros.data_inicio} onChange={e => setFiltro('data_inicio', e.target.value)} />
-          <input type="date" className={s.filterInput} value={filtros.data_fim}    onChange={e => setFiltro('data_fim', e.target.value)} />
+          <DateInput className={s.filterInput} value={filtros.data_inicio} onChange={e => setFiltro('data_inicio', e.target.value)} />
+          <DateInput className={s.filterInput} value={filtros.data_fim}    onChange={e => setFiltro('data_fim', e.target.value)} />
           <select className={s.filterSelect} value={filtros.projeto_id} onChange={e => setFiltro('projeto_id', e.target.value)}>
             <option value="">Todas as fazendas</option>
             {projetos.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
