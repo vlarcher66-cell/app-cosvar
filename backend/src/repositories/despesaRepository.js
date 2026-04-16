@@ -80,20 +80,74 @@ const remove = async (id, usuario_id) => {
   await db.query('DELETE FROM despesa WHERE id=? AND usuario_id=?', [id, usuario_id]);
 };
 
-const baixar = async (id, { conta_id, data_pagamento, valor_pago, acrescimo, desconto_pagamento, observacao, usuario_id }) => {
-  await db.query(
-    `UPDATE despesa SET
-      status = 'pago',
-      conta_id = ?,
-      data_pagamento = ?,
-      valor_pago = ?,
-      acrescimo = ?,
-      desconto_pagamento = ?,
-      descricao = CASE WHEN ? IS NOT NULL THEN ? ELSE descricao END
-     WHERE id = ? AND usuario_id = ?`,
-    [conta_id, data_pagamento, valor_pago, acrescimo || 0, desconto_pagamento || 0,
-     observacao, observacao, id, usuario_id]
+// parcelas: [{ conta_id, forma_pagamento_id, valor, acrescimo, desconto }]
+const baixar = async (id, { parcelas, data_pagamento, observacao, usuario_id }) => {
+  const conn = await db.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // Soma total pago, acréscimos e descontos das parcelas
+    const valor_pago         = parcelas.reduce((a, p) => a + Number(p.valor || 0), 0);
+    const acrescimo_total    = parcelas.reduce((a, p) => a + Number(p.acrescimo || 0), 0);
+    const desconto_total     = parcelas.reduce((a, p) => a + Number(p.desconto || 0), 0);
+    const conta_id_principal = parcelas[0]?.conta_id || null;
+
+    // Atualiza a despesa
+    await conn.query(
+      `UPDATE despesa SET
+        status = 'pago',
+        conta_id = ?,
+        data_pagamento = ?,
+        valor_pago = ?,
+        acrescimo = ?,
+        desconto_pagamento = ?,
+        descricao = CASE WHEN ? IS NOT NULL THEN ? ELSE descricao END
+       WHERE id = ? AND usuario_id = ?`,
+      [conta_id_principal, data_pagamento, valor_pago,
+       acrescimo_total, desconto_total,
+       observacao, observacao, id, usuario_id]
+    );
+
+    // Remove parcelas anteriores (se houver reprocessamento)
+    await conn.query('DELETE FROM despesa_pagamento WHERE despesa_id = ?', [id]);
+
+    // Insere uma linha por parcela
+    for (const p of parcelas) {
+      await conn.query(
+        `INSERT INTO despesa_pagamento
+         (despesa_id, conta_id, forma_pagamento_id, valor, data_pagamento, acrescimo, desconto, observacao)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [id, p.conta_id || null, p.forma_pagamento_id || null,
+         p.valor, data_pagamento,
+         p.acrescimo || 0, p.desconto || 0, observacao || null]
+      );
+    }
+
+    await conn.commit();
+  } catch (err) {
+    await conn.rollback();
+    throw err;
+  } finally {
+    conn.release();
+  }
+};
+
+// Retorna as parcelas de pagamento de uma despesa
+const getParcelas = async (despesa_id) => {
+  const [rows] = await db.query(
+    `SELECT dp.*,
+       ct.numero AS conta_numero, ct.tipo AS conta_tipo,
+       bco.nome AS banco_nome,
+       fp.nome AS forma_pagamento_nome
+     FROM despesa_pagamento dp
+     LEFT JOIN conta ct ON ct.id = dp.conta_id
+     LEFT JOIN banco bco ON bco.id = ct.banco_id
+     LEFT JOIN forma_pagamento fp ON fp.id = dp.forma_pagamento_id
+     WHERE dp.despesa_id = ?
+     ORDER BY dp.id ASC`,
+    [despesa_id]
   );
+  return rows;
 };
 
 // Para dashboard
@@ -151,4 +205,4 @@ const createBatch = async (itens) => {
   }
 };
 
-module.exports = { findAll, findById, create, createBatch, update, remove, baixar, totaisPorStatus, totaisPorGrupo };
+module.exports = { findAll, findById, create, createBatch, update, remove, baixar, getParcelas, totaisPorStatus, totaisPorGrupo };

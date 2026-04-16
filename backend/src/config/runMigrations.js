@@ -150,6 +150,36 @@ const runMigrations = async () => {
       console.log(`✅ Migration 16: ${del.affectedRows} receitas órfãs de cacau removidas`);
     }
 
+    // 17. Cria tabela despesa_pagamento (parcelas de pagamento por despesa)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS despesa_pagamento (
+        id               INT          NOT NULL AUTO_INCREMENT,
+        despesa_id       INT          NOT NULL,
+        conta_id         INT          DEFAULT NULL,
+        forma_pagamento_id INT        DEFAULT NULL,
+        valor            DECIMAL(12,2) NOT NULL,
+        data_pagamento   DATE         NOT NULL,
+        acrescimo        DECIMAL(12,2) NOT NULL DEFAULT 0,
+        desconto         DECIMAL(12,2) NOT NULL DEFAULT 0,
+        observacao       TEXT         DEFAULT NULL,
+        created_at       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        KEY idx_dp_despesa (despesa_id),
+        KEY idx_dp_conta (conta_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `).catch(e => { if (e.code !== 'ER_TABLE_EXISTS_ERROR') throw e; });
+    console.log('✅ Migration 17: tabela despesa_pagamento criada');
+
+    await addFkIfNotExists('despesa_pagamento', 'fk_dp_despesa',
+      `FOREIGN KEY (despesa_id) REFERENCES despesa (id) ON DELETE CASCADE ON UPDATE CASCADE`
+    );
+    await addFkIfNotExists('despesa_pagamento', 'fk_dp_conta',
+      `FOREIGN KEY (conta_id) REFERENCES conta (id) ON DELETE SET NULL ON UPDATE CASCADE`
+    );
+    await addFkIfNotExists('despesa_pagamento', 'fk_dp_forma',
+      `FOREIGN KEY (forma_pagamento_id) REFERENCES forma_pagamento (id) ON DELETE SET NULL ON UPDATE CASCADE`
+    );
+
     console.log('🎉 Todas as migrations concluídas');
   } catch (err) {
     console.error('❌ Erro fatal nas migrations:', err.message);

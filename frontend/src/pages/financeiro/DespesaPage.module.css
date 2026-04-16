@@ -926,6 +926,21 @@
 .baixaAcrescimo .inputPrefix { background: rgba(239,68,68,0.10); color: #ef4444; }
 .baixaDesconto  .inputPrefix { background: rgba(16,185,129,0.10); color: #10b981; }
 
+/* ── Parcelas de pagamento ── */
+.baixaParcelaRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr 130px 32px;
+  gap: 6px;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-soft, var(--border));
+}
+.baixaParcelaRow:last-of-type { border-bottom: none; }
+
+.baixaDiffOk  { font-size: 0.72rem; font-weight: 700; color: #059669; }
+.baixaDiffPos { font-size: 0.72rem; font-weight: 700; color: #d97706; }
+.baixaDiffNeg { font-size: 0.72rem; font-weight: 700; color: #059669; }
+
 /* ── Valor pago com tags ── */
 .valorPagoCell { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
 .tagAcrescimo {

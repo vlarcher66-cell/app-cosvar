@@ -23,11 +23,21 @@ const remove = async (id, usuario_id) => {
 const baixar = async (id, data) => {
   const despesa = await findById(id, data.usuario_id);
   if (despesa.status === 'pago') throw { statusCode: 400, message: 'Despesa já foi baixada' };
-  if (!data.conta_id)        throw { statusCode: 400, message: 'Conta é obrigatória' };
-  if (!data.data_pagamento)  throw { statusCode: 400, message: 'Data de pagamento é obrigatória' };
-  if (!data.valor_pago || Number(data.valor_pago) <= 0) throw { statusCode: 400, message: 'Valor pago é obrigatório' };
-  await repo.baixar(id, data);
+  if (!data.data_pagamento) throw { statusCode: 400, message: 'Data de pagamento é obrigatória' };
+
+  // Normaliza parcelas — aceita array novo ou formato legado
+  const parcelas = Array.isArray(data.parcelas) && data.parcelas.length > 0
+    ? data.parcelas
+    : [{ conta_id: data.conta_id, forma_pagamento_id: data.forma_pagamento_id || null,
+         valor: data.valor_pago, acrescimo: data.acrescimo || 0, desconto: data.desconto_pagamento || 0 }];
+
+  if (!parcelas.every(p => p.conta_id)) throw { statusCode: 400, message: 'Todas as parcelas precisam de uma conta' };
+  if (!parcelas.every(p => Number(p.valor) > 0)) throw { statusCode: 400, message: 'Todas as parcelas precisam ter valor maior que zero' };
+
+  await repo.baixar(id, { parcelas, data_pagamento: data.data_pagamento, observacao: data.observacao, usuario_id: data.usuario_id });
 };
+
+const getParcelas = (despesa_id) => repo.getParcelas(despesa_id);
 
 const createBatch = async (payload) => {
   const { itens, compartilhado, usuario_id } = payload;
@@ -44,4 +54,4 @@ const createBatch = async (payload) => {
   return repo.createBatch(registros);
 };
 
-module.exports = { findAll, findById, create, createBatch, update, remove, baixar };
+module.exports = { findAll, findById, create, createBatch, update, remove, baixar, getParcelas };

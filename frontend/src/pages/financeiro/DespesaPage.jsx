@@ -391,37 +391,64 @@ function TabAPagar({ toast }) {
     finally { setDeleting(false); }
   };
 
-  const [baixaTarget, setBaixaTarget] = useState(null);
-  const [baixaForm, setBaixaForm]     = useState({});
-  const [baixando, setBaixando]       = useState(false);
+  const [baixaTarget, setBaixaTarget]   = useState(null);
+  const [baixaData, setBaixaData]       = useState('');
+  const [baixaObs, setBaixaObs]         = useState('');
+  const [baixaParcelas, setBaixaParcelas] = useState([]);
+  const [formasPagamento, setFormasPagamento] = useState([]);
+  const [baixando, setBaixando]         = useState(false);
+
+  let _parcelaKey = useRef(0);
+  const newParcelaKey = () => ++_parcelaKey.current;
 
   useEffect(() => {
-    if (baixaTarget) contaService.getAll().then(setContas);
+    if (baixaTarget) {
+      Promise.all([contaService.getAll(), import('../../services/formaPagamentoService').then(m => m.default.getAll())])
+        .then(([cts, fps]) => { setContas(cts); setFormasPagamento(fps); });
+    }
   }, [baixaTarget]);
 
   const openBaixa = (row) => {
     setBaixaTarget(row);
-    setBaixaForm({
-      data_pagamento: new Date().toISOString().slice(0, 10),
-      conta_id: '',
-      valor_pago: row.valor,
-      acrescimo: '',
-      desconto_pagamento: '',
-      observacao: '',
-    });
+    setBaixaData(new Date().toISOString().slice(0, 10));
+    setBaixaObs('');
+    setBaixaParcelas([{ _key: newParcelaKey(), conta_id: '', forma_pagamento_id: '', valor: String(row.valor) }]);
   };
+
+  const addBaixaParcela = () => {
+    const pago = baixaParcelas.reduce((a, p) => a + Number(p.valor || 0), 0);
+    const restante = Math.max(0, Number(baixaTarget?.valor || 0) - pago).toFixed(2);
+    setBaixaParcelas(p => [...p, { _key: newParcelaKey(), conta_id: '', forma_pagamento_id: '', valor: restante }]);
+  };
+
+  const setBaixaParcela = (key, field, val) =>
+    setBaixaParcelas(ps => ps.map(p => p._key === key ? { ...p, [field]: val } : p));
+
+  const removeBaixaParcela = (key) =>
+    setBaixaParcelas(ps => ps.filter(p => p._key !== key));
+
+  const totalBaixaParcelas = baixaParcelas.reduce((a, p) => a + Number(p.valor || 0), 0);
+  const diffBaixa = totalBaixaParcelas - Number(baixaTarget?.valor || 0);
 
   const handleBaixa = async (e) => {
     e.preventDefault();
-    if (!baixaForm.conta_id)       { toast?.error('Selecione a conta'); return; }
-    if (!baixaForm.data_pagamento) { toast?.error('Informe a data de pagamento'); return; }
+    if (!baixaData) { toast?.error('Informe a data de pagamento'); return; }
+    if (baixaParcelas.some(p => !p.conta_id)) { toast?.error('Selecione a conta em todas as parcelas'); return; }
+    if (baixaParcelas.some(p => Number(p.valor) <= 0)) { toast?.error('Todas as parcelas precisam ter valor maior que zero'); return; }
     setBaixando(true);
     try {
-      await despesaService.baixar(baixaTarget.id, baixaForm);
-      toast?.success('Baixa registrada com sucesso');
+      const parcelas = baixaParcelas.map(p => ({
+        conta_id: p.conta_id,
+        forma_pagamento_id: p.forma_pagamento_id || null,
+        valor: p.valor,
+        acrescimo: diffBaixa > 0 && baixaParcelas.length === 1 ? diffBaixa.toFixed(2) : 0,
+        desconto:  diffBaixa < 0 && baixaParcelas.length === 1 ? Math.abs(diffBaixa).toFixed(2) : 0,
+      }));
+      await despesaService.baixar(baixaTarget.id, { parcelas, data_pagamento: baixaData, observacao: baixaObs });
+      toast?.success('Pagamento registrado com sucesso');
       setBaixaTarget(null);
       load();
-    } catch (err) { toast?.error(err.response?.data?.message || 'Erro ao registrar baixa'); }
+    } catch (err) { toast?.error(err.response?.data?.message || 'Erro ao registrar pagamento'); }
     finally { setBaixando(false); }
   };
 
@@ -830,6 +857,7 @@ function TabAPagar({ toast }) {
       <Modal isOpen={!!baixaTarget} onClose={() => setBaixaTarget(null)} title="Registrar Pagamento" width={480}>
         {baixaTarget && (
           <form onSubmit={handleBaixa} className={s.form}>
+            {/* Info da despesa */}
             <div className={s.baixaInfo}>
               <div className={s.baixaInfoItem}>
                 <span className={s.baixaInfoLabel}>Despesa</span>
@@ -841,72 +869,69 @@ function TabAPagar({ toast }) {
               </div>
             </div>
 
-            <div className={s.grid2}>
-              <div className={s.field}>
-                <label className={s.label}>Data do Pagamento <span className={s.req}>*</span></label>
-                <DateInput className={s.input} value={baixaForm.data_pagamento}
-                  onChange={e => setBaixaForm(p => ({ ...p, data_pagamento: e.target.value }))} required />
-              </div>
-              <div className={s.field}>
-                <label className={s.label}>Conta <span className={s.req}>*</span></label>
-                <select className={s.select} value={baixaForm.conta_id}
-                  onChange={e => setBaixaForm(p => ({ ...p, conta_id: e.target.value }))} required>
-                  <option value="">Selecione...</option>
-                  {contas.map(c => <option key={c.id} value={c.id}>{c.tipo === 'caixa' ? 'Caixa' : `${c.banco_nome || ''} — ${c.numero}`}</option>)}
-                </select>
-              </div>
-            </div>
-
+            {/* Data */}
             <div className={s.field}>
-              <label className={s.label}>Valor Pago <span className={s.req}>*</span></label>
-              <div className={s.inputWrap}>
-                <span className={s.inputPrefix}>R$</span>
-                <CurrencyInput
-                  className={`${s.input} ${s.inputWithPrefix}`}
-                  value={baixaForm.valor_pago}
-                  onChange={e => {
-                    const vp = e.target.value;
-                    const diff = Number(vp) - Number(baixaTarget.valor);
-                    setBaixaForm(p => ({
-                      ...p,
-                      valor_pago: vp,
-                      acrescimo: diff > 0 ? diff.toFixed(2) : '',
-                      desconto_pagamento: diff < 0 ? Math.abs(diff).toFixed(2) : '',
-                    }));
-                  }}
-                  required />
-              </div>
+              <label className={s.label}>Data do Pagamento <span className={s.req}>*</span></label>
+              <DateInput className={s.input} value={baixaData}
+                onChange={e => setBaixaData(e.target.value)} required />
             </div>
 
-            <AnimatePresence>
-              {Number(baixaForm.valor_pago) > Number(baixaTarget.valor) && (
-                <motion.div className={`${s.field} ${s.baixaAcrescimo}`}
-                  initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-                  <label className={s.label}>Acréscimo (juros/multa)</label>
+            {/* Parcelas */}
+            <div className={s.carrinhoBox}>
+              <div className={s.carrinhoHeader}>
+                <span className={s.carrinhoTitle}>
+                  <span className={s.modalSectionHeadDot} />
+                  Formas de Pagamento
+                </span>
+                {/* Totalizador */}
+                <span className={diffBaixa > 0.005
+                  ? s.baixaDiffPos
+                  : diffBaixa < -0.005
+                    ? s.baixaDiffNeg
+                    : s.baixaDiffOk}>
+                  {diffBaixa > 0.005
+                    ? `+${formatCurrency(diffBaixa)} juros`
+                    : diffBaixa < -0.005
+                      ? `-${formatCurrency(Math.abs(diffBaixa))} desconto`
+                      : '✓ Total ok'}
+                </span>
+              </div>
+
+              {baixaParcelas.map((p, i) => (
+                <div key={p._key} className={s.baixaParcelaRow}>
+                  <select className={s.select} value={p.forma_pagamento_id}
+                    onChange={e => setBaixaParcela(p._key, 'forma_pagamento_id', e.target.value)}>
+                    <option value="">Forma (opcional)</option>
+                    {formasPagamento.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
+                  </select>
+                  <select className={s.select} value={p.conta_id}
+                    onChange={e => setBaixaParcela(p._key, 'conta_id', e.target.value)} required>
+                    <option value="">Conta *</option>
+                    {contas.map(c => <option key={c.id} value={c.id}>{c.tipo === 'caixa' ? 'Caixa' : `${c.banco_nome || ''} — ${c.numero}`}</option>)}
+                  </select>
                   <div className={s.inputWrap}>
                     <span className={s.inputPrefix}>R$</span>
                     <CurrencyInput className={`${s.input} ${s.inputWithPrefix}`}
-                      value={baixaForm.acrescimo} readOnly />
+                      value={p.valor}
+                      onChange={e => setBaixaParcela(p._key, 'valor', e.target.value)} />
                   </div>
-                </motion.div>
-              )}
-              {Number(baixaForm.valor_pago) < Number(baixaTarget.valor) && Number(baixaForm.valor_pago) > 0 && (
-                <motion.div className={`${s.field} ${s.baixaDesconto}`}
-                  initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-                  <label className={s.label}>Desconto/Abatimento</label>
-                  <div className={s.inputWrap}>
-                    <span className={s.inputPrefix}>R$</span>
-                    <CurrencyInput className={`${s.input} ${s.inputWithPrefix}`}
-                      value={baixaForm.desconto_pagamento} readOnly />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  <button type="button" className={s.carrinhoRemove}
+                    onClick={() => removeBaixaParcela(p._key)}
+                    disabled={baixaParcelas.length === 1}>
+                    <IcoDelete />
+                  </button>
+                </div>
+              ))}
+
+              <button type="button" className={s.addItemBtn} onClick={addBaixaParcela}>
+                <IcoPlus /> Adicionar forma de pagamento
+              </button>
+            </div>
 
             <div className={s.field}>
               <label className={s.label}>Observação <span className={s.labelHint}>opcional</span></label>
               <textarea className={s.textarea} rows={2} placeholder="Ex: pago com desconto negociado..."
-                value={baixaForm.observacao} onChange={e => setBaixaForm(p => ({ ...p, observacao: e.target.value }))} />
+                value={baixaObs} onChange={e => setBaixaObs(e.target.value)} />
             </div>
 
             <div className={s.formActions}>

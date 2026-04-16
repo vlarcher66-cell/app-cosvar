@@ -74,4 +74,14 @@ const baixar = async (req, res, next) => {
   }
 };
 
-module.exports = { getAll, getOne, create, createBatch, update, remove, baixar };
+const getParcelas = async (req, res, next) => {
+  try {
+    const data = await service.getParcelas(req.params.id);
+    return success(res, data);
+  } catch (err) {
+    if (err.statusCode) return error(res, err.message, err.statusCode);
+    next(err);
+  }
+};
+
+module.exports = { getAll, getOne, create, createBatch, update, remove, baixar, getParcelas };

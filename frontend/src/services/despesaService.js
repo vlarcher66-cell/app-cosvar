@@ -5,6 +5,7 @@ const base = makeService('/despesas');
 
 export default {
   ...base,
-  createBatch: (payload) => api.post('/despesas/batch', payload).then(r => r.data),
-  baixar: (id, payload) => api.patch(`/despesas/${id}/baixa`, payload).then(r => r.data),
+  createBatch:  (payload) => api.post('/despesas/batch', payload).then(r => r.data),
+  baixar:       (id, payload) => api.patch(`/despesas/${id}/baixa`, payload).then(r => r.data),
+  getParcelas:  (id) => api.get(`/despesas/${id}/parcelas`).then(r => r.data.data),
 };
