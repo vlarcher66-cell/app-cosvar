@@ -466,6 +466,13 @@
   font-size: var(--text-sm);
 }
 
+.processoVazio {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 4px 0;
+}
+
 /* ══ MODAL FORM ══ */
 .form { display: flex; flex-direction: column; gap: 16px; padding: 2px 0; }
 

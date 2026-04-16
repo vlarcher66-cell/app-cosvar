@@ -433,26 +433,28 @@ export default function ReceitaPage() {
               </div>
             </div>
 
-            {/* Parcelas de recebimento */}
+            {/* Formas de recebimento */}
             <div className={s.processoSection}>
-              <div className={s.processoSectionTitle}>Recebimentos ({processo.parcelas?.length || 0})</div>
-              <div className={s.parcelasList}>
-                {(processo.parcelas || []).map((p, i) => (
-                  <div key={p.id || i} className={s.parcelaCard}>
-                    <div className={s.parcelaInfo}>
-                      <span className={s.parcelaForma}>{p.forma_pagamento_nome || 'Sem forma definida'}</span>
-                      <span className={s.parcelaConta}>
-                        {p.banco_nome ? `${p.banco_nome} — ` : ''}{p.conta_numero || '—'}
-                        {p.conta_tipo === 'caixa' ? ' (Caixa)' : ''}
-                      </span>
+              <div className={s.processoSectionTitle}>Formas de Recebimento ({processo.parcelas?.length || 0})</div>
+              {(processo.parcelas || []).length === 0 ? (
+                <div className={s.processoVazio}>Sem formas de recebimento registradas</div>
+              ) : (
+                <div className={s.parcelasList}>
+                  {(processo.parcelas || []).map((p, i) => (
+                    <div key={p.id || i} className={s.parcelaCard}>
+                      <div className={s.parcelaInfo}>
+                        <span className={s.parcelaForma}>{p.forma_pagamento_nome || 'Sem forma definida'}</span>
+                        <span className={s.parcelaConta}>
+                          {p.conta_tipo === 'caixa' ? 'Caixa' : `${p.banco_nome ? `${p.banco_nome} — ` : ''}${p.conta_numero || '—'}`}
+                        </span>
+                      </div>
+                      <div className={s.parcelaRight}>
+                        <span className={s.parcelaValor}>{formatCurrency(p.valor)}</span>
+                      </div>
                     </div>
-                    <div className={s.parcelaRight}>
-                      <span className={s.parcelaValor}>{formatCurrency(p.valor)}</span>
-                      <span className={`${s.parcelaStatus} ${p.status}`}>{p.status === 'recebido' ? 'Recebido' : 'Pendente'}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         ) : null}

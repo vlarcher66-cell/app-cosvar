@@ -116,7 +116,7 @@ const lancarReceitaVenda = async ({ baixa_id, valor, data, conta_id, observacao,
   return result.insertId;
 };
 
-// Retorna dados completos da venda de cacau + parcelas de receita vinculadas
+// Retorna dados completos da venda de cacau + formas de recebimento (receita_pagamento)
 const getProcesso = async (cacau_baixa_id, usuario_id) => {
   const [[baixa]] = await db.query(`
     SELECT b.*,
@@ -129,18 +129,30 @@ const getProcesso = async (cacau_baixa_id, usuario_id) => {
 
   if (!baixa) throw { statusCode: 404, message: 'Venda não encontrada' };
 
-  const [parcelas] = await db.query(`
-    SELECT r.id, r.valor, r.data, r.status, r.descricao,
-      ct.numero AS conta_numero, ct.tipo AS conta_tipo,
-      bco.nome AS banco_nome,
-      fp.nome AS forma_pagamento_nome
-    FROM receita r
-    LEFT JOIN conta ct         ON ct.id = r.conta_id
-    LEFT JOIN banco bco        ON bco.id = ct.banco_id
-    LEFT JOIN forma_pagamento fp ON fp.id = r.forma_pagamento_id
-    WHERE r.cacau_baixa_id = ? AND r.usuario_id = ?
-    ORDER BY r.id ASC
-  `, [cacau_baixa_id, usuario_id]);
+  // Busca a receita principal desta venda
+  const [[receita]] = await db.query(
+    `SELECT r.id, r.valor, r.data, r.status FROM receita r
+     WHERE r.cacau_baixa_id = ? AND r.usuario_id = ? LIMIT 1`,
+    [cacau_baixa_id, usuario_id]
+  );
+
+  // Busca as formas de recebimento em receita_pagamento
+  let parcelas = [];
+  if (receita) {
+    const [rows] = await db.query(`
+      SELECT rp.id, rp.valor,
+        ct.numero AS conta_numero, ct.tipo AS conta_tipo,
+        bco.nome AS banco_nome,
+        fp.nome AS forma_pagamento_nome
+      FROM receita_pagamento rp
+      LEFT JOIN conta ct           ON ct.id  = rp.conta_id
+      LEFT JOIN banco bco          ON bco.id = ct.banco_id
+      LEFT JOIN forma_pagamento fp ON fp.id  = rp.forma_pagamento_id
+      WHERE rp.receita_id = ?
+      ORDER BY rp.id ASC
+    `, [receita.id]);
+    parcelas = rows;
+  }
 
   return { baixa, parcelas };
 };

@@ -180,6 +180,32 @@ const runMigrations = async () => {
       `FOREIGN KEY (forma_pagamento_id) REFERENCES forma_pagamento (id) ON DELETE SET NULL ON UPDATE CASCADE`
     );
 
+    // 18. Cria tabela receita_pagamento (formas de recebimento por receita)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS receita_pagamento (
+        id                 INT          NOT NULL AUTO_INCREMENT,
+        receita_id         INT          NOT NULL,
+        conta_id           INT          DEFAULT NULL,
+        forma_pagamento_id INT          DEFAULT NULL,
+        valor              DECIMAL(12,2) NOT NULL,
+        created_at         DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        KEY idx_rp_receita (receita_id),
+        KEY idx_rp_conta (conta_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `).catch(e => { if (e.code !== 'ER_TABLE_EXISTS_ERROR') throw e; });
+    console.log('✅ Migration 18: tabela receita_pagamento criada');
+
+    await addFkIfNotExists('receita_pagamento', 'fk_rp_receita',
+      `FOREIGN KEY (receita_id) REFERENCES receita (id) ON DELETE CASCADE ON UPDATE CASCADE`
+    );
+    await addFkIfNotExists('receita_pagamento', 'fk_rp_conta',
+      `FOREIGN KEY (conta_id) REFERENCES conta (id) ON DELETE SET NULL ON UPDATE CASCADE`
+    );
+    await addFkIfNotExists('receita_pagamento', 'fk_rp_forma',
+      `FOREIGN KEY (forma_pagamento_id) REFERENCES forma_pagamento (id) ON DELETE SET NULL ON UPDATE CASCADE`
+    );
+
     console.log('🎉 Todas as migrations concluídas');
   } catch (err) {
     console.error('❌ Erro fatal nas migrations:', err.message);

@@ -76,14 +76,24 @@ const cacauBaixaService = {
       );
       if (!desc) throw { status: 500, message: 'Descrição "Venda de Cacau" não encontrada. Configure no cadastro.' };
 
-      // 4. Insere uma receita por parcela
+      // 4. Insere UMA receita com o valor total + parcelas em receita_pagamento
+      const valorTotal = parcelas.reduce((acc, p) => acc + parseFloat(p.valor || 0), 0);
+      const obsReceita = `Venda de cacau — ${numero_ordem}`;
+      // conta_id e forma_pagamento_id da primeira parcela (referência na receita principal)
+      const [receitaResult] = await conn.query(
+        `INSERT INTO receita (categoria_id, descricao_id, projeto_id, conta_id, forma_pagamento_id, cacau_baixa_id, valor, data, descricao, status, usuario_id)
+         VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, 'recebido', ?)`,
+        [cat.id, desc.id, parcelas[0].conta_id, parcelas[0].forma_pagamento_id || null,
+         baixaId, valorTotal, data.data, obsReceita, usuarioId]
+      );
+      const receitaId = receitaResult.insertId;
+
+      // Insere cada forma de recebimento em receita_pagamento
       for (const p of parcelas) {
-        const observacao = `Venda de cacau — ${numero_ordem}${parcelas.length > 1 ? ` (parcela)` : ''}`;
         await conn.query(
-          `INSERT INTO receita (categoria_id, descricao_id, projeto_id, conta_id, forma_pagamento_id, cacau_baixa_id, valor, data, descricao, status, usuario_id)
-           VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, 'recebido', ?)`,
-          [cat.id, desc.id, p.conta_id, p.forma_pagamento_id || null,
-           baixaId, p.valor, data.data, observacao, usuarioId]
+          `INSERT INTO receita_pagamento (receita_id, conta_id, forma_pagamento_id, valor)
+           VALUES (?, ?, ?, ?)`,
+          [receitaId, p.conta_id, p.forma_pagamento_id || null, p.valor]
         );
       }
 
