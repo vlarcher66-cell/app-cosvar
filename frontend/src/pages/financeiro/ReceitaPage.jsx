@@ -7,6 +7,7 @@ import contaService from '../../services/contaService';
 import projetoService from '../../services/projetoService';
 import Modal from '../../components/ui/Modal';
 import DateInput from '../../components/ui/DateInput';
+import CurrencyInput from '../../components/ui/CurrencyInput';
 import Button from '../../components/ui/Button';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import DataTable from '../../components/shared/DataTable';
@@ -328,12 +329,10 @@ export default function ReceitaPage() {
               <label className={s.label}>Valor <span className={s.req}>*</span></label>
               <div className={s.inputWrap}>
                 <span className={s.inputPrefix}>R$</span>
-                <input
-                  type="number" step="0.01" min="0.01"
+                <CurrencyInput
                   className={`${s.input} ${s.inputWithPrefix}`}
                   value={form.valor}
                   onChange={e => set('valor', e.target.value)}
-                  placeholder="0,00"
                   required
                 />
               </div>

@@ -14,6 +14,7 @@ import formaPagamentoService from '../../services/formaPagamentoService';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import DateInput from '../../components/ui/DateInput';
+import CurrencyInput from '../../components/ui/CurrencyInput';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import DataTable from '../../components/shared/DataTable';
 import { useGlobalToast } from '../../components/layout/MainLayout';
@@ -885,8 +886,8 @@ function TabBaixa({ toast, ano }) {
                       </option>
                     ))}
                   </select>
-                  <input type="number" step="0.01" min="0" className={s.parcelaValor}
-                    placeholder="Valor *" value={p.valor}
+                  <CurrencyInput className={s.parcelaValor}
+                    placeholder="0,00" value={p.valor}
                     onChange={e => setParcela(p._id, 'valor', e.target.value)} />
                   {parcelas.length > 1 && (
                     <button type="button" className={s.parcelaRemove} onClick={() => removeParcela(p._id)}>

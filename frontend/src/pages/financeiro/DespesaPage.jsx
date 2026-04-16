@@ -11,6 +11,7 @@ import projetoService from '../../services/projetoService';
 import contaService from '../../services/contaService';
 import Modal from '../../components/ui/Modal';
 import DateInput from '../../components/ui/DateInput';
+import CurrencyInput from '../../components/ui/CurrencyInput';
 import Button from '../../components/ui/Button';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import DataTable from '../../components/shared/DataTable';
@@ -202,11 +203,10 @@ function ItemSearchRow({ row, todosItens, onChange, onRemove, canRemove }) {
       <div className={s.carrinhoValorCell}>
         <div className={s.inputWrap}>
           <span className={s.inputPrefix}>R$</span>
-          <input type="number" step="0.01" min="0.01"
+          <CurrencyInput
             className={`${s.input} ${s.inputWithPrefix}`}
             value={row.valor}
             onChange={e => onChange({ ...row, valor: e.target.value })}
-            placeholder="0,00"
           />
         </div>
       </div>
@@ -637,10 +637,10 @@ function TabAPagar({ toast }) {
                   <label className={s.label}>Valor <span className={s.req}>*</span></label>
                   <div className={s.inputWrap}>
                     <span className={s.inputPrefix}>R$</span>
-                    <input type="number" step="0.01" min="0.01"
+                    <CurrencyInput
                       className={`${s.input} ${s.inputWithPrefix}`}
                       value={editForm.valor} onChange={e => setE('valor', e.target.value)}
-                      placeholder="0,00" required />
+                      required />
                   </div>
                 </div>
                 <div className={s.field}>
@@ -794,11 +794,10 @@ function TabAPagar({ toast }) {
                   <label className={s.label}>Desconto <span className={s.labelHint}>opcional</span></label>
                   <div className={s.inputWrap}>
                     <span className={s.inputPrefix}>R$</span>
-                    <input type="number" step="0.01" min="0"
+                    <CurrencyInput
                       className={`${s.input} ${s.inputWithPrefix}`}
                       value={shared.desconto}
-                      onChange={e => setS('desconto', e.target.value)}
-                      placeholder="0,00" />
+                      onChange={e => setS('desconto', e.target.value)} />
                   </div>
                 </div>
                 <div className={s.field}>
@@ -862,7 +861,7 @@ function TabAPagar({ toast }) {
               <label className={s.label}>Valor Pago <span className={s.req}>*</span></label>
               <div className={s.inputWrap}>
                 <span className={s.inputPrefix}>R$</span>
-                <input type="number" step="0.01" min="0.01"
+                <CurrencyInput
                   className={`${s.input} ${s.inputWithPrefix}`}
                   value={baixaForm.valor_pago}
                   onChange={e => {
@@ -875,7 +874,7 @@ function TabAPagar({ toast }) {
                       desconto_pagamento: diff < 0 ? Math.abs(diff).toFixed(2) : '',
                     }));
                   }}
-                  placeholder="0,00" required />
+                  required />
               </div>
             </div>
 
@@ -886,7 +885,7 @@ function TabAPagar({ toast }) {
                   <label className={s.label}>Acréscimo (juros/multa)</label>
                   <div className={s.inputWrap}>
                     <span className={s.inputPrefix}>R$</span>
-                    <input type="number" step="0.01" min="0" className={`${s.input} ${s.inputWithPrefix}`}
+                    <CurrencyInput className={`${s.input} ${s.inputWithPrefix}`}
                       value={baixaForm.acrescimo} readOnly />
                   </div>
                 </motion.div>
@@ -897,7 +896,7 @@ function TabAPagar({ toast }) {
                   <label className={s.label}>Desconto/Abatimento</label>
                   <div className={s.inputWrap}>
                     <span className={s.inputPrefix}>R$</span>
-                    <input type="number" step="0.01" min="0" className={`${s.input} ${s.inputWithPrefix}`}
+                    <CurrencyInput className={`${s.input} ${s.inputWithPrefix}`}
                       value={baixaForm.desconto_pagamento} readOnly />
                   </div>
                 </motion.div>
