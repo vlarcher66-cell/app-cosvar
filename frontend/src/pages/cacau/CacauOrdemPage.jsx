@@ -840,10 +840,13 @@ function TabBaixa({ toast, ano }) {
                         {formas.map(f => (
                           <div key={f.id} className={`${s.fpItem} ${String(p.forma_id) === String(f.id) ? s.fpItemSel : ''}`}
                             onClick={() => {
-                              // Limpa conta se não for compatível com a nova forma
+                              // Filtra contas compatíveis com a forma selecionada
+                              const contasCompativeis = contas.filter(c => !c.formas_ids?.length || c.formas_ids.includes(f.id));
                               const contaAtual = contas.find(c => String(c.id) === String(p.conta_id));
                               const contaCompativel = contaAtual && (!contaAtual.formas_ids?.length || contaAtual.formas_ids.includes(f.id));
-                              setParcelas(prev => prev.map(pp => pp._id === p._id ? { ...pp, forma_id: String(f.id), dropOpen: false, conta_id: contaCompativel ? pp.conta_id : '' } : pp));
+                              // Se só tiver uma conta compatível, preenche automaticamente
+                              const novaConta = contaCompativel ? p.conta_id : (contasCompativeis.length === 1 ? String(contasCompativeis[0].id) : '');
+                              setParcelas(prev => prev.map(pp => pp._id === p._id ? { ...pp, forma_id: String(f.id), dropOpen: false, conta_id: novaConta } : pp));
                             }}>
                             {editingForma?.id === f.id ? (
                               <div className={s.fpEditRow} onClick={e => e.stopPropagation()}>
