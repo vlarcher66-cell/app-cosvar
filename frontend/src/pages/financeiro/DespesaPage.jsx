@@ -237,7 +237,7 @@ function TabAPagar({ toast }) {
   const [projetos, setProjetos]         = useState([]);
   const [contas, setContas]             = useState([]);
 
-  const [filtros, setFiltros] = useState({ data_inicio: '', data_fim: '', grupo_id: '' });
+  const [filtros, setFiltros] = useState({ data_inicio: '', data_fim: '', grupo_id: '', fornecedor_id: '' });
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -251,6 +251,7 @@ function TabAPagar({ toast }) {
   useEffect(() => { load(); }, [load]);
 
   useEffect(() => { grupoDespesaService.getAll().then(setGrupos); }, []);
+  useEffect(() => { fornecedorService.getAll().then(setFornecedores); }, []);
 
   useEffect(() => {
     if (modalOpen) {
@@ -519,10 +520,15 @@ function TabAPagar({ toast }) {
           <option value="">Todos os grupos</option>
           {grupos.map(g => <option key={g.id} value={g.id}>{g.nome}</option>)}
         </select>
+        <select className={s.filterSelect} value={filtros.fornecedor_id}
+          onChange={e => setFiltros(p => ({ ...p, fornecedor_id: e.target.value }))}>
+          <option value="">Todos os fornecedores</option>
+          {fornecedores.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
+        </select>
         <AnimatePresence>
           {temFiltro && (
             <motion.button className={s.clearBtn}
-              onClick={() => setFiltros({ data_inicio: '', data_fim: '', grupo_id: '' })}
+              onClick={() => setFiltros({ data_inicio: '', data_fim: '', grupo_id: '', fornecedor_id: '' })}
               initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.85 }} transition={{ duration: 0.15 }}>
               ✕ Limpar
@@ -879,7 +885,8 @@ function TabPagas({ toast }) {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [grupos, setGrupos] = useState([]);
-  const [filtros, setFiltros] = useState({ data_inicio: '', data_fim: '', grupo_id: '' });
+  const [fornecedores, setFornecedores] = useState([]);
+  const [filtros, setFiltros] = useState({ data_inicio: '', data_fim: '', grupo_id: '', fornecedor_id: '' });
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -892,6 +899,7 @@ function TabPagas({ toast }) {
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => { grupoDespesaService.getAll().then(setGrupos); }, []);
+  useEffect(() => { fornecedorService.getAll().then(setFornecedores); }, []);
 
   const handleDelete = async () => {
     setDeleting(true);
@@ -963,9 +971,13 @@ function TabPagas({ toast }) {
           <option value="">Todos os grupos</option>
           {grupos.map(g => <option key={g.id} value={g.id}>{g.nome}</option>)}
         </select>
+        <select className={s.filterSelect} value={filtros.fornecedor_id} onChange={e => setFiltros(p => ({ ...p, fornecedor_id: e.target.value }))}>
+          <option value="">Todos os fornecedores</option>
+          {fornecedores.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
+        </select>
         <AnimatePresence>
           {temFiltro && (
-            <motion.button className={s.clearBtn} onClick={() => setFiltros({ data_inicio: '', data_fim: '', grupo_id: '' })}
+            <motion.button className={s.clearBtn} onClick={() => setFiltros({ data_inicio: '', data_fim: '', grupo_id: '', fornecedor_id: '' })}
               initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }} transition={{ duration: 0.15 }}>
               ✕ Limpar
             </motion.button>

@@ -27,8 +27,9 @@ const findAll = async (usuario_id, filters = {}) => {
   if (filters.data_inicio) { sql += ' AND d.data >= ?'; params.push(filters.data_inicio); }
   if (filters.data_fim)    { sql += ' AND d.data <= ?'; params.push(filters.data_fim); }
   if (filters.status)      { sql += ' AND d.status = ?'; params.push(filters.status); }
-  if (filters.grupo_id)    { sql += ' AND d.grupo_id = ?'; params.push(filters.grupo_id); }
-  if (filters.projeto_id)  { sql += ' AND d.projeto_id = ?'; params.push(filters.projeto_id); }
+  if (filters.grupo_id)      { sql += ' AND d.grupo_id = ?';      params.push(filters.grupo_id); }
+  if (filters.fornecedor_id) { sql += ' AND d.fornecedor_id = ?'; params.push(filters.fornecedor_id); }
+  if (filters.projeto_id)    { sql += ' AND d.projeto_id = ?';    params.push(filters.projeto_id); }
 
   sql += ' ORDER BY d.data DESC, d.id DESC';
 
