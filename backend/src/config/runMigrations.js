@@ -124,12 +124,16 @@ const runMigrations = async () => {
         )
     `).catch(e => console.log('⏭️  Limpeza duplicatas categoria:', e.message));
 
-    // 16. Remove receitas de venda de cacau que ficaram órfãs (cacau_baixa_id NULL)
-    // Só remove as que têm descrição do padrão automático de venda
+    // 16. Remove receitas de venda de cacau órfãs:
+    //   (a) cacau_baixa_id NULL com descrição automática de venda
+    //   (b) cacau_baixa_id preenchido mas a baixa não existe mais (CASCADE não pegou)
     await db.query(`
       DELETE FROM receita
-      WHERE cacau_baixa_id IS NULL
-        AND descricao LIKE 'Venda de cacau%'
+      WHERE descricao LIKE 'Venda de cacau%'
+        AND (
+          cacau_baixa_id IS NULL
+          OR cacau_baixa_id NOT IN (SELECT id FROM cacau_baixa)
+        )
     `).catch(e => console.log('⏭️  Limpeza receitas órfãs de cacau:', e.message));
     console.log('✅ Migration 16: receitas órfãs de cacau removidas');
 
