@@ -74,7 +74,7 @@ const getMovimentos = async (usuario_id, conta_id, mes, ano) => {
       dp.data_pagamento       AS data,
       dp.valor,
       dp.conciliado,
-      CONCAT(COALESCE(f.nome_razao, f.nome_fantasia, ''), ' — ', COALESCE(id2.nome, d.descricao, '')) AS descricao,
+      CONCAT(COALESCE(f.nome, ''), ' — ', COALESCE(id2.nome, d.descricao, '')) AS descricao,
       fp.nome                 AS forma_pagamento_nome,
       ct.numero               AS conta_numero,
       ct.tipo                 AS conta_tipo,
