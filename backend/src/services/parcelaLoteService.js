@@ -17,7 +17,7 @@ const baixar = async (id, dados, usuario_id) => {
   // Busca dados da parcela para montar a receita
   const [[parcela]] = await db.query(
     `SELECT pl.*, c.comprador_id, c.lote_id,
-       comp.nome_razao AS comprador_nome,
+       comp.nome AS comprador_nome,
        l.numero AS lote_numero, q.nome AS quadra_nome, e.nome AS empreendimento_nome
      FROM parcela_lote pl
      JOIN contrato_lote c ON c.id = pl.contrato_id

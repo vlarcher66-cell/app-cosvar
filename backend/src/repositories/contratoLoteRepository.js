@@ -10,7 +10,7 @@ const findAll = async (usuario_id, filtros = {}) => {
 
   const [rows] = await db.query(
     `SELECT c.*,
-       comp.nome_razao AS comprador_nome,
+       comp.nome AS comprador_nome,
        l.numero AS lote_numero, l.area AS lote_area,
        q.nome AS quadra_nome,
        e.nome AS empreendimento_nome,
@@ -33,7 +33,7 @@ const findAll = async (usuario_id, filtros = {}) => {
 const findById = async (id, usuario_id) => {
   const [[contrato]] = await db.query(
     `SELECT c.*,
-       comp.nome_razao AS comprador_nome, comp.cpf_cnpj, comp.telefone, comp.email,
+       comp.nome AS comprador_nome, comp.cpf_cnpj, comp.telefone, comp.email,
        l.numero AS lote_numero, l.area AS lote_area, l.dimensoes AS lote_dimensoes,
        q.nome AS quadra_nome,
        e.nome AS empreendimento_nome, e.id AS empreendimento_id

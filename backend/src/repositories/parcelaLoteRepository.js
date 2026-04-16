@@ -18,7 +18,7 @@ const findVencidas = async (usuario_id) => {
   const [rows] = await db.query(
     `SELECT pl.*,
        c.id AS contrato_id,
-       comp.nome_razao AS comprador_nome,
+       comp.nome AS comprador_nome,
        l.numero AS lote_numero, q.nome AS quadra_nome, e.nome AS empreendimento_nome
      FROM parcela_lote pl
      JOIN contrato_lote c ON c.id = pl.contrato_id
@@ -39,7 +39,7 @@ const findByMes = async (usuario_id, mes, ano) => {
   const [rows] = await db.query(
     `SELECT pl.*,
        c.id AS contrato_id,
-       comp.nome_razao AS comprador_nome,
+       comp.nome AS comprador_nome,
        l.numero AS lote_numero, q.nome AS quadra_nome, e.nome AS empreendimento_nome
      FROM parcela_lote pl
      JOIN contrato_lote c ON c.id = pl.contrato_id
@@ -48,7 +48,7 @@ const findByMes = async (usuario_id, mes, ano) => {
      JOIN empreendimento e ON e.id = q.empreendimento_id
      JOIN comprador comp ON comp.id = c.comprador_id
      WHERE pl.usuario_id = ? AND pl.data_vencimento BETWEEN ? AND ?
-     ORDER BY pl.data_vencimento, comp.nome_razao`,
+     ORDER BY pl.data_vencimento, comp.nome`,
     [usuario_id, dataInicio, dataFim]
   );
   return rows;

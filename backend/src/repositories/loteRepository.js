@@ -4,7 +4,7 @@ const findByEmpreendimento = async (empreendimento_id) => {
   const [rows] = await db.query(
     `SELECT l.*, q.nome AS quadra_nome, q.empreendimento_id,
        c.id AS contrato_id,
-       comp.nome_razao AS comprador_nome,
+       comp.nome AS comprador_nome,
        c.valor_total, c.num_parcelas, c.status AS contrato_status,
        (SELECT COUNT(*) FROM parcela_lote pl WHERE pl.contrato_id = c.id AND pl.status = 'pago') AS parcelas_pagas,
        (SELECT COUNT(*) FROM parcela_lote pl WHERE pl.contrato_id = c.id AND pl.status = 'vencido') AS parcelas_vencidas
