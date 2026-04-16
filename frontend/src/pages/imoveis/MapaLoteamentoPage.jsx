@@ -60,13 +60,17 @@ export default function MapaLoteamentoPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [empData, lotesData] = await Promise.all([
-        empreendimentoService.getOne(id),
-        empreendimentoService.getLotes(id),
-      ]);
+      const empData = await empreendimentoService.getOne(id);
       setEmp(empData);
-      setLotes(lotesData);
-    } catch { toast?.error('Erro ao carregar mapa'); }
+      try {
+        const lotesData = await empreendimentoService.getLotes(id);
+        setLotes(lotesData || []);
+      } catch {
+        setLotes([]);
+      }
+    } catch {
+      toast?.error('Erro ao carregar mapa');
+    }
     finally { setLoading(false); }
   }, [id]);
 
