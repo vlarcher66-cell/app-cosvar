@@ -669,84 +669,91 @@ function TabAPagar({ toast }) {
             <>
               {/* Campos compartilhados */}
               <div className={s.sharedBox}>
-                <div className={s.sharedTitle}>Dados Comuns</div>
-
-                {/* 1. Status — primeiro */}
-                <div className={s.field}>
-                  <label className={s.label}>Status</label>
-                  <div className={s.statusToggle}>
-                    {[
-                      { value: 'pendente', label: 'A Pagar', cls: s.togglePendente },
-                      { value: 'pago',     label: 'Pago',    cls: s.togglePago     },
-                    ].map(opt => (
-                      <button key={opt.value} type="button"
-                        className={`${s.toggleBtn} ${shared.status === opt.value ? `${opt.cls} ${s.toggleActive}` : ''}`}
-                        onClick={() => { setS('status', opt.value); if (opt.value === 'pendente') setS('conta_id', ''); }}>
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
+                <div className={s.sharedTitle}>
+                  <span className={s.modalSectionHeadDot} />
+                  Dados Comuns
                 </div>
-
-                {/* 2. Data + Conta */}
-                <div className={s.grid2}>
+                <div className={s.sharedBody}>
+                  {/* 1. Status */}
                   <div className={s.field}>
-                    <label className={s.label}>
-                      {shared.status === 'pendente' ? 'Data de Previsão' : 'Data de Pagamento'}
-                      <span className={s.req}>*</span>
-                    </label>
-                    <input type="date" className={s.input} value={shared.data}
-                      onChange={e => setS('data', e.target.value)} />
+                    <label className={s.label}>Status</label>
+                    <div className={s.statusToggle}>
+                      {[
+                        { value: 'pendente', label: 'A Pagar', cls: s.togglePendente },
+                        { value: 'pago',     label: 'Pago',    cls: s.togglePago     },
+                      ].map(opt => (
+                        <button key={opt.value} type="button"
+                          className={`${s.toggleBtn} ${shared.status === opt.value ? `${opt.cls} ${s.toggleActive}` : ''}`}
+                          onClick={() => { setS('status', opt.value); if (opt.value === 'pendente') setS('conta_id', ''); }}>
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  <div className={s.field}>
-                    <label className={s.label}>
-                      Conta {shared.status === 'pago' ? <span className={s.req}>*</span> : <span className={s.labelHint}>opcional</span>}
-                    </label>
-                    <select className={s.select} value={shared.conta_id}
-                      onChange={e => setS('conta_id', e.target.value)}
-                      disabled={shared.status === 'pendente'}>
-                      <option value="">{shared.status === 'pendente' ? '— A pagar —' : 'Selecione...'}</option>
-                      {contas.map(c => <option key={c.id} value={c.id}>{c.tipo === 'caixa' ? 'Caixa' : `${c.banco_nome || ''} — ${c.numero}`}</option>)}
-                    </select>
-                  </div>
-                </div>
 
-                {/* 3. Fornecedor + Centro de Custo */}
-                <div className={s.grid2}>
+                  {/* 2. Data + Conta */}
+                  <div className={s.grid2}>
+                    <div className={s.field}>
+                      <label className={s.label}>
+                        {shared.status === 'pendente' ? 'Data de Previsão' : 'Data de Pagamento'}
+                        <span className={s.req}>*</span>
+                      </label>
+                      <input type="date" className={s.input} value={shared.data}
+                        onChange={e => setS('data', e.target.value)} />
+                    </div>
+                    <div className={s.field}>
+                      <label className={s.label}>
+                        Conta {shared.status === 'pago' ? <span className={s.req}>*</span> : <span className={s.labelHint}>opcional</span>}
+                      </label>
+                      <select className={s.select} value={shared.conta_id}
+                        onChange={e => setS('conta_id', e.target.value)}
+                        disabled={shared.status === 'pendente'}>
+                        <option value="">{shared.status === 'pendente' ? '— A pagar —' : 'Selecione...'}</option>
+                        {contas.map(c => <option key={c.id} value={c.id}>{c.tipo === 'caixa' ? 'Caixa' : `${c.banco_nome || ''} — ${c.numero}`}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* 3. Fornecedor + Centro de Custo */}
+                  <div className={s.grid2}>
+                    <div className={s.field}>
+                      <label className={s.label}>Fornecedor</label>
+                      <select className={s.select} value={shared.fornecedor_id} onChange={e => setS('fornecedor_id', e.target.value)}>
+                        <option value="">Nenhum</option>
+                        {fornecedores.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
+                      </select>
+                    </div>
+                    <div className={s.field}>
+                      <label className={s.label}>Centro de Custo</label>
+                      <select className={s.select} value={shared.centro_custo_id} onChange={e => setS('centro_custo_id', e.target.value)}>
+                        <option value="">Nenhum</option>
+                        {centrosCusto.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* 4. Projeto */}
                   <div className={s.field}>
-                    <label className={s.label}>Fornecedor</label>
-                    <select className={s.select} value={shared.fornecedor_id} onChange={e => setS('fornecedor_id', e.target.value)}>
+                    <label className={s.label}>Projeto</label>
+                    <select className={s.select} value={shared.projeto_id} onChange={e => setS('projeto_id', e.target.value)}>
                       <option value="">Nenhum</option>
-                      {fornecedores.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
+                      {projetos.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
                     </select>
                   </div>
-                  <div className={s.field}>
-                    <label className={s.label}>Centro de Custo</label>
-                    <select className={s.select} value={shared.centro_custo_id} onChange={e => setS('centro_custo_id', e.target.value)}>
-                      <option value="">Nenhum</option>
-                      {centrosCusto.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
-                    </select>
-                  </div>
-                </div>
-
-                {/* 4. Projeto */}
-                <div className={s.field}>
-                  <label className={s.label}>Projeto</label>
-                  <select className={s.select} value={shared.projeto_id} onChange={e => setS('projeto_id', e.target.value)}>
-                    <option value="">Nenhum</option>
-                    {projetos.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
-                  </select>
                 </div>
               </div>
 
               {/* Carrinho de itens */}
               <div className={s.carrinhoBox}>
                 <div className={s.carrinhoHeader}>
-                  <span className={s.carrinhoTitle}>Itens da Despesa</span>
+                  <span className={s.carrinhoTitle}>
+                    <span className={s.modalSectionHeadDot} />
+                    Itens da Despesa
+                  </span>
                   {subtotalCarrinho > 0 && (
                     <div className={s.carrinhoTotais}>
                       {descontoCarrinho > 0 && <span className={s.carrinhoSubtotal}>Subtotal: {formatCurrency(subtotalCarrinho)}</span>}
-                      {descontoCarrinho > 0 && <span className={s.carrinhoDesconto}>- {formatCurrency(descontoCarrinho)}</span>}
+                      {descontoCarrinho > 0 && <span className={s.carrinhoDesconto}>− {formatCurrency(descontoCarrinho)}</span>}
                       <span className={s.carrinhoTotal}>Total: <strong>{formatCurrency(totalCarrinho)}</strong></span>
                     </div>
                   )}
