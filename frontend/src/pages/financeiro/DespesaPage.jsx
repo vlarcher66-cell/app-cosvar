@@ -80,10 +80,11 @@ const newKey = () => ++_keyCounter;
 
 /* ── ItemSearchRow — linha do carrinho com busca de item ── */
 function ItemSearchRow({ row, todosItens, onChange, onRemove, canRemove }) {
-  const [query, setQuery]         = useState('');
+  const [query, setQuery]               = useState('');
+  const [grupoFiltro, setGrupoFiltro]   = useState('');
   const [subgrupoFiltro, setSubgrupoFiltro] = useState('');
-  const [dropOpen, setDropOpen]   = useState(false);
-  const [dropPos, setDropPos]     = useState({ top: 0, left: 0, width: 0 });
+  const [dropOpen, setDropOpen]         = useState(false);
+  const [dropPos, setDropPos]           = useState({ top: 0, left: 0, width: 0 });
   const ref     = useRef(null);
   const inputRef = useRef(null);
 
@@ -93,12 +94,20 @@ function ItemSearchRow({ row, todosItens, onChange, onRemove, canRemove }) {
     return () => document.removeEventListener('mousedown', h);
   }, []);
 
-  // Lista única de subgrupos disponíveis nos itens
+  // Grupos únicos
+  const grupos = [...new Map(
+    todosItens.filter(it => it.grupo_id).map(it => [it.grupo_id, { id: it.grupo_id, nome: it.grupo_nome }])
+  ).values()].sort((a, b) => a.nome.localeCompare(b.nome));
+
+  // Subgrupos filtrados pelo grupo selecionado
   const subgrupos = [...new Map(
-    todosItens.filter(it => it.subgrupo_id).map(it => [it.subgrupo_id, { id: it.subgrupo_id, nome: it.subgrupo_nome }])
+    todosItens
+      .filter(it => it.subgrupo_id && (!grupoFiltro || String(it.grupo_id) === String(grupoFiltro)))
+      .map(it => [it.subgrupo_id, { id: it.subgrupo_id, nome: it.subgrupo_nome }])
   ).values()].sort((a, b) => a.nome.localeCompare(b.nome));
 
   const filtrados = todosItens.filter(it => {
+    if (grupoFiltro    && String(it.grupo_id)    !== String(grupoFiltro))    return false;
     if (subgrupoFiltro && String(it.subgrupo_id) !== String(subgrupoFiltro)) return false;
     if (!query) return true;
     return it.nome.toLowerCase().includes(query.toLowerCase()) ||
@@ -156,14 +165,24 @@ function ItemSearchRow({ row, todosItens, onChange, onRemove, canRemove }) {
           </div>
         ) : (
           <div className={s.itemSearch}>
-            <select
-              className={s.itemSubgrupoSelect}
-              value={subgrupoFiltro}
-              onChange={e => { setSubgrupoFiltro(e.target.value); abrirDrop(); }}
-            >
-              <option value="">Todos os subgrupos</option>
-              {subgrupos.map(sg => <option key={sg.id} value={sg.id}>{sg.nome}</option>)}
-            </select>
+            <div className={s.itemFiltros}>
+              <select
+                className={s.itemSubgrupoSelect}
+                value={grupoFiltro}
+                onChange={e => { setGrupoFiltro(e.target.value); setSubgrupoFiltro(''); abrirDrop(); }}
+              >
+                <option value="">Todos os grupos</option>
+                {grupos.map(g => <option key={g.id} value={g.id}>{g.nome}</option>)}
+              </select>
+              <select
+                className={s.itemSubgrupoSelect}
+                value={subgrupoFiltro}
+                onChange={e => { setSubgrupoFiltro(e.target.value); abrirDrop(); }}
+              >
+                <option value="">Todos os subgrupos</option>
+                {subgrupos.map(sg => <option key={sg.id} value={sg.id}>{sg.nome}</option>)}
+              </select>
+            </div>
             <input
               ref={inputRef}
               className={s.input}
