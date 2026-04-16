@@ -608,21 +608,14 @@ const runMigrations = async () => {
         await db.query(`DELETE l FROM lote l JOIN quadra q ON q.id = l.quadra_id WHERE q.empreendimento_id = ?`, [empSJ4.id]);
         await db.query(`DELETE FROM quadra WHERE empreendimento_id = ?`, [empSJ4.id]);
 
-        // São José — quadras com letras e quantidade de lotes por quadra
-        // Baseado na planta: quadras A-L (12 quadras) com lotes numerados
+        // São José — quadras A-F com lotes numerados
         const quadrasSJ = [
-          { nome: 'A', lotes: 20 },
-          { nome: 'B', lotes: 20 },
-          { nome: 'C', lotes: 18 },
-          { nome: 'D', lotes: 20 },
-          { nome: 'E', lotes: 20 },
-          { nome: 'F', lotes: 20 },
-          { nome: 'G', lotes: 18 },
-          { nome: 'H', lotes: 16 },
-          { nome: 'I', lotes: 16 },
-          { nome: 'J', lotes: 14 },
-          { nome: 'K', lotes: 14 },
-          { nome: 'L', lotes: 12 },
+          { nome: 'A', lotes: 35 },
+          { nome: 'B', lotes: 40 },
+          { nome: 'C', lotes: 38 },
+          { nome: 'D', lotes: 35 },
+          { nome: 'E', lotes: 30 },
+          { nome: 'F', lotes: 25 },
         ];
 
         for (const { nome, lotes } of quadrasSJ) {
@@ -637,7 +630,7 @@ const runMigrations = async () => {
           }
           await db.query(`INSERT INTO lote (quadra_id, numero, status, usuario_id) VALUES ?`, [values]);
         }
-        console.log(`✅ Migration 36: quadras do São José corrigidas para letras A-L`);
+        console.log(`✅ Migration 36: quadras do São José corrigidas para letras A-F`);
       } else {
         console.log(`⏭️  Migration 36: quadras do São José já têm letras`);
       }
