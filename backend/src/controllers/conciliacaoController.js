@@ -15,8 +15,8 @@ const getMovimentos = async (req, res, next) => {
 const setConciliado = async (req, res, next) => {
   try {
     const { tipo, id } = req.params;
-    const { conciliado } = req.body;
-    await service.setConciliado(req.user.id, tipo, id, conciliado);
+    const { conciliado, receita_id } = req.body;
+    await service.setConciliado(req.user.id, tipo, id, conciliado, receita_id);
     return success(res, null, 'Conciliação atualizada');
   } catch (err) {
     if (err.statusCode) return error(res, err.message, err.statusCode);
