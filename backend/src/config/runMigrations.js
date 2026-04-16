@@ -125,17 +125,23 @@ const runMigrations = async () => {
     `).catch(e => console.log('⏭️  Limpeza duplicatas categoria:', e.message));
 
     // 16. Remove receitas de venda de cacau órfãs:
-    //   (a) cacau_baixa_id NULL com descrição automática de venda
-    //   (b) cacau_baixa_id preenchido mas a baixa não existe mais (CASCADE não pegou)
-    await db.query(`
-      DELETE FROM receita
-      WHERE descricao LIKE 'Venda de cacau%'
-        AND (
-          cacau_baixa_id IS NULL
-          OR cacau_baixa_id NOT IN (SELECT id FROM cacau_baixa)
-        )
-    `).catch(e => console.log('⏭️  Limpeza receitas órfãs de cacau:', e.message));
-    console.log('✅ Migration 16: receitas órfãs de cacau removidas');
+    //   (a) sem cacau_baixa_id vinculado a uma baixa existente
+    //   (b) categoria é Cacau/Venda (geradas automaticamente)
+    const [catCacau] = await db.query(
+      `SELECT id FROM categoria_receita WHERE nome = 'Cacau' AND tipo = 'Venda' LIMIT 1`
+    );
+    if (catCacau.length > 0) {
+      const catId = catCacau[0].id;
+      const [del] = await db.query(`
+        DELETE FROM receita
+        WHERE categoria_id = ?
+          AND (
+            cacau_baixa_id IS NULL
+            OR cacau_baixa_id NOT IN (SELECT id FROM cacau_baixa)
+          )
+      `, [catId]);
+      console.log(`✅ Migration 16: ${del.affectedRows} receitas órfãs de cacau removidas`);
+    }
 
     console.log('🎉 Todas as migrations concluídas');
   } catch (err) {
