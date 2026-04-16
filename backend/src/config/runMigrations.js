@@ -538,6 +538,10 @@ const runMigrations = async () => {
       console.log(`✅ Migration 32: quadras São Francisco verificadas`);
     }
 
+    // 33. Log dos empreendimentos existentes para debug
+    const [emps] = await db.query(`SELECT id, nome FROM empreendimento ORDER BY id`);
+    console.log('📋 Empreendimentos no banco:', JSON.stringify(emps));
+
     console.log('🎉 Todas as migrations concluídas');
   } catch (err) {
     console.error('❌ Erro fatal nas migrations:', err.message);

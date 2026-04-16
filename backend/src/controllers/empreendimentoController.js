@@ -17,6 +17,8 @@ const getOne = async (req, res, next) => {
 
 const getLotes = async (req, res, next) => {
   try {
+    const emp = await service.findById(req.params.id);
+    if (!emp) return error(res, 'Empreendimento não encontrado', 404);
     const lotes = await loteService.findByEmpreendimento(req.params.id, req.user.id);
     return success(res, lotes);
   } catch (err) { next(err); }
