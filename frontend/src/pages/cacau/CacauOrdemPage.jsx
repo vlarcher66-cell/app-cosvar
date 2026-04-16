@@ -839,7 +839,12 @@ function TabBaixa({ toast, ano }) {
                         </div>
                         {formas.map(f => (
                           <div key={f.id} className={`${s.fpItem} ${String(p.forma_id) === String(f.id) ? s.fpItemSel : ''}`}
-                            onClick={() => { setParcela(p._id, 'forma_id', String(f.id)); setParcela(p._id, 'dropOpen', false); }}>
+                            onClick={() => {
+                              // Limpa conta se não for compatível com a nova forma
+                              const contaAtual = contas.find(c => String(c.id) === String(p.conta_id));
+                              const contaCompativel = contaAtual && (!contaAtual.formas_ids?.length || contaAtual.formas_ids.includes(f.id));
+                              setParcelas(prev => prev.map(pp => pp._id === p._id ? { ...pp, forma_id: String(f.id), dropOpen: false, conta_id: contaCompativel ? pp.conta_id : '' } : pp));
+                            }}>
                             {editingForma?.id === f.id ? (
                               <div className={s.fpEditRow} onClick={e => e.stopPropagation()}>
                                 <input autoFocus className={s.fpEditInput} value={editFormaVal}
@@ -880,7 +885,10 @@ function TabBaixa({ toast, ano }) {
                 <div className={s.parcelaDetalheRow}>
                   <select className={s.parcelaSelect} value={p.conta_id} onChange={e => setParcela(p._id, 'conta_id', e.target.value)}>
                     <option value="">Conta *</option>
-                    {contas.map(c => (
+                    {(p.forma_id
+                      ? contas.filter(c => !c.formas_ids?.length || c.formas_ids.includes(Number(p.forma_id)))
+                      : contas
+                    ).map(c => (
                       <option key={c.id} value={c.id}>
                         {c.tipo === 'caixa' ? 'Caixa' : c.banco_nome ? `${c.banco_nome}` : c.numero}
                       </option>

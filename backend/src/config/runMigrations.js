@@ -227,6 +227,27 @@ const runMigrations = async () => {
     `).catch(e => console.log('fk_receita_baixa:', e.message));
     console.log('✅ Migration 21: FK receita→cacau_baixa com CASCADE garantido');
 
+    // 22. Tabela conta_forma_pagamento (vínculo conta ↔ formas aceitas)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS conta_forma_pagamento (
+        id                 INT NOT NULL AUTO_INCREMENT,
+        conta_id           INT NOT NULL,
+        forma_pagamento_id INT NOT NULL,
+        PRIMARY KEY (id),
+        UNIQUE KEY uq_conta_forma (conta_id, forma_pagamento_id),
+        KEY idx_cfp_conta (conta_id),
+        KEY idx_cfp_forma (forma_pagamento_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `).catch(e => { if (e.code !== 'ER_TABLE_EXISTS_ERROR') throw e; });
+    console.log('✅ Migration 22: tabela conta_forma_pagamento criada');
+
+    await addFkIfNotExists('conta_forma_pagamento', 'fk_cfp_conta',
+      `FOREIGN KEY (conta_id) REFERENCES conta (id) ON DELETE CASCADE ON UPDATE CASCADE`
+    );
+    await addFkIfNotExists('conta_forma_pagamento', 'fk_cfp_forma',
+      `FOREIGN KEY (forma_pagamento_id) REFERENCES forma_pagamento (id) ON DELETE CASCADE ON UPDATE CASCADE`
+    );
+
     console.log('🎉 Todas as migrations concluídas');
   } catch (err) {
     console.error('❌ Erro fatal nas migrations:', err.message);

@@ -1,2 +1,28 @@
 const { makeController } = require('./makeController');
-module.exports = makeController(require('../services/contaService'));
+const service = require('../services/contaService');
+const { success, error } = require('../utils/apiResponse');
+
+const base = makeController(service);
+
+const getFormas = async (req, res, next) => {
+  try {
+    const data = await service.getFormas(req.params.id);
+    return success(res, data);
+  } catch (err) { if (err.statusCode) return error(res, err.message, err.statusCode); next(err); }
+};
+
+const setFormas = async (req, res, next) => {
+  try {
+    await service.setFormas(req.params.id, req.body.forma_ids || []);
+    return success(res, null, 'Formas atualizadas');
+  } catch (err) { if (err.statusCode) return error(res, err.message, err.statusCode); next(err); }
+};
+
+const findByForma = async (req, res, next) => {
+  try {
+    const data = await service.findByForma(req.user.id, req.query.forma_pagamento_id);
+    return success(res, data);
+  } catch (err) { if (err.statusCode) return error(res, err.message, err.statusCode); next(err); }
+};
+
+module.exports = { ...base, getFormas, setFormas, findByForma };

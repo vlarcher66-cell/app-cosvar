@@ -1,0 +1,49 @@
+.formasSection {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.formasTitle {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.formasList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.formaChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 14px;
+  border-radius: var(--r-full);
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.formaChip:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.formaChipOn {
+  background: rgba(37,99,235,0.10);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.chipCheck {
+  font-size: 0.75rem;
+  font-weight: 800;
+}
