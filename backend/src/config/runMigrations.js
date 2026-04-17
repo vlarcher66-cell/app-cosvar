@@ -760,11 +760,25 @@ const runMigrations = async () => {
       console.log('⏭️  Migration 43: já executada');
     }
 
-    // 33. Log do estado atual das tabelas imobiliárias
-    const [emps]   = await db.query(`SELECT id, nome FROM empreendimento ORDER BY id`).catch(() => [[]]);;
-    const [quadrs] = await db.query(`SELECT id, empreendimento_id, nome FROM quadra ORDER BY id`).catch(() => [[]]);;
-    console.log('📋 Empreendimentos:', JSON.stringify(emps));
-    console.log('📋 Quadras:', JSON.stringify(quadrs));
+    // 44. Garantia permanente — insere marcadores de todas as limpezas anteriores
+    // para que NUNCA sejam re-executadas mesmo em banco novo/restaurado
+    const [[marcador44]] = await db.query(
+      `SELECT COUNT(*) AS cnt FROM empreendimento WHERE nome = '__limpo44__' LIMIT 1`
+    ).catch(() => [[{ cnt: 0 }]]);
+    if (marcador44.cnt === 0) {
+      // Garante que todos os marcadores de limpeza existam
+      for (const m of ['__limpo41__', '__limpo42__', '__limpo43__']) {
+        await db.query(
+          `INSERT IGNORE INTO empreendimento (nome, usuario_id) SELECT ?, id FROM usuario LIMIT 1`, [m]
+        ).catch(() => {});
+      }
+      await db.query(
+        `INSERT INTO empreendimento (nome, usuario_id) SELECT '__limpo44__', id FROM usuario LIMIT 1`
+      ).catch(() => {});
+      console.log('✅ Migration 44: marcadores de limpeza garantidos — dados de produção protegidos');
+    } else {
+      console.log('⏭️  Migration 44: já executada');
+    }
 
     console.log('🎉 Todas as migrations concluídas');
   } catch (err) {
