@@ -64,6 +64,8 @@ export default function MapaLoteamentoPage() {
   const [formas,      setFormas]      = useState([]);
   const [contratoDetalhe, setContratoDetalhe] = useState(null);
 
+  const [aba, setAba] = useState('mapa');
+
   const [formLote,     setFormLote]     = useState(EMPTY_LOTE);
   const [formContrato, setFormContrato] = useState(EMPTY_CONTRATO);
   const [saving, setSaving] = useState(false);
@@ -72,6 +74,15 @@ export default function MapaLoteamentoPage() {
   const [deleting, setDeleting] = useState(false);
   const [modalProposta, setModalProposta] = useState(false);
   const [loteParaProposta, setLoteParaProposta] = useState(null);
+
+  // Gestão de quadras
+  const [quadrasGestao, setQuadrasGestao]     = useState([]);
+  const [loadingQ,      setLoadingQ]          = useState(false);
+  const [novaQuadra,    setNovaQuadra]        = useState('');
+  const [savingQ,       setSavingQ]           = useState(false);
+  const [gerandoQ,      setGerandoQ]          = useState(null); // quadra_id sendo gerado
+  const [formGerar,     setFormGerar]         = useState({ qtd: '', frente: '', fundo: '', preco_m2: '' });
+  const [abrirGerar,    setAbrirGerar]        = useState(null); // quadra_id com form aberto
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -96,6 +107,59 @@ export default function MapaLoteamentoPage() {
     contaService.getAll().then(setContas);
     formaPagamentoService.getAll().then(setFormas);
   }, []);
+
+  const loadQuadras = useCallback(async () => {
+    setLoadingQ(true);
+    try { setQuadrasGestao(await empreendimentoService.getQuadras(id)); }
+    catch { toast?.error('Erro ao carregar quadras'); }
+    finally { setLoadingQ(false); }
+  }, [id]);
+
+  useEffect(() => { if (aba === 'quadras') loadQuadras(); }, [aba, loadQuadras]);
+
+  const handleCreateQuadra = async (e) => {
+    e.preventDefault();
+    if (!novaQuadra.trim()) return;
+    setSavingQ(true);
+    try {
+      await empreendimentoService.createQuadra(id, { nome: novaQuadra.trim().toUpperCase() });
+      toast?.success(`Quadra ${novaQuadra.toUpperCase()} criada`);
+      setNovaQuadra('');
+      loadQuadras();
+    } catch (err) {
+      toast?.error(err?.response?.data?.message || 'Erro ao criar quadra');
+    } finally { setSavingQ(false); }
+  };
+
+  const handleRemoveQuadra = async (q) => {
+    if (!window.confirm(`Remover Quadra ${q.nome} e todos os seus lotes?`)) return;
+    try {
+      await empreendimentoService.removeQuadra(id, q.id);
+      toast?.success(`Quadra ${q.nome} removida`);
+      loadQuadras(); load();
+    } catch (err) {
+      toast?.error(err?.response?.data?.message || 'Erro ao remover quadra');
+    }
+  };
+
+  const handleGerarLotes = async (quadra_id) => {
+    if (!formGerar.qtd) return toast?.error('Informe a quantidade de lotes');
+    setGerandoQ(quadra_id);
+    try {
+      const r = await empreendimentoService.gerarLotes(id, quadra_id, {
+        qtd:      parseInt(formGerar.qtd),
+        frente:   formGerar.frente   || null,
+        fundo:    formGerar.fundo    || null,
+        preco_m2: formGerar.preco_m2 || null,
+      });
+      toast?.success(r.message || 'Lotes criados!');
+      setAbrirGerar(null);
+      setFormGerar({ qtd: '', frente: '', fundo: '', preco_m2: '' });
+      loadQuadras(); load();
+    } catch (err) {
+      toast?.error(err?.response?.data?.message || 'Erro ao gerar lotes');
+    } finally { setGerandoQ(null); }
+  };
 
   const quadras = emp?.quadras || [];
   const quadrasUnicas = [...new Set(lotes.map(l => l.quadra_nome))].sort();
@@ -213,10 +277,117 @@ export default function MapaLoteamentoPage() {
             <p className={s.pageSub}>{emp.cidade}{emp.bairro ? ` — ${emp.bairro}` : ''}</p>
           </div>
         </div>
-        <button className={s.newBtn} onClick={abrirNovoLote}><IcoPlus /> Novo Lote</button>
+        {aba === 'mapa' && (
+          <button className={s.newBtn} onClick={abrirNovoLote}><IcoPlus /> Novo Lote</button>
+        )}
       </div>
 
-      {/* KPIs */}
+      {/* Abas */}
+      <div className={s.abas}>
+        <button className={`${s.abaBtn} ${aba === 'mapa' ? s.abaActive : ''}`} onClick={() => setAba('mapa')}>Mapa de Vendas</button>
+        <button className={`${s.abaBtn} ${aba === 'quadras' ? s.abaActive : ''}`} onClick={() => setAba('quadras')}>Gestão de Quadras</button>
+      </div>
+
+      {/* KPIs — só no mapa */}
+      {aba === 'mapa' && <></> /* bloco abaixo é o mapa */}
+      {aba === 'quadras' && (
+        <div className={s.quadrasGestao}>
+          {/* Form nova quadra */}
+          <form className={s.novaQuadraForm} onSubmit={handleCreateQuadra}>
+            <div className={s.novaQuadraTitle}>Nova Quadra</div>
+            <div className={s.novaQuadraRow}>
+              <input className={s.input} value={novaQuadra}
+                onChange={e => setNovaQuadra(e.target.value)}
+                placeholder="Nome da quadra (ex: A, B, 1, 2...)"
+                maxLength={10} />
+              <button type="submit" className={s.newBtn} disabled={savingQ || !novaQuadra.trim()}>
+                <IcoPlus /> {savingQ ? 'Criando...' : 'Criar Quadra'}
+              </button>
+            </div>
+          </form>
+
+          {/* Lista de quadras */}
+          {loadingQ
+            ? <div className={s.loading}>Carregando quadras...</div>
+            : quadrasGestao.length === 0
+              ? <div className={s.empty}>Nenhuma quadra cadastrada. Crie a primeira acima.</div>
+              : quadrasGestao.map(q => (
+                <div key={q.id} className={s.quadraCard}>
+                  <div className={s.quadraCardHeader}>
+                    <div className={s.quadraCardTitle}>Quadra {q.nome}</div>
+                    <div className={s.quadraCardStats}>
+                      <span className={s.statDisp}>{q.disponiveis} disp.</span>
+                      <span className={s.statRes}>{q.reservados} res.</span>
+                      <span className={s.statVend}>{q.vendidos} vend.</span>
+                      <span className={s.statTotal}>{q.total_lotes} total</span>
+                    </div>
+                    <div className={s.quadraCardActions}>
+                      <button className={s.btnGerarLotes}
+                        onClick={() => { setAbrirGerar(abrirGerar === q.id ? null : q.id); setFormGerar({ qtd: '', frente: '', fundo: '', preco_m2: '' }); }}>
+                        {abrirGerar === q.id ? 'Cancelar' : '+ Gerar Lotes'}
+                      </button>
+                      {q.total_lotes === 0 && (
+                        <button className={s.btnRemoveQ} onClick={() => handleRemoveQuadra(q)} title="Remover quadra">✕</button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Form gerar lotes */}
+                  {abrirGerar === q.id && (
+                    <div className={s.gerarForm}>
+                      <div className={s.gerarGrid}>
+                        <div className={s.gerarField}>
+                          <label>Qtd de Lotes *</label>
+                          <input className={s.input} type="number" min="1" max="200"
+                            value={formGerar.qtd} onChange={e => setFormGerar(p => ({ ...p, qtd: e.target.value }))}
+                            placeholder="Ex: 35" />
+                        </div>
+                        <div className={s.gerarField}>
+                          <label>Frente (m)</label>
+                          <input className={s.input} type="number" step="0.01" min="0"
+                            value={formGerar.frente} onChange={e => setFormGerar(p => ({ ...p, frente: e.target.value }))}
+                            placeholder="Ex: 12" />
+                        </div>
+                        <div className={s.gerarField}>
+                          <label>Fundo (m)</label>
+                          <input className={s.input} type="number" step="0.01" min="0"
+                            value={formGerar.fundo} onChange={e => setFormGerar(p => ({ ...p, fundo: e.target.value }))}
+                            placeholder="Ex: 30" />
+                        </div>
+                        <div className={s.gerarField}>
+                          <label>Preço / m² (R$)</label>
+                          <CurrencyInput className={s.input}
+                            value={formGerar.preco_m2} onChange={e => setFormGerar(p => ({ ...p, preco_m2: e.target.value }))}
+                            placeholder="0,00" />
+                        </div>
+                      </div>
+
+                      {/* Preview do cálculo */}
+                      {formGerar.qtd && formGerar.frente && formGerar.fundo && (
+                        <div className={s.gerarPreview}>
+                          {formGerar.qtd} lotes &nbsp;·&nbsp;
+                          Área: {(parseFloat(formGerar.frente) * parseFloat(formGerar.fundo)).toFixed(0)} m² cada
+                          {formGerar.preco_m2 && (
+                            <> &nbsp;·&nbsp; Valor: <strong>{formatCurrency(parseFloat(formGerar.frente) * parseFloat(formGerar.fundo) * parseFloat(formGerar.preco_m2))}</strong> cada</>
+                          )}
+                        </div>
+                      )}
+
+                      <div className={s.gerarActions}>
+                        <button className={s.newBtn} onClick={() => handleGerarLotes(q.id)}
+                          disabled={gerandoQ === q.id || !formGerar.qtd}>
+                          {gerandoQ === q.id ? 'Gerando...' : `Gerar ${formGerar.qtd || '?'} Lotes`}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))
+          }
+        </div>
+      )}
+
+      {aba === 'mapa' && <>{/* KPIs */}
       <div className={s.kpiRow}>
         {STATUS_LIST.map(st => (
           <div key={st} className={`${s.kpi} ${filtroStatus === st ? s.kpiActive : ''}`}
@@ -295,6 +466,7 @@ export default function MapaLoteamentoPage() {
           </div>
         ))}
       </div>
+      </> /* fim aba mapa */}
 
       {/* Modal detalhe do lote */}
       <AnimatePresence>
