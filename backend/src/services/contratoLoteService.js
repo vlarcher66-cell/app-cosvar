@@ -1,6 +1,8 @@
-const contratoRepo = require('../repositories/contratoLoteRepository');
-const parcelaRepo  = require('../repositories/parcelaLoteRepository');
-const loteRepo     = require('../repositories/loteRepository');
+const contratoRepo  = require('../repositories/contratoLoteRepository');
+const parcelaRepo   = require('../repositories/parcelaLoteRepository');
+const loteRepo      = require('../repositories/loteRepository');
+const docRepo       = require('../repositories/documentoContratoRepository');
+const { cloudinary } = require('../config/cloudinary');
 
 const findAll  = (usuario_id, filtros) => contratoRepo.findAll(usuario_id, filtros);
 const findById = (id, usuario_id)      => contratoRepo.findById(id, usuario_id);
@@ -69,8 +71,17 @@ const rescindir = async (id, usuario_id) => {
 const remove = async (id, usuario_id) => {
   const contrato = await contratoRepo.findById(id, usuario_id);
   if (!contrato) throw { statusCode: 404, message: 'Contrato não encontrado' };
+
+  // Deleta documentos do Cloudinary antes de remover o contrato
+  const docs = await docRepo.findByContrato(id, usuario_id);
+  await Promise.allSettled(
+    docs.filter(d => d.public_id).flatMap(d => [
+      cloudinary.uploader.destroy(d.public_id, { resource_type: 'raw' }),
+      cloudinary.uploader.destroy(d.public_id, { resource_type: 'image' }),
+    ])
+  );
+
   await contratoRepo.remove(id, usuario_id);
-  // Libera o lote se não houver outro contrato ativo
   await loteRepo.updateStatus(contrato.lote_id, 'disponivel', usuario_id);
 };
 
