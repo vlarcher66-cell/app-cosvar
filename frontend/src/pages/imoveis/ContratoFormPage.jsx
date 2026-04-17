@@ -5,7 +5,7 @@ import empreendimentoService from '../../services/empreendimentoService';
 import compradorService from '../../services/compradorService';
 import contratoLoteService from '../../services/contratoLoteService';
 import { useGlobalToast } from '../../components/layout/MainLayout';
-import CurrencyInput from '../../components/shared/CurrencyInput';
+import CurrencyInput from '../../components/ui/CurrencyInput';
 import s from './ContratoFormPage.module.css';
 
 const parseMoney = v => parseFloat(String(v).replace(/\./g, '').replace(',', '.')) || 0;
