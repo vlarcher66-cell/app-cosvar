@@ -604,9 +604,10 @@ const runMigrations = async () => {
       // Verifica se quadras ainda têm nomes numéricos (errado)
       const [[q1]] = await db.query(`SELECT id FROM quadra WHERE empreendimento_id = ? AND nome = '1' LIMIT 1`, [empSJ4.id]);
       if (q1 && u) {
-        // Apaga lotes e quadras antigas
-        await db.query(`DELETE l FROM lote l JOIN quadra q ON q.id = l.quadra_id WHERE q.empreendimento_id = ?`, [empSJ4.id]);
-        await db.query(`DELETE FROM quadra WHERE empreendimento_id = ?`, [empSJ4.id]);
+        // Apaga lotes sem contrato vinculado e quadras antigas
+        await db.query(`DELETE l FROM lote l JOIN quadra q ON q.id = l.quadra_id WHERE q.empreendimento_id = ? AND NOT EXISTS (SELECT 1 FROM contrato_lote cl WHERE cl.lote_id = l.id)`, [empSJ4.id]);
+        // Remove quadras que ficaram sem lotes
+        await db.query(`DELETE FROM quadra WHERE empreendimento_id = ? AND NOT EXISTS (SELECT 1 FROM lote l WHERE l.quadra_id = quadra.id)`, [empSJ4.id]);
 
         // São José — quadras A-F com lotes numerados
         const quadrasSJ = [
