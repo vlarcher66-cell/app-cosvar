@@ -27,7 +27,7 @@ export default function ContratoDetalhePage() {
   const navigate = useNavigate();
   const fileRef  = useRef();
 
-  const [aba,       setAba]       = useState('parcelas');
+  const [aba,       setAba]       = useState('geral');
   const [contrato,  setContrato]  = useState(null);
   const [contas,    setContas]    = useState([]);
   const [formas,    setFormas]    = useState([]);
@@ -183,13 +183,48 @@ export default function ContratoDetalhePage() {
 
       {/* Abas */}
       <div className={s.tabs}>
-        <button className={`${s.tab} ${aba === 'parcelas' ? s.tabActive : ''}`} onClick={() => setAba('parcelas')}>
-          Parcelas ({total})
-        </button>
-        <button className={`${s.tab} ${aba === 'documentos' ? s.tabActive : ''}`} onClick={() => setAba('documentos')}>
-          Documentos ({docs.length})
-        </button>
+        <button className={`${s.tab} ${aba === 'geral' ? s.tabActive : ''}`} onClick={() => setAba('geral')}>Geral</button>
+        <button className={`${s.tab} ${aba === 'parcelas' ? s.tabActive : ''}`} onClick={() => setAba('parcelas')}>Parcelas ({total})</button>
+        <button className={`${s.tab} ${aba === 'documentos' ? s.tabActive : ''}`} onClick={() => setAba('documentos')}>Documentos ({docs.length})</button>
       </div>
+
+      {/* Aba Geral */}
+      {aba === 'geral' && (
+        <motion.div className={s.geralGrid} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+          <div className={s.geralCard}>
+            <div className={s.geralCardTitle}>Cliente</div>
+            <div className={s.geralRow}><span>Nome</span><strong>{contrato.comprador_nome || '—'}</strong></div>
+            <div className={s.geralRow}><span>CPF / CNPJ</span><strong>{contrato.cpf_cnpj || '—'}</strong></div>
+            <div className={s.geralRow}><span>Telefone</span><strong>{contrato.telefone || '—'}</strong></div>
+            <div className={s.geralRow}><span>E-mail</span><strong>{contrato.email || '—'}</strong></div>
+          </div>
+
+          <div className={s.geralCard}>
+            <div className={s.geralCardTitle}>Imóvel</div>
+            <div className={s.geralRow}><span>Empreendimento</span><strong>{contrato.empreendimento_nome}</strong></div>
+            <div className={s.geralRow}><span>Quadra</span><strong>{contrato.quadra_nome}</strong></div>
+            <div className={s.geralRow}><span>Lote</span><strong>{contrato.lote_numero}</strong></div>
+            {contrato.lote_area && <div className={s.geralRow}><span>Área</span><strong>{contrato.lote_area} m²</strong></div>}
+            {contrato.lote_dimensoes && <div className={s.geralRow}><span>Dimensões</span><strong>{contrato.lote_dimensoes}</strong></div>}
+          </div>
+
+          <div className={s.geralCard}>
+            <div className={s.geralCardTitle}>Contrato</div>
+            <div className={s.geralRow}><span>Data</span><strong>{formatDate(contrato.data_contrato)}</strong></div>
+            <div className={s.geralRow}><span>Status</span>
+              <span className={s.badge} style={{ background: STATUS_COLOR[contrato.status] + '22', color: STATUS_COLOR[contrato.status], border: `1px solid ${STATUS_COLOR[contrato.status]}44` }}>
+                {STATUS_LABEL[contrato.status]}
+              </span>
+            </div>
+            <div className={s.geralRow}><span>Valor Total</span><strong>{formatCurrency(contrato.valor_total)}</strong></div>
+            <div className={s.geralRow}><span>Entrada</span><strong>{formatCurrency(contrato.entrada_valor || 0)}</strong></div>
+            {contrato.entrada_data && <div className={s.geralRow}><span>Data da Entrada</span><strong>{formatDate(contrato.entrada_data)}</strong></div>}
+            <div className={s.geralRow}><span>Nº de Parcelas</span><strong>{contrato.num_parcelas}</strong></div>
+            <div className={s.geralRow}><span>Dia de Vencimento</span><strong>Todo dia {contrato.dia_vencimento}</strong></div>
+            {contrato.observacao && <div className={s.geralRow}><span>Observação</span><strong>{contrato.observacao}</strong></div>}
+          </div>
+        </motion.div>
+      )}
 
       {/* Aba Parcelas */}
       {aba === 'parcelas' && (

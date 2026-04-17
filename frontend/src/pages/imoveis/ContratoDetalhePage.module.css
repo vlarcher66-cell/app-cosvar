@@ -34,6 +34,16 @@
 .btnEstornar { height: 28px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--r-sm); background: transparent; color: var(--text-muted); font-size: 0.75rem; font-weight: 600; cursor: pointer; }
 .btnEstornar:hover { background: var(--surface); color: var(--text); }
 
+/* Aba Geral */
+.geralGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.geralCard { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+.geralCardTitle { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.geralRow { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: var(--text-sm); }
+.geralRow span { color: var(--text-muted); white-space: nowrap; }
+.geralRow strong { color: var(--text); font-weight: 600; text-align: right; }
+
+@media (max-width: 900px) { .geralGrid { grid-template-columns: 1fr; } }
+
 /* Abas */
 .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); }
 .tab { height: 38px; padding: 0 18px; border: none; background: none; color: var(--text-muted); font-size: var(--text-sm); font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
