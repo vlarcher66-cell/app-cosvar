@@ -720,6 +720,26 @@ const runMigrations = async () => {
     await addFkIfNotExists('proposta_lote', 'fk_prop_usuario',
       `FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE`);
 
+    // 41. Limpeza de dados de teste — apaga quadras e lotes (CASCADE remove contratos, parcelas, documentos, propostas)
+    // Mantém empreendimentos intactos
+    const [[jaLimpo]] = await db.query(`SELECT COUNT(*) AS cnt FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'quadra'`);
+    if (jaLimpo.cnt > 0) {
+      const [[marcador]] = await db.query(`SELECT COUNT(*) AS cnt FROM empreendimento WHERE nome = '__limpo41__' LIMIT 1`).catch(() => [[{ cnt: 0 }]]);
+      if (marcador.cnt === 0) {
+        await db.query(`DELETE FROM proposta_lote`).catch(() => {});
+        await db.query(`DELETE FROM parcela_lote`).catch(() => {});
+        await db.query(`DELETE FROM documento_contrato`).catch(() => {});
+        await db.query(`DELETE FROM contrato_lote`).catch(() => {});
+        await db.query(`DELETE FROM lote`).catch(() => {});
+        await db.query(`DELETE FROM quadra`).catch(() => {});
+        // Marca como executado usando uma coluna auxiliar no empreendimento
+        await db.query(`INSERT INTO empreendimento (nome, usuario_id) SELECT '__limpo41__', id FROM usuario LIMIT 1`).catch(() => {});
+        console.log('✅ Migration 41: dados de teste limpos (quadras e lotes removidos, empreendimentos mantidos)');
+      } else {
+        console.log('⏭️  Migration 41: limpeza já executada anteriormente');
+      }
+    }
+
     // 33. Log do estado atual das tabelas imobiliárias
     const [emps]   = await db.query(`SELECT id, nome FROM empreendimento ORDER BY id`).catch(() => [[]]);;
     const [quadrs] = await db.query(`SELECT id, empreendimento_id, nome FROM quadra ORDER BY id`).catch(() => [[]]);;
