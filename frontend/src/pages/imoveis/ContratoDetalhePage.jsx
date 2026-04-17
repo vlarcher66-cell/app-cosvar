@@ -6,9 +6,13 @@ import parcelaLoteService from '../../services/parcelaLoteService';
 import documentoContratoService from '../../services/documentoContratoService';
 import contaService from '../../services/contaService';
 import formaPagamentoService from '../../services/formaPagamentoService';
+import DateInput from '../../components/ui/DateInput';
+import CurrencyInput from '../../components/ui/CurrencyInput';
 import { useGlobalToast } from '../../components/layout/MainLayout';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import s from './ContratoDetalhePage.module.css';
+
+const newParcela = () => ({ _id: Math.random(), conta_id: '', forma_id: '', valor: '' });
 
 const STATUS_COLOR = { ativo: '#10b981', quitado: '#2563eb', rescindido: '#ef4444' };
 const STATUS_LABEL = { ativo: 'Ativo', quitado: 'Quitado', rescindido: 'Rescindido' };
@@ -75,17 +79,42 @@ export default function ContratoDetalhePage() {
     formaPagamentoService.getAll().then(setFormas);
   }, []);
 
+  const [pagamentos, setPagamentos] = useState([newParcela()]);
+
   const abrirBaixa = (parcela) => {
-    setFormBaixa({ data_pagamento: new Date().toISOString().slice(0, 10), conta_id: '', forma_pagamento_id: '', observacao: '' });
+    setFormBaixa({ data_pagamento: new Date().toISOString().slice(0, 10), observacao: '' });
+    setPagamentos([{ ...newParcela(), valor: String(parcela.valor) }]);
     setModal(parcela);
   };
 
+  const setPag = (_id, k, v) => setPagamentos(prev => prev.map(p => p._id === _id ? { ...p, [k]: v, ...(k === 'conta_id' ? { forma_id: '' } : {}) } : p));
+  const addPag = () => setPagamentos(prev => [...prev, newParcela()]);
+  const remPag = (_id) => setPagamentos(prev => prev.filter(p => p._id !== _id));
+
+  const formasDaConta = (conta_id) => {
+    const conta = contas.find(c => String(c.id) === String(conta_id));
+    if (!conta || !conta.formas_ids?.length) return formas;
+    return formas.filter(f => conta.formas_ids.includes(f.id));
+  };
+
+  const totalPagamentos = pagamentos.reduce((acc, p) => acc + (parseFloat(String(p.valor).replace(/\./g,'').replace(',','.')) || 0), 0);
+
   const handleBaixar = async (e) => {
     e.preventDefault();
-    if (!formBaixa.conta_id) return toast?.error('Selecione a conta');
+    if (pagamentos.some(p => !p.conta_id)) return toast?.error('Selecione a conta em todos os pagamentos');
+    if (pagamentos.some(p => !(parseFloat(String(p.valor).replace(/\./g,'').replace(',','.')) > 0))) return toast?.error('Informe o valor em todos os pagamentos');
+    if (Math.abs(totalPagamentos - Number(modal.valor)) > 0.01) return toast?.error(`Total dos pagamentos (${formatCurrency(totalPagamentos)}) deve ser igual ao valor da parcela (${formatCurrency(modal.valor)})`);
     setBaixando(true);
     try {
-      await parcelaLoteService.baixar(modal.id, formBaixa);
+      await parcelaLoteService.baixar(modal.id, {
+        data_pagamento: formBaixa.data_pagamento,
+        observacao: formBaixa.observacao,
+        pagamentos: pagamentos.map(p => ({
+          conta_id: p.conta_id,
+          forma_pagamento_id: p.forma_id || null,
+          valor: parseFloat(String(p.valor).replace(/\./g,'').replace(',','.')) || 0,
+        })),
+      });
       toast?.success('Parcela baixada!');
       setModal(null);
       load();
@@ -385,25 +414,41 @@ export default function ContratoDetalhePage() {
       {modal && (
         <div className={s.overlay} onClick={() => setModal(null)}>
           <form className={s.modal} onClick={e => e.stopPropagation()} onSubmit={handleBaixar}>
-            <div className={s.modalTitle}>Baixar Parcela {modal.numero}</div>
+            <div className={s.modalTitle}>Baixar {modal.numero === 0 ? 'Entrada' : `Parcela ${modal.numero}`}</div>
             <div className={s.modalSub}>{formatCurrency(modal.valor)} — venc. {formatDate(modal.data_vencimento)}</div>
-            <div className={s.mField}><label>Data de Pagamento</label>
-              <input type="date" value={formBaixa.data_pagamento} onChange={e => setFormBaixa(p => ({ ...p, data_pagamento: e.target.value }))} required />
+
+            <div className={s.mField}>
+              <label>Data de Pagamento</label>
+              <DateInput className={s.mInput} value={formBaixa.data_pagamento} onChange={e => setFormBaixa(p => ({ ...p, data_pagamento: e.target.value }))} required />
             </div>
-            <div className={s.mField}><label>Conta *</label>
-              <select value={formBaixa.conta_id} onChange={e => setFormBaixa(p => ({ ...p, conta_id: e.target.value }))} required>
-                <option value="">Selecione...</option>
-                {contas.map(c => <option key={c.id} value={c.id}>{c.banco_nome} — {c.numero}</option>)}
-              </select>
+
+            <div className={s.mFormasLabel}>Formas de Recebimento</div>
+            {pagamentos.map((p, idx) => (
+              <div key={p._id} className={s.mPagRow}>
+                <select className={s.mSelect} value={p.conta_id} onChange={e => setPag(p._id, 'conta_id', e.target.value)} required>
+                  <option value="">Conta...</option>
+                  {contas.map(c => <option key={c.id} value={c.id}>{c.banco_nome} — {c.numero}</option>)}
+                </select>
+                <select className={s.mSelect} value={p.forma_id} onChange={e => setPag(p._id, 'forma_id', e.target.value)}>
+                  <option value="">Forma...</option>
+                  {formasDaConta(p.conta_id).map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
+                </select>
+                <CurrencyInput className={s.mInputValor} value={p.valor} onChange={e => setPag(p._id, 'valor', e.target.value)} placeholder="0,00" />
+                {pagamentos.length > 1 && (
+                  <button type="button" className={s.mRemBtn} onClick={() => remPag(p._id)}>✕</button>
+                )}
+              </div>
+            ))}
+            <div className={s.mPagFooter}>
+              <button type="button" className={s.mAddBtn} onClick={addPag}>+ Adicionar forma</button>
+              <span className={`${s.mTotal} ${Math.abs(totalPagamentos - Number(modal.valor)) > 0.01 ? s.mTotalErro : s.mTotalOk}`}>
+                Total: {formatCurrency(totalPagamentos)}
+              </span>
             </div>
-            <div className={s.mField}><label>Forma de Pagamento</label>
-              <select value={formBaixa.forma_pagamento_id} onChange={e => setFormBaixa(p => ({ ...p, forma_pagamento_id: e.target.value }))}>
-                <option value="">Selecione...</option>
-                {formas.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
-              </select>
-            </div>
-            <div className={s.mField}><label>Observação</label>
-              <input type="text" value={formBaixa.observacao} onChange={e => setFormBaixa(p => ({ ...p, observacao: e.target.value }))} placeholder="Opcional" />
+
+            <div className={s.mField}>
+              <label>Observação</label>
+              <input className={s.mInput} type="text" value={formBaixa.observacao} onChange={e => setFormBaixa(p => ({ ...p, observacao: e.target.value }))} placeholder="Opcional" />
             </div>
             <div className={s.mFooter}>
               <button type="button" className={s.btnCancel} onClick={() => setModal(null)}>Cancelar</button>

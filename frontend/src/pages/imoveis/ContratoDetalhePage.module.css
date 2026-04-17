@@ -103,14 +103,30 @@
 
 /* Modal */
 .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
-.modal { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-xl); padding: 24px; width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 14px; }
+.modal { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-xl); padding: 24px; width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 14px; }
 .modalTitle { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 800; color: var(--text); }
 .modalSub { font-size: var(--text-sm); color: var(--text-muted); margin-top: -8px; }
 
 .mField { display: flex; flex-direction: column; gap: 5px; }
 .mField label { font-size: var(--text-sm); font-weight: 600; color: var(--text-muted); }
-.mField input, .mField select { height: 38px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); color: var(--text); font-size: var(--text-sm); }
-.mField input:focus, .mField select:focus { outline: none; border-color: #6366f1; }
+.mInput { height: 38px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); color: var(--text); font-size: var(--text-sm); width: 100%; }
+.mInput:focus { outline: none; border-color: #6366f1; }
+
+/* Formas de recebimento múltiplas */
+.mFormasLabel { font-size: var(--text-sm); font-weight: 600; color: var(--text-muted); margin-bottom: -6px; }
+.mPagRow { display: grid; grid-template-columns: 1fr 1fr 90px auto; gap: 6px; align-items: center; }
+.mSelect { height: 38px; padding: 0 8px; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); color: var(--text); font-size: var(--text-sm); }
+.mSelect:focus { outline: none; border-color: #6366f1; }
+.mInputValor { height: 38px; padding: 0 8px; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); color: var(--text); font-size: var(--text-sm); text-align: right; width: 100%; }
+.mInputValor:focus { outline: none; border-color: #6366f1; }
+.mRemBtn { width: 30px; height: 30px; border: 1px solid rgba(239,68,68,0.3); border-radius: var(--r-sm); background: transparent; color: #ef4444; font-size: 12px; cursor: pointer; flex-shrink: 0; }
+.mRemBtn:hover { background: rgba(239,68,68,0.08); }
+.mPagFooter { display: flex; justify-content: space-between; align-items: center; }
+.mAddBtn { height: 30px; padding: 0 12px; border: 1px dashed var(--border); border-radius: var(--r-md); background: transparent; color: var(--text-muted); font-size: var(--text-sm); cursor: pointer; }
+.mAddBtn:hover { border-color: #6366f1; color: #6366f1; }
+.mTotal { font-size: var(--text-sm); font-weight: 700; font-family: var(--font-mono); }
+.mTotalOk { color: #10b981; }
+.mTotalErro { color: #ef4444; }
 
 .mFooter { display: flex; justify-content: flex-end; gap: 10px; padding-top: 4px; }
 .btnCancel { height: 38px; padding: 0 18px; border: 1px solid var(--border); border-radius: var(--r-md); background: transparent; color: var(--text-muted); font-size: var(--text-sm); font-weight: 600; cursor: pointer; }
