@@ -3,11 +3,14 @@ const { error } = require('../utils/apiResponse');
 
 const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  // Aceita token via query string (para iframe/download direto)
+  const token = (authHeader && authHeader.startsWith('Bearer '))
+    ? authHeader.split(' ')[1]
+    : req.query.token;
+
+  if (!token) {
     return error(res, 'Token não fornecido', 401);
   }
-
-  const token = authHeader.split(' ')[1];
   try {
     const decoded = verifyToken(token);
     req.user = decoded; // { id, nome, email, perfil }

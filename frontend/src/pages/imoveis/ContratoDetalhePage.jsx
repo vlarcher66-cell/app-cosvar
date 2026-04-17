@@ -339,7 +339,7 @@ export default function ContratoDetalhePage() {
                       <button className={s.btnDl} onClick={() => setPreview(doc)} title="Visualizar">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="14" height="14"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                       </button>
-                      <a href={documentoContratoService.viewUrl(id, doc.id)} target="_blank" rel="noreferrer" className={s.btnDl} title="Download">
+                      <a href={`${documentoContratoService.viewUrl(id, doc.id)}?token=${localStorage.getItem('cosvar_token')}`} target="_blank" rel="noreferrer" className={s.btnDl} title="Download">
                         <IcoDl />
                       </a>
                       <button className={s.btnDelDoc} onClick={() => handleRemoveDoc(doc)} title="Remover">
@@ -371,7 +371,7 @@ export default function ContratoDetalhePage() {
               <img src={preview.url} alt={preview.nome} className={s.previewImg} />
             ) : (
               <iframe
-                src={documentoContratoService.viewUrl(id, preview.id)}
+                src={`${documentoContratoService.viewUrl(id, preview.id)}?token=${localStorage.getItem('cosvar_token')}`}
                 className={s.previewFrame}
                 title={preview.nome}
               />
