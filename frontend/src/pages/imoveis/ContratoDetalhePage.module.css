@@ -52,32 +52,22 @@
 
 /* Documentos */
 .docsArea { display: flex; flex-direction: column; gap: 16px; }
-.uploadForm { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 20px; display: flex; flex-direction: column; gap: 12px; }
-.uploadTitle { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
 .uploadRow { display: grid; grid-template-columns: 2fr 1fr 2fr auto; gap: 12px; align-items: end; }
-.uploadFields { display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: end; }
-.uploadFields .field { display: flex; flex-direction: column; gap: 5px; }
-.uploadFields .field label { font-size: var(--text-sm); font-weight: 600; color: var(--text-muted); }
-.uploadFields .field input, .uploadFields .field select { height: 38px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); color: var(--text); font-size: var(--text-sm); outline: none; }
-.uploadFields .field input:focus, .uploadFields .field select:focus { border-color: #6366f1; }
-.uploadFields .field select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
-.btnUpload { height: 38px; padding: 0 24px; border: none; border-radius: var(--r-md); background: #6366f1; color: #fff; font-size: var(--text-sm); font-weight: 700; cursor: pointer; white-space: nowrap; }
+/* Upload bar — linha única */
+.uploadBar { display: flex; gap: 8px; align-items: center; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 10px 14px; }
+.uploadFileBtn { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border: 1.5px dashed var(--border); border-radius: var(--r-md); background: var(--surface); color: var(--text-muted); font-size: var(--text-sm); cursor: pointer; white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; transition: border-color 0.15s; }
+.uploadFileBtn:hover { border-color: #6366f1; color: var(--text); }
+.uploadFileBtn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.uploadFileBtnOk { border-color: #10b981; color: #10b981; }
+.uploadInput { flex: 1; height: 36px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); color: var(--text); font-size: var(--text-sm); min-width: 0; }
+.uploadInput:focus { outline: none; border-color: #6366f1; }
+.uploadSelect { height: 36px; padding: 0 10px; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); color: var(--text); font-size: var(--text-sm); flex-shrink: 0; }
+.uploadSelect:focus { outline: none; border-color: #6366f1; }
+.btnUpload { height: 36px; padding: 0 20px; border: none; border-radius: var(--r-md); background: #6366f1; color: #fff; font-size: var(--text-sm); font-weight: 700; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
 .btnUpload:hover:not(:disabled) { background: #4f46e5; }
 .btnUpload:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.dropZone { border: 2px dashed var(--border); border-radius: var(--r-lg); padding: 32px 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: var(--surface); transition: border-color 0.15s, background 0.15s; }
-.dropZone:hover { border-color: #6366f1; background: rgba(99,102,241,0.03); }
-.dropZoneOk { border-color: #10b981; background: rgba(16,185,129,0.03); }
-.dropEmpty { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.dropHint { font-size: var(--text-sm); color: var(--text-muted); text-align: center; }
-.dropHint span { color: #6366f1; font-weight: 600; }
-.dropSub { font-size: 0.72rem; color: var(--text-muted); opacity: 0.7; }
-.dropFileInfo { display: flex; align-items: center; gap: 14px; }
-.dropFileIcon { color: #10b981; display: flex; }
-.dropFileName { font-size: var(--text-sm); font-weight: 700; color: var(--text); }
-.dropFileSub { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
-
-@media (max-width: 700px) { .uploadFields { grid-template-columns: 1fr; } }
+@media (max-width: 700px) { .uploadBar { flex-wrap: wrap; } }
 
 .empty { text-align: center; color: var(--text-muted); padding: 40px; font-size: var(--text-sm); }
 

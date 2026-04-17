@@ -274,51 +274,32 @@ export default function ContratoDetalhePage() {
       {/* Aba Documentos */}
       {aba === 'documentos' && (
         <motion.div className={s.docsArea} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-          {/* Form upload */}
-          <form className={s.uploadForm} onSubmit={handleUpload}>
-            <div className={s.uploadTitle}>Enviar Documento</div>
+          {/* Form upload — linha única */}
+          <form className={s.uploadBar} onSubmit={handleUpload}>
+            <input type="file" ref={fileRef} accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+              onChange={e => setArquivo(e.target.files[0] || null)} style={{ display: 'none' }} />
 
-            {/* Zona de drop */}
-            <div className={`${s.dropZone} ${arquivo ? s.dropZoneOk : ''}`}
+            <div className={`${s.uploadFileBtn} ${arquivo ? s.uploadFileBtnOk : ''}`}
               onClick={() => fileRef.current?.click()}
               onDragOver={e => e.preventDefault()}
               onDrop={e => { e.preventDefault(); setArquivo(e.dataTransfer.files[0] || null); }}>
-              <input type="file" ref={fileRef} accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                onChange={e => setArquivo(e.target.files[0] || null)} style={{ display: 'none' }} />
-              {arquivo ? (
-                <div className={s.dropFileInfo}>
-                  <span className={s.dropFileIcon}><IcoFile /></span>
-                  <div>
-                    <div className={s.dropFileName}>{arquivo.name}</div>
-                    <div className={s.dropFileSub}>{(arquivo.size / 1024).toFixed(0)} KB — clique para trocar</div>
-                  </div>
-                </div>
-              ) : (
-                <div className={s.dropEmpty}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="32" height="32" style={{ color: '#6366f1', opacity: 0.7 }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  <div className={s.dropHint}>Arraste o arquivo aqui ou <span>clique para selecionar</span></div>
-                  <div className={s.dropSub}>PDF, imagem, DOC — máx. 10MB</div>
-                </div>
-              )}
+              <IcoFile />
+              <span>{arquivo ? arquivo.name : 'Selecionar arquivo...'}</span>
             </div>
 
-            {/* Campos nome e tipo */}
-            <div className={s.uploadFields}>
-              <div className={s.field}>
-                <label>Nome do Documento</label>
-                <input type="text" value={uploadForm.nome} onChange={e => setUploadForm(p => ({ ...p, nome: e.target.value }))} placeholder={arquivo ? arquivo.name : 'Ex: Contrato Assinado'} />
-              </div>
-              <div className={s.field}>
-                <label>Tipo de Documento</label>
-                <select value={uploadForm.tipo} onChange={e => setUploadForm(p => ({ ...p, tipo: e.target.value }))}>
-                  <option value="">Selecione o tipo...</option>
-                  {TIPO_DOC.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-              </div>
-              <button type="submit" className={s.btnUpload} disabled={uploading || !arquivo}>
-                {uploading ? 'Enviando...' : 'Enviar'}
-              </button>
-            </div>
+            <input className={s.uploadInput} type="text" value={uploadForm.nome}
+              onChange={e => setUploadForm(p => ({ ...p, nome: e.target.value }))}
+              placeholder={arquivo ? arquivo.name : 'Nome do documento'} />
+
+            <select className={s.uploadSelect} value={uploadForm.tipo}
+              onChange={e => setUploadForm(p => ({ ...p, tipo: e.target.value }))}>
+              <option value="">Tipo...</option>
+              {TIPO_DOC.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+
+            <button type="submit" className={s.btnUpload} disabled={uploading || !arquivo}>
+              {uploading ? '...' : 'Enviar'}
+            </button>
           </form>
 
           {/* Uso Cloudinary */}
