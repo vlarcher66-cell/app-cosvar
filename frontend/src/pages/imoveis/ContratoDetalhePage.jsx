@@ -246,9 +246,17 @@ export default function ContratoDetalhePage() {
                 </select>
               </div>
               <div className={s.field}>
-                <label>Arquivo (PDF, imagem, doc) — máx. 10MB</label>
-                <input type="file" ref={fileRef} accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                  onChange={e => setArquivo(e.target.files[0] || null)} />
+                <label>Arquivo</label>
+                <div className={s.dropZone} onClick={() => fileRef.current?.click()}
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={e => { e.preventDefault(); setArquivo(e.dataTransfer.files[0] || null); }}>
+                  <input type="file" ref={fileRef} accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                    onChange={e => setArquivo(e.target.files[0] || null)} style={{ display: 'none' }} />
+                  {arquivo
+                    ? <span className={s.dropFile}><IcoFile /> {arquivo.name}</span>
+                    : <span className={s.dropHint}>Clique ou arraste o arquivo aqui<br/><small>PDF, imagem, doc — máx. 10MB</small></span>
+                  }
+                </div>
               </div>
               <button type="submit" className={s.btnUpload} disabled={uploading}>
                 {uploading ? 'Enviando...' : 'Enviar'}
