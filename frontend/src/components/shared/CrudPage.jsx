@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import PageHeader from './PageHeader';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Plus, Search, X } from 'lucide-react';
 import DataTable from './DataTable';
 import Modal from '../ui/Modal';
 import ConfirmDialog from '../ui/ConfirmDialog';
-import Button from '../ui/Button';
 import Badge from '../ui/Badge';
 import { useGlobalToast } from '../layout/MainLayout';
 import { statusLabel } from '../../utils/formatters';
@@ -54,9 +54,7 @@ export default function CrudPage({ title, subtitle, service, columns, FormCompon
       load();
     } catch (err) {
       toast?.error(err.response?.data?.message || 'Erro ao salvar');
-    } finally {
-      setSaving(false);
-    }
+    } finally { setSaving(false); }
   };
 
   const handleDelete = async () => {
@@ -68,23 +66,19 @@ export default function CrudPage({ title, subtitle, service, columns, FormCompon
       load();
     } catch (err) {
       toast?.error(err.response?.data?.message || 'Erro ao excluir');
-    } finally {
-      setDeleting(false);
-    }
+    } finally { setDeleting(false); }
   };
 
   const actionsCol = {
     key: '_actions',
     label: 'Ações',
-    width: 110,
+    width: 120,
     render: (_, row) => (
       <div className={s.actions}>
         <button className={s.btnEdit} onClick={() => { setEditing(row); setModalOpen(true); }}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           Editar
         </button>
         <button className={s.btnDelete} onClick={() => setDeleteTarget(row)}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
           Excluir
         </button>
       </div>
@@ -100,41 +94,73 @@ export default function CrudPage({ title, subtitle, service, columns, FormCompon
   const entityName = title.split(/[\s—–-]/).filter(Boolean).pop();
 
   return (
-    <div className={s.page}>
+    <motion.div
+      className={s.page}
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+    >
+      {/* Header */}
       <div className={s.topRow}>
-        <div className={s.titleBlock}>
+        <div>
           <h1 className={s.title}>{title}</h1>
           {subtitle && <p className={s.subtitle}>{subtitle}</p>}
         </div>
-        <button className={s.btnNew} onClick={() => { setEditing(null); setModalOpen(true); }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <motion.button
+          className={s.btnNew}
+          onClick={() => { setEditing(null); setModalOpen(true); }}
+          whileHover={{ scale: 1.03, y: -1 }}
+          whileTap={{ scale: 0.97 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+        >
+          <Plus size={15} strokeWidth={2.5} />
           Novo {entityName}
-        </button>
+        </motion.button>
       </div>
 
+      {/* Toolbar */}
       <div className={s.toolbar}>
         <div className={s.searchWrap}>
-          <svg className={s.searchIcon} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <Search size={14} className={s.searchIcon} />
           <input
             className={s.searchInput}
             type="text"
-            placeholder="Buscar..."
+            placeholder={`Buscar em ${title.toLowerCase()}...`}
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
-          {search && (
-            <button className={s.searchClear} onClick={() => setSearch('')}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          )}
+          <AnimatePresence>
+            {search && (
+              <motion.button
+                className={s.searchClear}
+                onClick={() => setSearch('')}
+                initial={{ opacity: 0, scale: 0.7 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.7 }}
+                transition={{ duration: 0.12 }}
+              >
+                <X size={12} strokeWidth={2.5} />
+              </motion.button>
+            )}
+          </AnimatePresence>
         </div>
-        <div className={s.counter}>
-          {loading ? '…' : (
-            search
-              ? <><strong>{filtered.length}</strong> de {rows.length} registro{rows.length !== 1 ? 's' : ''}</>
-              : <><strong>{rows.length}</strong> registro{rows.length !== 1 ? 's' : ''}</>
+
+        <AnimatePresence mode="wait">
+          {!loading && (
+            <motion.div
+              className={s.counter}
+              key={`${filtered.length}-${rows.length}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.2 }}
+            >
+              {search
+                ? <><strong>{filtered.length}</strong> de {rows.length} registro{rows.length !== 1 ? 's' : ''}</>
+                : <><strong>{rows.length}</strong> registro{rows.length !== 1 ? 's' : ''}</>
+              }
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
       </div>
 
       <DataTable
@@ -165,6 +191,6 @@ export default function CrudPage({ title, subtitle, service, columns, FormCompon
         title="Confirmar exclusão"
         message={`Deseja realmente excluir "${deleteTarget?.nome}"? Esta ação não pode ser desfeita.`}
       />
-    </div>
+    </motion.div>
   );
 }

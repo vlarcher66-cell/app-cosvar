@@ -10,31 +10,34 @@
   border-radius: var(--r-lg);
   border: 1px solid var(--border);
   background: var(--surface);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
 }
 
 .table { width: 100%; border-collapse: collapse; }
 
 .th {
   background: var(--topbar-grad-from);
-  color: rgba(200,215,240,0.7);
+  color: rgba(200,215,240,0.65);
   font-size: var(--text-xs);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.07em;
-  padding: 12px 16px;
+  letter-spacing: 0.08em;
+  padding: 13px 16px;
   border-bottom: 1px solid rgba(37,99,235,0.2);
   white-space: nowrap;
   text-align: center;
 }
 .thLeft { text-align: left; }
 
-.tr { transition: background var(--dur) var(--ease); }
+.tr {
+  transition: background 120ms ease;
+  cursor: default;
+}
 .tr:not(:last-child) { border-bottom: 1px solid var(--border-soft); }
-.tr:hover { background: rgba(37,99,235,0.03); }
+.tr:hover { background: rgba(37,99,235,0.035); }
 
 .td {
-  padding: 11px 16px;
+  padding: 12px 16px;
   font-size: var(--text-sm);
   color: var(--text-2);
   vertical-align: middle;
@@ -43,7 +46,7 @@
 }
 .tdLeft { text-align: left; }
 
-/* ── Célula com avatar + nome ── */
+/* ── Avatar + nome ── */
 .nameCell {
   display: flex;
   align-items: center;
@@ -52,34 +55,36 @@
 
 .avatar {
   flex-shrink: 0;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--r-full);
-  background: var(--accent-bg);
+  background: linear-gradient(135deg, var(--accent-bg) 0%, rgba(37,99,235,0.15) 100%);
   color: var(--accent);
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(37,99,235,0.15);
+  border: 1.5px solid rgba(37,99,235,0.2);
+  letter-spacing: 0;
 }
 
 .nameText {
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text);
+  font-size: var(--text-sm);
 }
 
-/* ── Estado vazio ── */
+/* ── Vazio ── */
 .empty {
-  padding: 56px 20px;
+  padding: 60px 20px;
   text-align: center;
 }
 .emptyInner {
-  display: flex;
+  display: inline-flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 10px;
   color: var(--text-faint);
   font-size: var(--text-sm);
 }
@@ -88,6 +93,6 @@
 @media (max-width: 768px) {
   .wrapper { border-radius: var(--r-md); }
   .th { padding: 10px; font-size: 0.62rem; }
-  .td { padding: 9px 10px; font-size: 0.78rem; }
+  .td { padding: 10px; font-size: 0.78rem; }
   .avatar { width: 26px; height: 26px; font-size: 0.65rem; }
 }
