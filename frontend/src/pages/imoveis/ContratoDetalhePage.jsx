@@ -88,7 +88,12 @@ export default function ContratoDetalhePage() {
   };
 
   const setPag = (_id, k, v) => setPagamentos(prev => prev.map(p => p._id === _id ? { ...p, [k]: v, ...(k === 'conta_id' ? { forma_id: '' } : {}) } : p));
-  const addPag = () => setPagamentos(prev => [...prev, newParcela()]);
+  const addPag = () => {
+    const jaUsado = pagamentos.reduce((acc, p) => acc + (parseFloat(String(p.valor).replace(/\./g,'').replace(',','.')) || 0), 0);
+    const diferenca = Math.max(0, Number(modal?.valor || 0) - jaUsado);
+    const valorRestante = diferenca > 0 ? diferenca.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '';
+    setPagamentos(prev => [...prev, { ...newParcela(), valor: valorRestante }]);
+  };
   const remPag = (_id) => setPagamentos(prev => prev.filter(p => p._id !== _id));
 
   const formasDaConta = (conta_id) => {
