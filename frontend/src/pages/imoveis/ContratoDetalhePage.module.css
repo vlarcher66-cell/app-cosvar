@@ -34,6 +34,40 @@
 .btnEstornar { height: 28px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--r-sm); background: transparent; color: var(--text-muted); font-size: 0.75rem; font-weight: 600; cursor: pointer; }
 .btnEstornar:hover { background: var(--surface); color: var(--text); }
 
+/* Abas */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); }
+.tab { height: 38px; padding: 0 18px; border: none; background: none; color: var(--text-muted); font-size: var(--text-sm); font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tab:hover { color: var(--text); }
+.tabActive { color: #6366f1; border-bottom-color: #6366f1; }
+
+/* Documentos */
+.docsArea { display: flex; flex-direction: column; gap: 16px; }
+.uploadForm { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+.uploadTitle { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+.uploadRow { display: grid; grid-template-columns: 2fr 1fr 2fr auto; gap: 12px; align-items: end; }
+.btnUpload { height: 38px; padding: 0 20px; border: none; border-radius: var(--r-md); background: #6366f1; color: #fff; font-size: var(--text-sm); font-weight: 700; cursor: pointer; white-space: nowrap; }
+.btnUpload:hover:not(:disabled) { background: #4f46e5; }
+.btnUpload:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.empty { text-align: center; color: var(--text-muted); padding: 40px; font-size: var(--text-sm); }
+
+.docList { display: flex; flex-direction: column; gap: 8px; }
+.docItem { display: flex; align-items: center; gap: 12px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 12px 16px; }
+.docIcon { color: #6366f1; flex-shrink: 0; }
+.docInfo { flex: 1; min-width: 0; }
+.docNome { font-size: var(--text-sm); font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.docMeta { display: flex; gap: 10px; margin-top: 2px; font-size: 0.72rem; color: var(--text-muted); }
+.docTipo { background: rgba(99,102,241,0.1); color: #6366f1; border-radius: 99px; padding: 1px 8px; font-weight: 600; }
+.docActions { display: flex; gap: 6px; flex-shrink: 0; }
+.btnDl { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: 1px solid var(--border); border-radius: var(--r-sm); background: transparent; color: var(--text-muted); cursor: pointer; text-decoration: none; }
+.btnDl:hover { background: var(--surface); color: var(--text); }
+.btnDelDoc { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: 1px solid rgba(239,68,68,0.3); border-radius: var(--r-sm); background: transparent; color: #ef4444; cursor: pointer; }
+.btnDelDoc:hover { background: rgba(239,68,68,0.1); }
+
+@media (max-width: 700px) {
+  .uploadRow { grid-template-columns: 1fr; }
+}
+
 /* Modal */
 .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
 .modal { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-xl); padding: 24px; width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 14px; }

@@ -665,6 +665,30 @@ const runMigrations = async () => {
     // comprador_id era NOT NULL, precisa ser nullable pois novos contratos usam cliente_imovel_id
     await makeColumnNullable('contrato_lote', 'comprador_id', 'INT');
 
+    // 39. Tabela documento_contrato (arquivos vinculados a contratos de lote)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS documento_contrato (
+        id           INT          NOT NULL AUTO_INCREMENT,
+        contrato_id  INT          NOT NULL,
+        nome         VARCHAR(200) NOT NULL,
+        tipo         VARCHAR(80)  NULL,
+        url          TEXT         NOT NULL,
+        public_id    VARCHAR(200) NOT NULL,
+        tamanho      INT          NULL,
+        usuario_id   INT          NOT NULL,
+        created_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        KEY idx_doc_contrato (contrato_id),
+        KEY idx_doc_usuario (usuario_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    `);
+    console.log('✅ Migration 39: tabela documento_contrato criada');
+
+    await addFkIfNotExists('documento_contrato', 'fk_doc_contrato',
+      `FOREIGN KEY (contrato_id) REFERENCES contrato_lote(id) ON DELETE CASCADE`);
+    await addFkIfNotExists('documento_contrato', 'fk_doc_usuario',
+      `FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE`);
+
     // 33. Log do estado atual das tabelas imobiliárias
     const [emps]   = await db.query(`SELECT id, nome FROM empreendimento ORDER BY id`).catch(() => [[]]);;
     const [quadrs] = await db.query(`SELECT id, empreendimento_id, nome FROM quadra ORDER BY id`).catch(() => [[]]);;
