@@ -142,7 +142,12 @@ export default function ReceitaPage() {
       render: (_, row) => row.cacau_baixa_id
         ? <span className={s.cellVinculada} title="Gerada automaticamente pela venda de cacau">🔒 {row.cacau_venda_numero || 'Cacau'}</span>
         : row.parcela_lote_id
-          ? <span className={s.cellImovel} title={row.imovel_origem}>🏠 {row.imovel_origem || 'Imóvel'}</span>
+          ? (() => {
+              const orig = row.imovel_origem || '';
+              const iniciais = orig.replace(/^([^—]+) —.*$/, '$1').trim().split(' ').map(w => w[0]).join('').toUpperCase();
+              const loc = orig.replace(/^.*?(Qd\..+)$/, '$1');
+              return <span className={s.cellImovel} title={orig}>IMV — {iniciais} {loc || 'Imóvel'}</span>;
+            })()
           : <span className={s.cellOrigemManual}>Manual</span> },
     { key: 'categoria_nome', label: 'Categoria', render: v => <span className={s.cellCategoria}>{v || '—'}</span> },
     { key: 'descricao_nome', label: 'Descrição', render: v => v || '—' },
