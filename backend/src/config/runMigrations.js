@@ -538,10 +538,9 @@ const runMigrations = async () => {
       console.log(`✅ Migration 32: quadras São Francisco verificadas`);
     }
 
-    // 34. Semeia lotes do São José baseado na planta (se ainda não existem)
-    const [[empSJ3]] = await db.query(`SELECT id FROM empreendimento WHERE nome = 'Loteamento São José' LIMIT 1`);
-    if (empSJ3) {
-      const [[lotesExistem]] = await db.query(`SELECT COUNT(*) AS cnt FROM lote l JOIN quadra q ON q.id = l.quadra_id WHERE q.empreendimento_id = ?`, [empSJ3.id]);
+    // 34. DESATIVADO — lotes gerenciados pelo sistema, não por migration
+    if (false) {
+      const [[lotesExistem]] = await db.query(`SELECT 0 AS cnt`);
       if (lotesExistem.cnt === 0) {
         const [[u]] = await db.query(`SELECT id FROM usuario LIMIT 1`);
         if (u) {
@@ -569,10 +568,9 @@ const runMigrations = async () => {
       }
     }
 
-    // 35. Semeia lotes do São Francisco baseado na planta (se ainda não existem)
-    const [[empSF3]] = await db.query(`SELECT id FROM empreendimento WHERE nome = 'Loteamento São Francisco' LIMIT 1`);
-    if (empSF3) {
-      const [[lotesExistem]] = await db.query(`SELECT COUNT(*) AS cnt FROM lote l JOIN quadra q ON q.id = l.quadra_id WHERE q.empreendimento_id = ?`, [empSF3.id]);
+    // 35. DESATIVADO — lotes gerenciados pelo sistema, não por migration
+    if (false) {
+      const [[lotesExistem]] = await db.query(`SELECT 0 AS cnt`);
       if (lotesExistem.cnt === 0) {
         const [[u]] = await db.query(`SELECT id FROM usuario LIMIT 1`);
         if (u) {
@@ -597,9 +595,10 @@ const runMigrations = async () => {
       }
     }
 
-    // 36. Corrige quadras do São José: de números para letras + recria lotes
-    const [[empSJ4]] = await db.query(`SELECT id FROM empreendimento WHERE nome = 'Loteamento São José' LIMIT 1`);
-    if (empSJ4) {
+    // 36. DESATIVADO — quadras e lotes gerenciados pelo sistema, não por migration
+    if (false) {
+      const empSJ4 = null;
+      if (empSJ4) {
       const [[u]] = await db.query(`SELECT id FROM usuario LIMIT 1`);
       // Verifica se quadras ainda têm nomes numéricos (errado)
       const [[q1]] = await db.query(`SELECT id FROM quadra WHERE empreendimento_id = ? AND nome = '1' LIMIT 1`, [empSJ4.id]);
