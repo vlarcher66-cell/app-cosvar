@@ -9,6 +9,7 @@ const findAll = async () => {
        (SELECT COUNT(*) FROM lote l JOIN quadra q ON q.id = l.quadra_id WHERE q.empreendimento_id = e.id AND l.status = 'vendido') AS lotes_vendidos,
        (SELECT COUNT(*) FROM lote l JOIN quadra q ON q.id = l.quadra_id WHERE q.empreendimento_id = e.id AND l.status = 'reservado') AS lotes_reservados
      FROM empreendimento e
+     WHERE e.nome NOT LIKE '__limpo%'
      ORDER BY e.nome`
   );
   return rows;
