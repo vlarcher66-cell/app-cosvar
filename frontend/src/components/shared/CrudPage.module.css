@@ -1,2 +1,168 @@
-.page { display: flex; flex-direction: column; gap: 0; }
-.actions { display: flex; gap: 6px; align-items: center; }
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Top row: título + botão novo ── */
+.topRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.titleBlock {}
+
+.title {
+  font-size: var(--text-xl);
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.btnNew {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-md);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease);
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.25);
+}
+.btnNew:hover {
+  background: var(--accent-dim);
+  box-shadow: var(--shadow-blue);
+  transform: translateY(-1px);
+}
+.btnNew:active { transform: translateY(0); }
+
+/* ── Toolbar: busca + contador ── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.searchWrap {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+  max-width: 380px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-faint);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 9px 36px 9px 36px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  font-size: var(--text-sm);
+  color: var(--text);
+  outline: none;
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  box-sizing: border-box;
+}
+.searchInput::placeholder { color: var(--text-faint); }
+.searchInput:focus {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-accent);
+}
+
+.searchClear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-faint);
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  border-radius: 4px;
+  transition: color var(--dur);
+}
+.searchClear:hover { color: var(--text-muted); }
+
+.counter {
+  font-size: var(--text-xs);
+  color: var(--text-faint);
+  white-space: nowrap;
+  margin-left: auto;
+}
+.counter strong {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* ── Ações na tabela ── */
+.actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+}
+
+.btnEdit, .btnDelete {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: var(--r-sm);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.btnEdit {
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+.btnEdit:hover {
+  background: rgba(37,99,235,0.15);
+}
+
+.btnDelete {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+.btnDelete:hover {
+  background: rgba(220,38,38,0.14);
+}
+
+@media (max-width: 640px) {
+  .topRow { gap: 10px; }
+  .searchWrap { max-width: 100%; }
+  .btnNew { padding: 8px 14px; font-size: 0.78rem; }
+}
