@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import ReactApexChart from 'react-apexcharts';
 import despesaService from '../../services/despesaService';
 import grupoDespesaService from '../../services/grupoDespesaService';
 import itemDespesaService from '../../services/itemDespesaService';
@@ -1061,10 +1062,24 @@ function TabPagas({ toast }) {
 }
 
 /* ══ TAB ANÁLISES ══ */
+const APEX_COLORS = ['#6366f1','#10b981','#f59e0b','#ef4444','#3b82f6','#8b5cf6','#ec4899','#14b8a6'];
+
+function useApexTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    || window.matchMedia('(prefers-color-scheme: dark)').matches;
+  return {
+    background: 'transparent',
+    foreColor: isDark ? '#94a3b8' : '#64748b',
+    borderColor: isDark ? '#1e293b' : '#e2e8f0',
+  };
+}
+
 function TabAnalises({ toast }) {
-  const [rows, setRows]     = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filtros, setFiltros] = useState({ data_inicio: '', data_fim: '' });
+  const [rows, setRows]         = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [filtros, setFiltros]   = useState({ data_inicio: '', data_fim: '' });
+  const [expanded, setExpanded] = useState(null);
+  const theme = useApexTheme();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -1081,7 +1096,6 @@ function TabAnalises({ toast }) {
   const totalPendente = rows.filter(r => r.status === 'pendente').reduce((a, r) => a + Number(r.valor||0), 0);
   const totalGeral    = totalPago + totalPendente;
 
-  // Agrupa por grupo
   const porGrupo = Object.values(rows.reduce((acc, r) => {
     const g = r.grupo_nome || 'Sem grupo';
     if (!acc[g]) acc[g] = { grupo: g, pago: 0, pendente: 0 };
@@ -1090,8 +1104,78 @@ function TabAnalises({ toast }) {
     return acc;
   }, {})).sort((a, b) => (b.pago + b.pendente) - (a.pago + a.pendente));
 
+  // Evolução mensal
+  const porMes = Object.entries(rows.reduce((acc, r) => {
+    if (!r.data) return acc;
+    const mes = r.data.slice(0, 7);
+    if (!acc[mes]) acc[mes] = { mes, pago: 0, pendente: 0 };
+    if (r.status === 'pago') acc[mes].pago += Number(r.valor||0);
+    else acc[mes].pendente += Number(r.valor||0);
+    return acc;
+  }, {})).sort(([a], [b]) => a.localeCompare(b)).map(([, v]) => v);
+
+  const fmtBRL = (v) => `R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+
+  // ── BarChart empilhado horizontal por grupo ──
+  const barOptions = {
+    chart: { type: 'bar', toolbar: { show: false }, background: theme.background, fontFamily: 'inherit', animations: { enabled: true, easing: 'easeinout', speed: 600 } },
+    plotOptions: { bar: { horizontal: true, barHeight: '60%', borderRadius: 6, borderRadiusApplication: 'end' } },
+    colors: ['#10b981', '#f59e0b'],
+    dataLabels: { enabled: false },
+    stroke: { show: false },
+    xaxis: {
+      categories: porGrupo.map(g => g.grupo),
+      labels: { formatter: v => fmtBRL(v), style: { colors: theme.foreColor, fontSize: '11px' } },
+      axisBorder: { show: false }, axisTicks: { show: false },
+    },
+    yaxis: { labels: { style: { colors: theme.foreColor, fontSize: '12px', fontWeight: 600 } } },
+    grid: { borderColor: theme.borderColor, strokeDashArray: 4, xaxis: { lines: { show: true } }, yaxis: { lines: { show: false } } },
+    legend: { position: 'top', horizontalAlign: 'left', labels: { colors: theme.foreColor }, markers: { radius: 4 } },
+    tooltip: { theme: 'dark', y: { formatter: fmtBRL } },
+  };
+  const barSeries = [
+    { name: 'Pago',      data: porGrupo.map(g => g.pago) },
+    { name: 'A Pagar',   data: porGrupo.map(g => g.pendente) },
+  ];
+
+  // ── Donut por grupo ──
+  const donutOptions = {
+    chart: { type: 'donut', background: theme.background, fontFamily: 'inherit', animations: { enabled: true, easing: 'easeinout', speed: 700 } },
+    colors: APEX_COLORS,
+    labels: porGrupo.map(g => g.grupo),
+    dataLabels: { enabled: false },
+    legend: { position: 'bottom', labels: { colors: theme.foreColor }, markers: { radius: 4 } },
+    plotOptions: { pie: { donut: { size: '68%', labels: { show: true, total: { show: true, label: 'Total', color: theme.foreColor, formatter: w => fmtBRL(w.globals.seriesTotals.reduce((a, b) => a + b, 0)) } } } } },
+    stroke: { show: false },
+    tooltip: { theme: 'dark', y: { formatter: fmtBRL } },
+  };
+  const donutSeries = porGrupo.map(g => g.pago + g.pendente);
+
+  // ── AreaChart evolução mensal ──
+  const areaOptions = {
+    chart: { type: 'area', toolbar: { show: false }, background: theme.background, fontFamily: 'inherit', animations: { enabled: true, easing: 'easeinout', speed: 700 }, zoom: { enabled: false } },
+    colors: ['#10b981', '#f59e0b'],
+    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.45, opacityTo: 0.05, stops: [0, 100] } },
+    stroke: { curve: 'smooth', width: 2.5 },
+    dataLabels: { enabled: false },
+    xaxis: {
+      categories: porMes.map(m => { const [y, mo] = m.mes.split('-'); return `${mo}/${y.slice(2)}`; }),
+      labels: { style: { colors: theme.foreColor, fontSize: '11px' } },
+      axisBorder: { show: false }, axisTicks: { show: false },
+    },
+    yaxis: { labels: { formatter: v => `R$ ${(v/1000).toFixed(1)}k`, style: { colors: theme.foreColor, fontSize: '11px' } } },
+    grid: { borderColor: theme.borderColor, strokeDashArray: 4 },
+    legend: { position: 'top', horizontalAlign: 'left', labels: { colors: theme.foreColor }, markers: { radius: 4 } },
+    tooltip: { theme: 'dark', y: { formatter: fmtBRL } },
+  };
+  const areaSeries = [
+    { name: 'Pago',    data: porMes.map(m => m.pago) },
+    { name: 'A Pagar', data: porMes.map(m => m.pendente) },
+  ];
+
   return (
     <div className={s.tabContent}>
+      {/* KPIs */}
       <div className={s.kpis}>
         {[
           { label: 'Total Geral',   value: formatCurrency(totalGeral),    icon: <IcoTotal />,   variant: 'total'    },
@@ -1111,6 +1195,7 @@ function TabAnalises({ toast }) {
         ))}
       </div>
 
+      {/* Filtro */}
       <motion.div className={s.filterBar} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.25 }}>
         <div className={s.filterIcon}><IcoFilter /></div>
         <div className={s.filterGroup}>
@@ -1133,22 +1218,97 @@ function TabAnalises({ toast }) {
       ) : porGrupo.length === 0 ? (
         <div className={s.emptyState}>Nenhum dado para exibir</div>
       ) : (
-        <div className={s.analiseGrid}>
-          {porGrupo.map(g => (
-            <div key={g.grupo} className={s.analiseCard}>
-              <div className={s.analiseCardTitle}>{g.grupo}</div>
-              <div className={s.analiseCardTotal}>{formatCurrency(g.pago + g.pendente)}</div>
-              <div className={s.analiseBar}>
-                <div className={s.analiseBarPago}   style={{ width: `${totalGeral ? ((g.pago) / totalGeral * 100) : 0}%` }} />
-                <div className={s.analiseBarPendente} style={{ width: `${totalGeral ? ((g.pendente) / totalGeral * 100) : 0}%` }} />
-              </div>
-              <div className={s.analiseCardDetail}>
-                <span className={s.analiseTagPago}>Pago: {formatCurrency(g.pago)}</span>
-                <span className={s.analiseTagPendente}>A pagar: {formatCurrency(g.pendente)}</span>
-              </div>
+        <>
+          {/* Gráficos principais */}
+          <motion.div className={s.analiseChartGrid}
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.35 }}>
+
+            <div className={s.analiseChartCard}>
+              <div className={s.analiseChartTitle}>Despesas por Grupo</div>
+              <ReactApexChart
+                key={`bar-${porGrupo.length}`}
+                type="bar"
+                options={barOptions}
+                series={barSeries}
+                height={Math.max(200, porGrupo.length * 48 + 60)}
+              />
             </div>
-          ))}
-        </div>
+
+            <div className={s.analiseChartCard}>
+              <div className={s.analiseChartTitle}>Distribuição por Grupo</div>
+              <ReactApexChart
+                key={`donut-${porGrupo.length}`}
+                type="donut"
+                options={donutOptions}
+                series={donutSeries}
+                height={300}
+              />
+            </div>
+          </motion.div>
+
+          {/* Evolução mensal */}
+          {porMes.length > 1 && (
+            <motion.div className={s.analiseChartCard}
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.35 }}>
+              <div className={s.analiseChartTitle}>Evolução Mensal</div>
+              <ReactApexChart
+                key={`area-${porMes.length}`}
+                type="area"
+                options={areaOptions}
+                series={areaSeries}
+                height={220}
+              />
+            </motion.div>
+          )}
+
+          {/* Cards por grupo com expand */}
+          <div className={s.analiseGrid}>
+            {porGrupo.map((g, i) => {
+              const total = g.pago + g.pendente;
+              const pctPago = totalGeral ? (g.pago / totalGeral * 100) : 0;
+              const pctPendente = totalGeral ? (g.pendente / totalGeral * 100) : 0;
+              const isOpen = expanded === g.grupo;
+              return (
+                <motion.div key={g.grupo} className={s.analiseCard}
+                  custom={i} variants={cardVariants} initial="hidden" animate="visible"
+                  onClick={() => setExpanded(isOpen ? null : g.grupo)}
+                  style={{ cursor: 'pointer' }}>
+                  <div className={s.analiseCardHeader}>
+                    <div className={s.analiseCardTitle}>{g.grupo}</div>
+                    <motion.span className={s.analiseCardChevron} animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="6 9 12 15 18 9"/></svg>
+                    </motion.span>
+                  </div>
+                  <div className={s.analiseCardTotal}>{formatCurrency(total)}</div>
+                  <div className={s.analiseBar}>
+                    <motion.div className={s.analiseBarPago} initial={{ width: 0 }} animate={{ width: `${pctPago}%` }} transition={{ duration: 0.7, ease: 'easeOut' }} />
+                    <motion.div className={s.analiseBarPendente} initial={{ width: 0 }} animate={{ width: `${pctPendente}%` }} transition={{ duration: 0.7, ease: 'easeOut', delay: 0.1 }} />
+                  </div>
+                  <div className={s.analiseCardDetail}>
+                    <span className={s.analiseTagPago}>Pago: {formatCurrency(g.pago)}</span>
+                    <span className={s.analiseTagPendente}>A pagar: {formatCurrency(g.pendente)}</span>
+                  </div>
+                  <AnimatePresence>
+                    {isOpen && (
+                      <motion.div className={s.analiseCardExpanded}
+                        initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.25 }}>
+                        <div className={s.analiseCardExpandedRow}>
+                          <span>% do total geral</span>
+                          <strong>{totalGeral ? ((total / totalGeral) * 100).toFixed(1) : 0}%</strong>
+                        </div>
+                        <div className={s.analiseCardExpandedRow}>
+                          <span>Qtd. lançamentos</span>
+                          <strong>{rows.filter(r => (r.grupo_nome || 'Sem grupo') === g.grupo).length}</strong>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })}
+          </div>
+        </>
       )}
     </div>
   );
