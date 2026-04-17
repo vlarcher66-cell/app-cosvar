@@ -62,7 +62,11 @@ const download = async (req, res, next) => {
     const isDownload = req.query.dl === '1';
     const disposition = isDownload ? `attachment; filename="${doc.nome}"` : `inline; filename="${doc.nome}"`;
     res.setHeader('Content-Disposition', disposition);
-    res.setHeader('Content-Type', 'application/octet-stream');
+
+    // Define Content-Type correto para o browser renderizar inline
+    const ext = (doc.nome || '').split('.').pop().toLowerCase();
+    const mimeMap = { pdf: 'application/pdf', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp' };
+    res.setHeader('Content-Type', mimeMap[ext] || 'application/octet-stream');
 
     client.get(doc.url, (stream) => {
       stream.pipe(res);
