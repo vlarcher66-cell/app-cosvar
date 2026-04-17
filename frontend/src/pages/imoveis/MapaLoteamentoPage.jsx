@@ -22,6 +22,12 @@ const IcoPlus    = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentCol
 const IcoEdit    = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
 
 const STATUS_COLOR  = { disponivel: '#10b981', reservado: '#f59e0b', vendido: '#ef4444', rescindido: '#6b7280' };
+const SEM_PRECO_COLOR = '#f59e0b'; // disponível mas sem preço → amarelo (atenção)
+
+const loteColor = (lote) => {
+  if (lote.status === 'disponivel' && !lote.valor) return SEM_PRECO_COLOR;
+  return STATUS_COLOR[lote.status];
+};
 const STATUS_LABEL  = { disponivel: 'Disponível', reservado: 'Reservado', vendido: 'Vendido', rescindido: 'Rescindido' };
 const STATUS_LIST   = ['disponivel', 'reservado', 'vendido', 'rescindido'];
 
@@ -256,11 +262,11 @@ export default function MapaLoteamentoPage() {
                 {grupo.lotes.map(lote => (
                   <motion.button key={lote.id}
                     className={s.loteBtn}
-                    style={{ '--lote-color': STATUS_COLOR[lote.status] }}
+                    style={{ '--lote-color': loteColor(lote) }}
                     onClick={() => abrirDetalhe(lote)}
                     whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.97 }}
-                    title={`Lote ${lote.numero} — ${STATUS_LABEL[lote.status]}${lote.comprador_nome ? ` — ${lote.comprador_nome}` : ''}`}
+                    title={`Lote ${lote.numero} — ${STATUS_LABEL[lote.status]}${!lote.valor && lote.status === 'disponivel' ? ' (sem preço)' : ''}${lote.comprador_nome ? ` — ${lote.comprador_nome}` : ''}`}
                   >
                     <span className={s.loteNum}>{lote.numero}</span>
                     {lote.parcelas_vencidas > 0 && <span className={s.loteAlert}>!</span>}
@@ -274,7 +280,15 @@ export default function MapaLoteamentoPage() {
 
       {/* Legenda */}
       <div className={s.legenda}>
-        {STATUS_LIST.map(st => (
+        <div className={s.legendaItem}>
+          <span className={s.legendaDot} style={{ background: '#10b981' }} />
+          <span>Disponível (com preço)</span>
+        </div>
+        <div className={s.legendaItem}>
+          <span className={s.legendaDot} style={{ background: '#f59e0b' }} />
+          <span>Disponível (sem preço) / Reservado</span>
+        </div>
+        {['vendido', 'rescindido'].map(st => (
           <div key={st} className={s.legendaItem}>
             <span className={s.legendaDot} style={{ background: STATUS_COLOR[st] }} />
             <span>{STATUS_LABEL[st]}</span>
