@@ -740,6 +740,26 @@ const runMigrations = async () => {
       console.log('⏭️  Migration 42: limpeza já executada');
     }
 
+    // 43. Limpeza forçada — remove tudo exceto empreendimentos reais
+    const [[marcador43]] = await db.query(
+      `SELECT COUNT(*) AS cnt FROM empreendimento WHERE nome = '__limpo43__' LIMIT 1`
+    ).catch(() => [[{ cnt: 0 }]]);
+    if (marcador43.cnt === 0) {
+      await db.query(`SET FOREIGN_KEY_CHECKS = 0`);
+      await db.query(`TRUNCATE TABLE proposta_lote`).catch(() => {});
+      await db.query(`TRUNCATE TABLE documento_contrato`).catch(() => {});
+      await db.query(`TRUNCATE TABLE parcela_lote`).catch(() => {});
+      await db.query(`TRUNCATE TABLE contrato_lote`).catch(() => {});
+      await db.query(`TRUNCATE TABLE lote`).catch(() => {});
+      await db.query(`TRUNCATE TABLE quadra`).catch(() => {});
+      await db.query(`SET FOREIGN_KEY_CHECKS = 1`);
+      await db.query(`DELETE FROM empreendimento WHERE nome LIKE '__limpo%'`).catch(() => {});
+      await db.query(`INSERT INTO empreendimento (nome, usuario_id) SELECT '__limpo43__', id FROM usuario LIMIT 1`);
+      console.log('✅ Migration 43: banco limpo — quadras e lotes zerados');
+    } else {
+      console.log('⏭️  Migration 43: já executada');
+    }
+
     // 33. Log do estado atual das tabelas imobiliárias
     const [emps]   = await db.query(`SELECT id, nome FROM empreendimento ORDER BY id`).catch(() => [[]]);;
     const [quadrs] = await db.query(`SELECT id, empreendimento_id, nome FROM quadra ORDER BY id`).catch(() => [[]]);;
