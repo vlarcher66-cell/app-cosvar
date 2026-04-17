@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { formatCurrency } from '../../utils/formatters';
+import CurrencyInput from '../ui/CurrencyInput';
 import clienteImovelService from '../../services/clienteImovelService';
 import propostaLoteService from '../../services/propostaLoteService';
 import s from './ModalProposta.module.css';
@@ -25,7 +26,7 @@ export default function ModalProposta({ lote, onClose, onSaved }) {
   const [saving, setSaving] = useState(false);
   const [clientes, setClientes] = useState([]);
 
-  // Aba Lote
+  // Aba Lote — valor numérico puro (ex: "55000")
   const [valorLote, setValorLote] = useState(String(lote?.valor || ''));
 
   // Aba Cliente — pode selecionar existente ou criar novo
@@ -44,7 +45,7 @@ export default function ModalProposta({ lote, onClose, onSaved }) {
     clienteImovelService.getAll().then(setClientes).catch(() => {});
   }, []);
 
-  const valor = parseBR(valorLote);
+  const valor = parseFloat(valorLote) || 0;
   const descPct = parseFloat(descontoAVista || 0) / 100;
   const valorAVista = valor * (1 - descPct);
   const entPct = parseFloat(entradaPct || 0) / 100;
@@ -133,10 +134,12 @@ export default function ModalProposta({ lote, onClose, onSaved }) {
               </div>
               <div className={s.field}>
                 <label>Valor do Lote (R$) *</label>
-                <input className={s.input} value={valorLote}
+                <CurrencyInput
+                  className={s.input}
+                  value={valorLote}
                   onChange={e => setValorLote(e.target.value)}
-                  placeholder="Ex: 55.000,00" />
-                {valor > 0 && <div className={s.hint}>{formatCurrency(valor)}</div>}
+                  placeholder="0,00"
+                />
               </div>
               <div className={s.nextRow}>
                 <button className={s.btnNext} onClick={() => setAba('cliente')}>Próximo: Cliente →</button>
@@ -199,13 +202,19 @@ export default function ModalProposta({ lote, onClose, onSaved }) {
               <div className={s.paramRow}>
                 <div className={s.field}>
                   <label>Desconto à Vista (%)</label>
-                  <input className={s.input} type="number" step="0.1" min="0" max="100"
-                    value={descontoAVista} onChange={e => setDescontoAVista(e.target.value)} />
+                  <div className={s.inputPct}>
+                    <input className={s.input} type="number" step="0.1" min="0" max="100"
+                      value={descontoAVista} onChange={e => setDescontoAVista(e.target.value)} />
+                    <span className={s.pctSuffix}>%</span>
+                  </div>
                 </div>
                 <div className={s.field}>
                   <label>Entrada (%)</label>
-                  <input className={s.input} type="number" step="1" min="0" max="100"
-                    value={entradaPct} onChange={e => setEntradaPct(e.target.value)} />
+                  <div className={s.inputPct}>
+                    <input className={s.input} type="number" step="1" min="0" max="100"
+                      value={entradaPct} onChange={e => setEntradaPct(e.target.value)} />
+                    <span className={s.pctSuffix}>%</span>
+                  </div>
                 </div>
                 <div className={s.field}>
                   <label>Observação</label>
@@ -238,18 +247,22 @@ export default function ModalProposta({ lote, onClose, onSaved }) {
                     {opcoes.map((op, i) => (
                       <tr key={i} className={opcaoEscolhida === i ? s.rowSelected : ''}>
                         <td>
-                          <input className={s.inputSm} type="number" min="1" value={taxas[i].n}
-                            onChange={e => setN(i, e.target.value)} />
-                          x
+                          <div className={s.inputInlineGroup}>
+                            <input className={s.inputSm} type="number" min="1" value={taxas[i].n}
+                              onChange={e => setN(i, e.target.value)} />
+                            <span className={s.inputInlineSuffix}>x</span>
+                          </div>
                         </td>
                         <td>
-                          <input className={s.inputSm} type="number" step="0.01" min="0" value={taxas[i].taxa}
-                            onChange={e => setTaxa(i, e.target.value)} />
-                          %
+                          <div className={s.inputInlineGroup}>
+                            <input className={s.inputSm} type="number" step="0.01" min="0" value={taxas[i].taxa}
+                              onChange={e => setTaxa(i, e.target.value)} />
+                            <span className={s.inputInlineSuffix}>% a.m.</span>
+                          </div>
                         </td>
                         <td className={s.mono}><strong>{formatCurrency(op.pmt)}</strong></td>
                         <td className={s.mono}>{formatCurrency(op.pmt * op.n + entrada)}</td>
-                        <td>
+                        <td style={{ textAlign: 'center' }}>
                           <input type="radio" name="opcao" checked={opcaoEscolhida === i}
                             onChange={() => setOpcaoEscolhida(i)} />
                         </td>

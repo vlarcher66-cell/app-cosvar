@@ -48,8 +48,17 @@
 .tabela td { padding: 9px 12px; border-top: 1px solid var(--border); vertical-align: middle; }
 .rowSelected td { background: rgba(99,102,241,0.06); }
 .mono { font-family: var(--font-mono); }
-.inputSm { width: 58px; height: 30px; padding: 0 6px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface-2); color: var(--text); font-size: var(--text-sm); text-align: center; margin-right: 4px; }
+.inputSm { width: 58px; height: 30px; padding: 0 6px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface-2); color: var(--text); font-size: var(--text-sm); text-align: center; }
 .inputSm:focus { outline: none; border-color: #6366f1; }
+
+/* Input com sufixo % */
+.inputPct { position: relative; display: flex; align-items: center; }
+.inputPct .input { padding-right: 28px; }
+.pctSuffix { position: absolute; right: 10px; font-size: var(--text-sm); color: var(--text-muted); font-weight: 600; pointer-events: none; }
+
+/* Input inline com sufixo na tabela */
+.inputInlineGroup { display: flex; align-items: center; gap: 5px; }
+.inputInlineSuffix { font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; }
 
 .nextRow { display: flex; justify-content: flex-end; gap: 10px; padding-top: 4px; }
 .btnNext { height: 38px; padding: 0 20px; border: none; border-radius: var(--r-md); background: #6366f1; color: #fff; font-size: var(--text-sm); font-weight: 700; cursor: pointer; }
