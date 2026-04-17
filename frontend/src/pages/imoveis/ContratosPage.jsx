@@ -20,6 +20,7 @@ export default function ContratosPage() {
   const [loading, setLoading] = useState(true);
   const [empreendimentos, setEmpreendimentos] = useState([]);
   const [filtros, setFiltros] = useState({ status: '', empreendimento_id: '' });
+  const [deletando, setDeletando] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -34,6 +35,18 @@ export default function ContratosPage() {
   useEffect(() => { empreendimentoService.getAll().then(setEmpreendimentos); }, []);
 
   const setF = (k, v) => setFiltros(p => ({ ...p, [k]: v }));
+
+  const handleDelete = async (row) => {
+    if (!window.confirm(`Excluir contrato de ${row.comprador_nome || 'cliente'} — Lote ${row.lote_numero}?\n\nEsta ação também remove todas as parcelas.`)) return;
+    setDeletando(row.id);
+    try {
+      await contratoLoteService.remove(row.id);
+      toast?.success('Contrato excluído');
+      load();
+    } catch (err) {
+      toast?.error(err?.response?.data?.message || 'Erro ao excluir contrato');
+    } finally { setDeletando(null); }
+  };
 
   const totalRecebido = rows.reduce((a, r) => a + Number(r.total_recebido || 0), 0);
   const totalContrato = rows.reduce((a, r) => a + Number(r.valor_total || 0), 0);
@@ -56,8 +69,13 @@ export default function ContratosPage() {
         {STATUS_LABEL[v]}
       </span>
     )},
-    { key: '_actions', label: '', width: 60, align: 'center', render: (_, row) => (
-      <button className={s.btnVer} onClick={() => navigate(`/imoveis/contratos/${row.id}`)}>Ver</button>
+    { key: '_actions', label: '', width: 100, align: 'center', render: (_, row) => (
+      <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
+        <button className={s.btnVer} onClick={() => navigate(`/imoveis/contratos/${row.id}`)}>Ver</button>
+        <button className={s.btnDel} onClick={() => handleDelete(row)} disabled={deletando === row.id} title="Excluir contrato">
+          {deletando === row.id ? '...' : '✕'}
+        </button>
+      </div>
     )},
   ];
 
