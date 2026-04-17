@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const ctrl   = require('../controllers/clienteImovelController');
-const auth   = require('../middleware/authMiddleware');
+const { authMiddleware: auth } = require('../middlewares/authMiddleware');
 
 router.use(auth);
 router.get('/',     ctrl.getAll);
