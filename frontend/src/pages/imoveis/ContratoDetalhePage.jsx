@@ -83,7 +83,8 @@ export default function ContratoDetalhePage() {
 
   const abrirBaixa = (parcela) => {
     setFormBaixa({ data_pagamento: new Date().toISOString().slice(0, 10), observacao: '' });
-    setPagamentos([{ ...newParcela(), valor: String(parcela.valor) }]);
+    const vFormatado = Number(parcela.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+    setPagamentos([{ ...newParcela(), valor: vFormatado }]);
     setModal(parcela);
   };
 
