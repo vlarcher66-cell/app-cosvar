@@ -268,32 +268,45 @@ export default function ContratoDetalhePage() {
           {/* Form upload */}
           <form className={s.uploadForm} onSubmit={handleUpload}>
             <div className={s.uploadTitle}>Enviar Documento</div>
-            <div className={s.uploadRow}>
+
+            {/* Zona de drop */}
+            <div className={`${s.dropZone} ${arquivo ? s.dropZoneOk : ''}`}
+              onClick={() => fileRef.current?.click()}
+              onDragOver={e => e.preventDefault()}
+              onDrop={e => { e.preventDefault(); setArquivo(e.dataTransfer.files[0] || null); }}>
+              <input type="file" ref={fileRef} accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                onChange={e => setArquivo(e.target.files[0] || null)} style={{ display: 'none' }} />
+              {arquivo ? (
+                <div className={s.dropFileInfo}>
+                  <span className={s.dropFileIcon}><IcoFile /></span>
+                  <div>
+                    <div className={s.dropFileName}>{arquivo.name}</div>
+                    <div className={s.dropFileSub}>{(arquivo.size / 1024).toFixed(0)} KB — clique para trocar</div>
+                  </div>
+                </div>
+              ) : (
+                <div className={s.dropEmpty}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="32" height="32" style={{ color: '#6366f1', opacity: 0.7 }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <div className={s.dropHint}>Arraste o arquivo aqui ou <span>clique para selecionar</span></div>
+                  <div className={s.dropSub}>PDF, imagem, DOC — máx. 10MB</div>
+                </div>
+              )}
+            </div>
+
+            {/* Campos nome e tipo */}
+            <div className={s.uploadFields}>
               <div className={s.field}>
                 <label>Nome do Documento</label>
-                <input type="text" value={uploadForm.nome} onChange={e => setUploadForm(p => ({ ...p, nome: e.target.value }))} placeholder="Ex: Contrato Assinado" />
+                <input type="text" value={uploadForm.nome} onChange={e => setUploadForm(p => ({ ...p, nome: e.target.value }))} placeholder={arquivo ? arquivo.name : 'Ex: Contrato Assinado'} />
               </div>
               <div className={s.field}>
-                <label>Tipo</label>
+                <label>Tipo de Documento</label>
                 <select value={uploadForm.tipo} onChange={e => setUploadForm(p => ({ ...p, tipo: e.target.value }))}>
-                  <option value="">Selecione...</option>
+                  <option value="">Selecione o tipo...</option>
                   {TIPO_DOC.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
-              <div className={s.field}>
-                <label>Arquivo</label>
-                <div className={s.dropZone} onClick={() => fileRef.current?.click()}
-                  onDragOver={e => e.preventDefault()}
-                  onDrop={e => { e.preventDefault(); setArquivo(e.dataTransfer.files[0] || null); }}>
-                  <input type="file" ref={fileRef} accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                    onChange={e => setArquivo(e.target.files[0] || null)} style={{ display: 'none' }} />
-                  {arquivo
-                    ? <span className={s.dropFile}><IcoFile /> {arquivo.name}</span>
-                    : <span className={s.dropHint}>Clique ou arraste o arquivo aqui<br/><small>PDF, imagem, doc — máx. 10MB</small></span>
-                  }
-                </div>
-              </div>
-              <button type="submit" className={s.btnUpload} disabled={uploading}>
+              <button type="submit" className={s.btnUpload} disabled={uploading || !arquivo}>
                 {uploading ? 'Enviando...' : 'Enviar'}
               </button>
             </div>
