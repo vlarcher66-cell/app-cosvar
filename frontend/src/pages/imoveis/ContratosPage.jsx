@@ -71,6 +71,7 @@ export default function ContratosPage() {
             <p className={s.pageSub}>Contratos de venda de lotes</p>
           </div>
         </div>
+        <button className={s.btnNovo} onClick={() => navigate('/imoveis/contratos/novo')}>+ Novo Contrato</button>
       </div>
 
       <div className={s.kpiRow}>

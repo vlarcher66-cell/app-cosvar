@@ -16,3 +16,5 @@
 .filterSelect { height: 34px; padding: 0 10px; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface-2); color: var(--text); font-size: var(--text-sm); }
 .btnVer { height: 28px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface); color: var(--text-muted); font-size: 0.75rem; cursor: pointer; font-weight: 600; }
 .btnVer:hover { background: var(--surface-2); color: var(--text); }
+.btnNovo { height: 38px; padding: 0 20px; border: none; border-radius: var(--r-md); background: #6366f1; color: #fff; font-size: var(--text-sm); font-weight: 700; cursor: pointer; white-space: nowrap; }
+.btnNovo:hover { background: #4f46e5; }

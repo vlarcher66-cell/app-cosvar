@@ -17,9 +17,11 @@ import ProducaoCacauPage from './pages/cacau/ProducaoCacauPage';
 import CacauOrdemPage    from './pages/cacau/CacauOrdemPage';
 
 // Imóveis
-import LoteamentosPage   from './pages/imoveis/LoteamentosPage';
-import MapaLoteamentoPage from './pages/imoveis/MapaLoteamentoPage';
-import ContratosPage     from './pages/imoveis/ContratosPage';
+import LoteamentosPage      from './pages/imoveis/LoteamentosPage';
+import MapaLoteamentoPage   from './pages/imoveis/MapaLoteamentoPage';
+import ContratosPage        from './pages/imoveis/ContratosPage';
+import ContratoFormPage     from './pages/imoveis/ContratoFormPage';
+import ContratoDetalhePage  from './pages/imoveis/ContratoDetalhePage';
 
 // Cadastros
 import GrupoPage       from './pages/cadastros/GrupoPage';
@@ -72,7 +74,9 @@ export default function App() {
             {/* Imóveis */}
             <Route path="/imoveis/loteamentos"     element={<LoteamentosPage />} />
             <Route path="/imoveis/mapa/:id"        element={<MapaLoteamentoPage />} />
-            <Route path="/imoveis/contratos"       element={<ContratosPage />} />
+            <Route path="/imoveis/contratos"           element={<ContratosPage />} />
+            <Route path="/imoveis/contratos/novo"      element={<ContratoFormPage />} />
+            <Route path="/imoveis/contratos/:id"       element={<ContratoDetalhePage />} />
           </Route>
 
           {/* Fallback */}
