@@ -56,6 +56,11 @@
 .uploadTitle { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
 .uploadRow { display: grid; grid-template-columns: 2fr 1fr 2fr auto; gap: 12px; align-items: end; }
 .uploadFields { display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: end; }
+.uploadFields .field { display: flex; flex-direction: column; gap: 5px; }
+.uploadFields .field label { font-size: var(--text-sm); font-weight: 600; color: var(--text-muted); }
+.uploadFields .field input, .uploadFields .field select { height: 38px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); color: var(--text); font-size: var(--text-sm); outline: none; }
+.uploadFields .field input:focus, .uploadFields .field select:focus { border-color: #6366f1; }
+.uploadFields .field select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
 .btnUpload { height: 38px; padding: 0 24px; border: none; border-radius: var(--r-md); background: #6366f1; color: #fff; font-size: var(--text-sm); font-weight: 700; cursor: pointer; white-space: nowrap; }
 .btnUpload:hover:not(:disabled) { background: #4f46e5; }
 .btnUpload:disabled { opacity: 0.5; cursor: not-allowed; }
