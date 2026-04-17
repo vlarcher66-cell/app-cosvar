@@ -11,13 +11,13 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => {
-    const ext = file.originalname.split('.').pop().toLowerCase();
-    const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
     const baseName = file.originalname.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9]/g, '_');
     return {
       folder: 'cosvar/documentos',
-      resource_type: isImage ? 'image' : 'raw',
-      public_id: `${Date.now()}-${baseName}.${ext}`,
+      resource_type: 'auto',
+      public_id: `${Date.now()}-${baseName}`,
+      use_filename: false,
+      unique_filename: false,
     };
   },
 });

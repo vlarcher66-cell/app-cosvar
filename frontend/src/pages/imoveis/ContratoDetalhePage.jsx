@@ -336,10 +336,10 @@ export default function ContratoDetalhePage() {
                       </div>
                     </div>
                     <div className={s.docActions}>
-                      <button className={s.btnDl} onClick={() => setPreview(doc)} title="Visualizar">
+                      <a href={doc.url} target="_blank" rel="noreferrer" className={s.btnDl} title="Visualizar">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="14" height="14"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                      </button>
-                      <a href={`${documentoContratoService.viewUrl(id, doc.id)}?token=${localStorage.getItem('cosvar_token')}`} target="_blank" rel="noreferrer" className={s.btnDl} title="Download">
+                      </a>
+                      <a href={doc.url} download target="_blank" rel="noreferrer" className={s.btnDl} title="Download">
                         <IcoDl />
                       </a>
                       <button className={s.btnDelDoc} onClick={() => handleRemoveDoc(doc)} title="Remover">
@@ -352,32 +352,6 @@ export default function ContratoDetalhePage() {
             )
           }
         </motion.div>
-      )}
-
-      {/* Modal visualizador de documento */}
-      {preview && (
-        <div className={s.overlay} onClick={() => setPreview(null)}>
-          <div className={s.previewModal} onClick={e => e.stopPropagation()}>
-            <div className={s.previewHeader}>
-              <span className={s.previewNome}>{preview.nome}</span>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <a href={preview.url} download={preview.nome} target="_blank" rel="noreferrer" className={s.btnDl} title="Download">
-                  <IcoDl />
-                </a>
-                <button className={s.btnCancel} onClick={() => setPreview(null)}>✕ Fechar</button>
-              </div>
-            </div>
-            {preview.url.match(/\.(jpg|jpeg|png|gif|webp)/i) ? (
-              <img src={preview.url} alt={preview.nome} className={s.previewImg} />
-            ) : (
-              <iframe
-                src={`${documentoContratoService.viewUrl(id, preview.id)}?token=${localStorage.getItem('cosvar_token')}`}
-                className={s.previewFrame}
-                title={preview.nome}
-              />
-            )}
-          </div>
-        </div>
       )}
 
       {/* Modal baixa */}
