@@ -318,13 +318,15 @@ export default function MapaLoteamentoPage() {
                   <IcoEdit /> Editar Lote
                 </Button>
                 {selected.status === 'disponivel' && (
-                  <Button variant="primary" onClick={() => {
-                    setLoteParaProposta({ ...selected, empreendimento_nome: emp?.nome });
-                    setModalDetalhe(false);
-                    setModalProposta(true);
-                  }}>
-                    Fazer Proposta
-                  </Button>
+                  selected.valor
+                    ? <Button variant="primary" onClick={() => {
+                        setLoteParaProposta({ ...selected, empreendimento_nome: emp?.nome });
+                        setModalDetalhe(false);
+                        setModalProposta(true);
+                      }}>
+                        Fazer Proposta
+                      </Button>
+                    : <div className={s.semValorAviso}>⚠ Defina o valor do lote para fazer proposta</div>
                 )}
                 {contratoDetalhe && (
                   <Button variant="secondary" onClick={() => navigate(`/imoveis/contratos/${contratoDetalhe.id}`)}>
