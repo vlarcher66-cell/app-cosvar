@@ -25,7 +25,14 @@ const STATUS_COLOR  = { disponivel: '#10b981', reservado: '#f59e0b', vendido: '#
 const STATUS_LABEL  = { disponivel: 'Disponível', reservado: 'Reservado', vendido: 'Vendido', rescindido: 'Rescindido' };
 const STATUS_LIST   = ['disponivel', 'reservado', 'vendido', 'rescindido'];
 
-const EMPTY_LOTE = { quadra_id: '', numero: '', area: '', dimensoes: '', valor: '', status: 'disponivel', observacao: '' };
+const EMPTY_LOTE = { quadra_id: '', numero: '', frente: '', fundo: '', area: '', dimensoes: '', preco_m2: '', valor: '', status: 'disponivel', observacao: '' };
+
+// Parseia "12x30" ou "12 x 30" → { frente: 12, fundo: 30 }
+const parseDim = (str) => {
+  const m = String(str || '').replace(/\s/g, '').toLowerCase().match(/^([0-9.,]+)[xX*]([0-9.,]+)/);
+  if (!m) return null;
+  return { frente: parseFloat(m[1].replace(',', '.')), fundo: parseFloat(m[2].replace(',', '.')) };
+};
 const EMPTY_CONTRATO = { comprador_id: '', data_contrato: '', valor_total: '', entrada_valor: '', entrada_data: '', num_parcelas: '12', dia_vencimento: '10', observacao: '' };
 
 export default function MapaLoteamentoPage() {
@@ -115,13 +122,20 @@ export default function MapaLoteamentoPage() {
   // Abre modal de edição de lote
   const abrirEditLote = (lote) => {
     setEditingLote(lote);
+    const dim = parseDim(lote.dimensoes);
+    const precoM2 = (lote.area && lote.valor)
+      ? String((parseFloat(lote.valor) / parseFloat(lote.area)).toFixed(2))
+      : '';
     setFormLote({
-      quadra_id: String(lote.quadra_id),
-      numero: lote.numero,
-      area: lote.area || '',
-      dimensoes: lote.dimensoes || '',
-      valor: lote.valor || '',
-      status: lote.status,
+      quadra_id:  String(lote.quadra_id),
+      numero:     lote.numero,
+      frente:     dim ? String(dim.frente) : '',
+      fundo:      dim ? String(dim.fundo)  : '',
+      area:       lote.area    || '',
+      dimensoes:  lote.dimensoes || '',
+      preco_m2:   precoM2,
+      valor:      lote.valor   || '',
+      status:     lote.status,
       observacao: lote.observacao || '',
     });
     setModalDetalhe(false);
@@ -340,20 +354,73 @@ export default function MapaLoteamentoPage() {
               <input className={s.input} value={formLote.numero} onChange={e => setL('numero', e.target.value)} required placeholder="Ex: 01" />
             </div>
           </div>
+          {/* Dimensões: frente × fundo → calcula área e dimensões */}
+          <div className={s.grid2}>
+            <div className={s.field}>
+              <label className={s.label}>Frente (m)</label>
+              <input className={s.input} type="number" step="0.01" min="0"
+                value={formLote.frente}
+                onChange={e => {
+                  const frente = e.target.value;
+                  const fundo = formLote.fundo;
+                  const area = frente && fundo ? (parseFloat(frente) * parseFloat(fundo)).toFixed(2) : '';
+                  const dim  = frente && fundo ? `${frente}x${fundo}m` : '';
+                  const valor = area && formLote.preco_m2 ? (parseFloat(area) * parseFloat(formLote.preco_m2)).toFixed(2) : formLote.valor;
+                  setFormLote(p => ({ ...p, frente, area, dimensoes: dim, valor }));
+                }}
+                placeholder="Ex: 12" />
+            </div>
+            <div className={s.field}>
+              <label className={s.label}>Fundo (m)</label>
+              <input className={s.input} type="number" step="0.01" min="0"
+                value={formLote.fundo}
+                onChange={e => {
+                  const fundo = e.target.value;
+                  const frente = formLote.frente;
+                  const area = frente && fundo ? (parseFloat(frente) * parseFloat(fundo)).toFixed(2) : '';
+                  const dim  = frente && fundo ? `${frente}x${fundo}m` : '';
+                  const valor = area && formLote.preco_m2 ? (parseFloat(area) * parseFloat(formLote.preco_m2)).toFixed(2) : formLote.valor;
+                  setFormLote(p => ({ ...p, fundo, area, dimensoes: dim, valor }));
+                }}
+                placeholder="Ex: 30" />
+            </div>
+          </div>
+
+          {/* Área calculada + preço/m² → calcula valor total */}
           <div className={s.grid2}>
             <div className={s.field}>
               <label className={s.label}>Área (m²)</label>
-              <input className={s.input} type="number" step="0.01" value={formLote.area} onChange={e => setL('area', e.target.value)} placeholder="360" />
+              <input className={s.input} type="number" step="0.01" min="0"
+                value={formLote.area}
+                onChange={e => {
+                  const area = e.target.value;
+                  const valor = area && formLote.preco_m2 ? (parseFloat(area) * parseFloat(formLote.preco_m2)).toFixed(2) : formLote.valor;
+                  setFormLote(p => ({ ...p, area, valor }));
+                }}
+                placeholder="Calculado automaticamente" />
             </div>
             <div className={s.field}>
-              <label className={s.label}>Dimensões</label>
-              <input className={s.input} value={formLote.dimensoes} onChange={e => setL('dimensoes', e.target.value)} placeholder="12x30m" />
+              <label className={s.label}>Preço por m² (R$)</label>
+              <CurrencyInput className={s.input}
+                value={formLote.preco_m2}
+                onChange={e => {
+                  const preco_m2 = e.target.value;
+                  const valor = formLote.area && preco_m2 ? (parseFloat(formLote.area) * parseFloat(preco_m2)).toFixed(2) : formLote.valor;
+                  setFormLote(p => ({ ...p, preco_m2, valor }));
+                }}
+                placeholder="0,00" />
             </div>
           </div>
+
           <div className={s.grid2}>
             <div className={s.field}>
-              <label className={s.label}>Valor</label>
+              <label className={s.label}>Valor Total (R$)</label>
               <CurrencyInput className={s.input} value={formLote.valor} onChange={e => setL('valor', e.target.value)} placeholder="0,00" />
+              {formLote.area && formLote.valor && (
+                <span className={s.calcHint}>
+                  {formatCurrency(parseFloat(formLote.valor))} — {parseFloat(formLote.area).toFixed(0)} m²
+                </span>
+              )}
             </div>
             <div className={s.field}>
               <label className={s.label}>Status</label>
