@@ -47,6 +47,7 @@
 .tabela th { text-align: left; padding: 8px 12px; background: var(--surface-2); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
 .tabela td { padding: 9px 12px; border-top: 1px solid var(--border); vertical-align: middle; }
 .rowSelected td { background: rgba(99,102,241,0.06); }
+.rowAvista td { background: rgba(16,185,129,0.04); }
 .mono { font-family: var(--font-mono); }
 .inputSm { width: 58px; height: 30px; padding: 0 6px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface-2); color: var(--text); font-size: var(--text-sm); text-align: center; }
 .inputSm:focus { outline: none; border-color: #6366f1; }

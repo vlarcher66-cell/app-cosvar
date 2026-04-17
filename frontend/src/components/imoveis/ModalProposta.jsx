@@ -86,7 +86,7 @@ export default function ModalProposta({ lote, onClose, onSaved }) {
         desconto_avista_pct: parseFloat(descontoAVista || 0),
         entrada_pct: parseFloat(entradaPct || 0),
         entrada_valor: entrada,
-        parcelas_json: opcoes,
+        parcelas_json: [{ n: 0, taxa: 0, pmt: valorAVista, avista: true }, ...opcoes],
         observacao,
       });
       onSaved?.();
@@ -249,11 +249,22 @@ export default function ModalProposta({ lote, onClose, onSaved }) {
                       <th>Parcelas</th>
                       <th>Taxa a.m. (%)</th>
                       <th>Valor da Parcela</th>
-                      <th>Total Financiado</th>
-                      <th>Converter</th>
+                      <th>Total</th>
+                      <th>Sel.</th>
                     </tr>
                   </thead>
                   <tbody>
+                    {/* Linha À Vista */}
+                    <tr className={opcaoEscolhida === 'avista' ? s.rowSelected : s.rowAvista}>
+                      <td><strong style={{ color: '#10b981' }}>À Vista</strong></td>
+                      <td><span style={{ color: '#10b981', fontSize: '0.72rem', fontWeight: 700 }}>{descontoAVista}% de desconto</span></td>
+                      <td className={s.mono}><strong style={{ color: '#10b981' }}>{formatCurrency(valorAVista)}</strong></td>
+                      <td className={s.mono} style={{ color: '#10b981' }}>{formatCurrency(valorAVista)}</td>
+                      <td style={{ textAlign: 'center' }}>
+                        <input type="radio" name="opcao" checked={opcaoEscolhida === 'avista'}
+                          onChange={() => setOpcaoEscolhida('avista')} />
+                      </td>
+                    </tr>
                     {opcoes.map((op, i) => (
                       <tr key={i} className={opcaoEscolhida === i ? s.rowSelected : ''}>
                         <td>
@@ -304,16 +315,23 @@ export default function ModalProposta({ lote, onClose, onSaved }) {
 // Gera HTML para impressão no padrão da proposta COSVAR
 function gerarHtmlProposta({ lote, valorLote, valorAVista, entrada, saldo, descontoAVista, entradaPct, opcoes, nomeCliente, cpf, observacao }) {
   const fmt = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-  const linhasParcelas = opcoes.map(op => {
-    const label = op.taxa > 0
-      ? `${op.n}X  TAXA  ${String(op.taxa.toFixed(2)).replace('.', ',')} a/m:`
-      : `${op.n}X  SEM JUROS:`;
-    return `<tr>
-      <td>${label}</td>
-      <td><strong>${fmt(op.pmt)}</strong></td>
-      <td style="color:#555; font-size:11px">${op.taxa > 0 ? '' : 'SEM JUROS'}</td>
-    </tr>`;
-  }).join('');
+  const linhasParcelas = [
+    `<tr style="background:#f0fdf4">
+      <td><strong>À VISTA (${descontoAVista}% de desconto):</strong></td>
+      <td><strong style="color:#16a34a">${fmt(valorAVista)}</strong></td>
+      <td></td>
+    </tr>`,
+    ...opcoes.map(op => {
+      const label = op.taxa > 0
+        ? `${op.n}X  TAXA  ${String(op.taxa.toFixed(2)).replace('.', ',')} a/m:`
+        : `${op.n}X  SEM JUROS:`;
+      return `<tr>
+        <td>${label}</td>
+        <td><strong>${fmt(op.pmt)}</strong></td>
+        <td style="color:#555; font-size:11px">${op.taxa > 0 ? '' : 'SEM JUROS'}</td>
+      </tr>`;
+    }),
+  ].join('');
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
