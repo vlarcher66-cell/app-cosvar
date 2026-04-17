@@ -49,5 +49,6 @@ router.use('/contratos-lote',   authMiddleware, require('./contratoLoteRoutes'))
 router.use('/parcelas-lote',    authMiddleware, require('./parcelaLoteRoutes'));
 router.use('/clientes-imovel',  authMiddleware, require('./clienteImovelRoutes'));
 router.use('/contratos-lote/:contrato_id/documentos', require('./documentoContratoRoutes'));
+router.use('/propostas-lote',   authMiddleware, require('./propostaLoteRoutes'));
 
 module.exports = router;

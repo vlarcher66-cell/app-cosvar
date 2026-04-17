@@ -17,7 +17,16 @@ const create = async (data) => {
   // Gera as parcelas
   const valorEntrada  = parseFloat(entrada_valor || 0);
   const valorParcelas = parseFloat(valor_total) - valorEntrada;
-  const valorParcela  = parseFloat((valorParcelas / num_parcelas).toFixed(2));
+  const taxa          = parseFloat(data.taxa_juros || 0) / 100; // % a.m.
+
+  // Se taxa > 0: sistema Price (juros compostos); senão: parcela simples
+  let valorParcela;
+  if (taxa > 0 && num_parcelas > 0) {
+    // PMT = PV * i / (1 - (1+i)^-n)
+    valorParcela = parseFloat((valorParcelas * taxa / (1 - Math.pow(1 + taxa, -num_parcelas))).toFixed(2));
+  } else {
+    valorParcela = parseFloat((valorParcelas / num_parcelas).toFixed(2));
+  }
 
   const dataBase = new Date(data_contrato);
   const parcelas = [];

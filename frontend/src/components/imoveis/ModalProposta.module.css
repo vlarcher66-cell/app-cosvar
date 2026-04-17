@@ -1,0 +1,67 @@
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
+.modal { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-xl); width: 100%; max-width: 720px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
+
+.header { display: flex; align-items: flex-start; justify-content: space-between; padding: 20px 24px 16px; border-bottom: 1px solid var(--border); gap: 12px; }
+.title { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 800; color: var(--text); }
+.sub { font-size: var(--text-sm); color: var(--text-muted); margin-top: 2px; }
+.closeBtn { background: none; border: 1px solid var(--border); border-radius: var(--r-sm); width: 32px; height: 32px; cursor: pointer; color: var(--text-muted); font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.closeBtn:hover { background: var(--surface); color: var(--text); }
+
+.tabs { display: flex; gap: 2px; padding: 0 24px; border-bottom: 1px solid var(--border); }
+.tab { height: 40px; padding: 0 18px; border: none; background: none; color: var(--text-muted); font-size: var(--text-sm); font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.tab:hover { color: var(--text); }
+.tabActive { color: #6366f1; border-bottom-color: #6366f1; }
+
+.body { flex: 1; overflow-y: auto; padding: 20px 24px 24px; }
+.abaContent { display: flex; flex-direction: column; gap: 16px; }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.clienteGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.infoBox { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: 10px 14px; display: flex; flex-direction: column; gap: 3px; }
+.infoBox span { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+.infoBox strong { font-size: var(--text-sm); color: var(--text); font-weight: 700; }
+
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: var(--text-sm); font-weight: 600; color: var(--text-muted); }
+.hint { font-size: 0.75rem; color: #10b981; font-weight: 600; }
+.input { height: 38px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); color: var(--text); font-size: var(--text-sm); }
+.input:focus { outline: none; border-color: #6366f1; }
+.select { height: 38px; padding: 0 10px; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); color: var(--text); font-size: var(--text-sm); }
+.select:focus { outline: none; border-color: #6366f1; }
+
+.switchRow { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: 4px; width: fit-content; }
+.switchBtn { height: 30px; padding: 0 16px; border: none; border-radius: var(--r-sm); background: transparent; color: var(--text-muted); font-size: var(--text-sm); font-weight: 600; cursor: pointer; }
+.switchActive { background: #6366f1; color: #fff; }
+
+.paramRow { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 10px; }
+
+.resumo { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 14px 16px; }
+.resumoItem { display: flex; justify-content: space-between; align-items: center; font-size: var(--text-sm); gap: 8px; }
+.resumoItem span { color: var(--text-muted); }
+.resumoItem strong { font-family: var(--font-mono); font-weight: 700; color: var(--text); }
+
+.tabelaWrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; }
+.tabelaTitle { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); padding: 10px 14px; border-bottom: 1px solid var(--border); }
+.tabela { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+.tabela th { text-align: left; padding: 8px 12px; background: var(--surface-2); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+.tabela td { padding: 9px 12px; border-top: 1px solid var(--border); vertical-align: middle; }
+.rowSelected td { background: rgba(99,102,241,0.06); }
+.mono { font-family: var(--font-mono); }
+.inputSm { width: 58px; height: 30px; padding: 0 6px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface-2); color: var(--text); font-size: var(--text-sm); text-align: center; margin-right: 4px; }
+.inputSm:focus { outline: none; border-color: #6366f1; }
+
+.nextRow { display: flex; justify-content: flex-end; gap: 10px; padding-top: 4px; }
+.btnNext { height: 38px; padding: 0 20px; border: none; border-radius: var(--r-md); background: #6366f1; color: #fff; font-size: var(--text-sm); font-weight: 700; cursor: pointer; }
+.btnNext:hover { background: #4f46e5; }
+.btnSecondary { height: 38px; padding: 0 16px; border: 1px solid var(--border); border-radius: var(--r-md); background: transparent; color: var(--text-muted); font-size: var(--text-sm); font-weight: 600; cursor: pointer; }
+.btnSecondary:hover { background: var(--surface); color: var(--text); }
+.btnPrint { height: 38px; padding: 0 16px; border: 1px solid var(--border); border-radius: var(--r-md); background: transparent; color: var(--text-muted); font-size: var(--text-sm); font-weight: 600; cursor: pointer; }
+.btnPrint:hover { background: var(--surface); color: var(--text); }
+.btnSave { height: 38px; padding: 0 20px; border: none; border-radius: var(--r-md); background: #10b981; color: #fff; font-size: var(--text-sm); font-weight: 700; cursor: pointer; }
+.btnSave:hover:not(:disabled) { background: #059669; }
+.btnSave:disabled { opacity: 0.5; cursor: not-allowed; }
+
+@media (max-width: 600px) {
+  .grid2, .clienteGrid, .paramRow, .resumo { grid-template-columns: 1fr; }
+}

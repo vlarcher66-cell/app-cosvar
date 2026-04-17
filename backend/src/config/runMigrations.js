@@ -690,6 +690,36 @@ const runMigrations = async () => {
     await addFkIfNotExists('documento_contrato', 'fk_doc_usuario',
       `FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE`);
 
+    // 40. Tabela proposta_lote (orçamento comercial antes do contrato)
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS proposta_lote (
+        id                  INT            NOT NULL AUTO_INCREMENT,
+        lote_id             INT            NOT NULL,
+        cliente_imovel_id   INT            NULL,
+        valor_total         DECIMAL(12,2)  NOT NULL,
+        desconto_avista_pct DECIMAL(5,2)   NOT NULL DEFAULT 0,
+        entrada_pct         DECIMAL(5,2)   NOT NULL DEFAULT 0,
+        entrada_valor       DECIMAL(12,2)  NOT NULL DEFAULT 0,
+        parcelas_json       JSON           NULL,
+        status              ENUM('pendente','aprovada','recusada') NOT NULL DEFAULT 'pendente',
+        observacao          TEXT           NULL,
+        usuario_id          INT            NOT NULL,
+        created_at          DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at          DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        KEY idx_prop_lote    (lote_id),
+        KEY idx_prop_cliente (cliente_imovel_id),
+        KEY idx_prop_usuario (usuario_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    `).catch(e => { if (e.code !== 'ER_TABLE_EXISTS_ERROR') throw e; });
+    console.log('✅ Migration 40: tabela proposta_lote criada');
+    await addFkIfNotExists('proposta_lote', 'fk_prop_lote',
+      `FOREIGN KEY (lote_id) REFERENCES lote (id) ON DELETE CASCADE ON UPDATE CASCADE`);
+    await addFkIfNotExists('proposta_lote', 'fk_prop_cliente',
+      `FOREIGN KEY (cliente_imovel_id) REFERENCES cliente_imovel (id) ON DELETE SET NULL ON UPDATE CASCADE`);
+    await addFkIfNotExists('proposta_lote', 'fk_prop_usuario',
+      `FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE`);
+
     // 33. Log do estado atual das tabelas imobiliárias
     const [emps]   = await db.query(`SELECT id, nome FROM empreendimento ORDER BY id`).catch(() => [[]]);;
     const [quadrs] = await db.query(`SELECT id, empreendimento_id, nome FROM quadra ORDER BY id`).catch(() => [[]]);;

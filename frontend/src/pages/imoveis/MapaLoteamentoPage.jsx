@@ -12,6 +12,7 @@ import Button from '../../components/ui/Button';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import DateInput from '../../components/ui/DateInput';
 import CurrencyInput from '../../components/ui/CurrencyInput';
+import ModalProposta from '../../components/imoveis/ModalProposta';
 import { useGlobalToast } from '../../components/layout/MainLayout';
 import { formatCurrency, formatDate, formatDateInput } from '../../utils/formatters';
 import s from './MapaLoteamentoPage.module.css';
@@ -56,6 +57,8 @@ export default function MapaLoteamentoPage() {
   const [editingLote, setEditingLote] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [modalProposta, setModalProposta] = useState(false);
+  const [loteParaProposta, setLoteParaProposta] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -301,8 +304,12 @@ export default function MapaLoteamentoPage() {
                   <IcoEdit /> Editar Lote
                 </Button>
                 {selected.status === 'disponivel' && (
-                  <Button variant="primary" onClick={() => { setModalDetalhe(false); setFormContrato({ ...EMPTY_CONTRATO, valor_total: selected.valor || '' }); setModalContrato(true); }}>
-                    Registrar Venda
+                  <Button variant="primary" onClick={() => {
+                    setLoteParaProposta({ ...selected, empreendimento_nome: emp?.nome });
+                    setModalDetalhe(false);
+                    setModalProposta(true);
+                  }}>
+                    Fazer Proposta
                   </Button>
                 )}
                 {contratoDetalhe && (
@@ -424,6 +431,19 @@ export default function MapaLoteamentoPage() {
           </div>
         </form>
       </Modal>
+
+      {/* Modal Proposta */}
+      {modalProposta && loteParaProposta && (
+        <ModalProposta
+          lote={loteParaProposta}
+          onClose={() => setModalProposta(false)}
+          onSaved={() => {
+            setModalProposta(false);
+            toast?.success('Proposta salva! Lote marcado como reservado.');
+            load();
+          }}
+        />
+      )}
 
       <ConfirmDialog isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete} loading={deleting}
