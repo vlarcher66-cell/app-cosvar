@@ -10,13 +10,29 @@ cloudinary.config({
 
 const storage = new CloudinaryStorage({
   cloudinary,
-  params: {
+  params: async (req, file) => ({
     folder: 'cosvar/documentos',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'],
     resource_type: 'auto',
-  },
+    public_id: `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9.]/g, '_')}`,
+  }),
 });
 
 const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB
 
-module.exports = { cloudinary, upload };
+/**
+ * Retorna uso de armazenamento do Cloudinary
+ */
+const getUsage = async () => {
+  const result = await cloudinary.api.usage();
+  return {
+    storage_used_mb: (result.storage.usage / 1024 / 1024).toFixed(1),
+    storage_limit_mb: (result.storage.limit / 1024 / 1024).toFixed(0),
+    storage_pct: ((result.storage.usage / result.storage.limit) * 100).toFixed(1),
+    transformations_used: result.transformations.usage,
+    bandwidth_used_mb: (result.bandwidth.usage / 1024 / 1024).toFixed(1),
+    credits_used: result.credits?.usage || 0,
+    credits_limit: result.credits?.limit || 0,
+  };
+};
+
+module.exports = { cloudinary, upload, getUsage };

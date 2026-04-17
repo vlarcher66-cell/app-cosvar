@@ -41,6 +41,7 @@ export default function ContratoDetalhePage() {
   const [uploading,   setUploading]   = useState(false);
   const [uploadForm,  setUploadForm]  = useState({ nome: '', tipo: '' });
   const [arquivo,     setArquivo]     = useState(null);
+  const [cloudUsage,  setCloudUsage]  = useState(null);
 
   const [formBaixa, setFormBaixa] = useState({
     data_pagamento: new Date().toISOString().slice(0, 10),
@@ -59,6 +60,13 @@ export default function ContratoDetalhePage() {
     } catch { toast?.error('Contrato não encontrado'); navigate('/imoveis/contratos'); }
     finally { setLoading(false); }
   }, [id]);
+
+  // Carrega uso do Cloudinary ao abrir aba documentos
+  useEffect(() => {
+    if (aba === 'documentos' && !cloudUsage) {
+      documentoContratoService.usage(id).then(setCloudUsage).catch(() => {});
+    }
+  }, [aba]);
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => {
@@ -311,6 +319,23 @@ export default function ContratoDetalhePage() {
               </button>
             </div>
           </form>
+
+          {/* Uso Cloudinary */}
+          {cloudUsage && (
+            <div className={s.cloudUsage}>
+              <div className={s.cloudUsageTitle}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="14" height="14"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+                Armazenamento Cloudinary
+              </div>
+              <div className={s.cloudUsageBar}>
+                <div className={s.cloudUsageFill} style={{ width: `${Math.min(cloudUsage.storage_pct, 100)}%`, background: cloudUsage.storage_pct > 80 ? '#ef4444' : cloudUsage.storage_pct > 60 ? '#f59e0b' : '#10b981' }} />
+              </div>
+              <div className={s.cloudUsageInfo}>
+                <span>{cloudUsage.storage_used_mb} MB usados de {cloudUsage.storage_limit_mb} MB ({cloudUsage.storage_pct}%)</span>
+                <span>Banda: {cloudUsage.bandwidth_used_mb} MB</span>
+              </div>
+            </div>
+          )}
 
           {/* Lista de documentos */}
           {docs.length === 0

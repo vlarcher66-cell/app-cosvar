@@ -81,6 +81,13 @@
 
 .empty { text-align: center; color: var(--text-muted); padding: 40px; font-size: var(--text-sm); }
 
+/* Cloudinary usage */
+.cloudUsage { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+.cloudUsageTitle { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+.cloudUsageBar { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.cloudUsageFill { height: 100%; border-radius: 99px; transition: width 0.4s ease; }
+.cloudUsageInfo { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); }
+
 .docList { display: flex; flex-direction: column; gap: 8px; }
 .docItem { display: flex; align-items: center; gap: 12px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 12px 16px; }
 .docIcon { color: #6366f1; flex-shrink: 0; }

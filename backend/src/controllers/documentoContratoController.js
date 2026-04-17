@@ -1,5 +1,5 @@
 const repo       = require('../repositories/documentoContratoRepository');
-const { cloudinary } = require('../config/cloudinary');
+const { cloudinary, getUsage } = require('../config/cloudinary');
 const { success, error } = require('../utils/apiResponse');
 
 const getAll = async (req, res, next) => {
@@ -36,4 +36,10 @@ const remove = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { getAll, upload, remove };
+const usage = async (req, res, next) => {
+  try {
+    return success(res, await getUsage());
+  } catch (err) { next(err); }
+};
+
+module.exports = { getAll, upload, remove, usage };
