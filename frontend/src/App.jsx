@@ -24,18 +24,19 @@ import ContratoFormPage     from './pages/imoveis/ContratoFormPage';
 import ContratoDetalhePage  from './pages/imoveis/ContratoDetalhePage';
 
 // Cadastros
-import GrupoPage       from './pages/cadastros/GrupoPage';
-import SubgrupoPage    from './pages/cadastros/SubgrupoPage';
-import ItemPage        from './pages/cadastros/ItemPage';
-import CategoriaPage   from './pages/cadastros/CategoriaPage';
-import DescricaoPage   from './pages/cadastros/DescricaoPage';
-import ProdutorPage    from './pages/cadastros/ProdutorPage';
-import FornecedorPage  from './pages/cadastros/FornecedorPage';
-import CompradorPage   from './pages/cadastros/CompradorPage';
-import ProjetoPage     from './pages/cadastros/ProjetoPage';
-import CentroCustoPage from './pages/cadastros/CentroCustoPage';
-import BancoPage       from './pages/cadastros/BancoPage';
-import ContaPage       from './pages/cadastros/ContaPage';
+import GrupoPage          from './pages/cadastros/GrupoPage';
+import SubgrupoPage       from './pages/cadastros/SubgrupoPage';
+import ItemPage           from './pages/cadastros/ItemPage';
+import CategoriaPage      from './pages/cadastros/CategoriaPage';
+import DescricaoPage      from './pages/cadastros/DescricaoPage';
+import ProdutorPage       from './pages/cadastros/ProdutorPage';
+import FornecedorPage     from './pages/cadastros/FornecedorPage';
+import CompradorPage      from './pages/cadastros/CompradorPage';
+import ProjetoPage        from './pages/cadastros/ProjetoPage';
+import CentroCustoPage    from './pages/cadastros/CentroCustoPage';
+import BancoPage          from './pages/cadastros/BancoPage';
+import ContaPage          from './pages/cadastros/ContaPage';
+import ClienteImovelPage  from './pages/cadastros/ClienteImovelPage';
 
 export default function App() {
   return (
@@ -68,8 +69,9 @@ export default function App() {
             <Route path="/cadastros/compradores"   element={<CompradorPage />} />
             <Route path="/cadastros/projetos"      element={<ProjetoPage />} />
             <Route path="/cadastros/centros-custo" element={<CentroCustoPage />} />
-            <Route path="/cadastros/bancos"        element={<BancoPage />} />
-            <Route path="/cadastros/contas"        element={<ContaPage />} />
+            <Route path="/cadastros/bancos"          element={<BancoPage />} />
+            <Route path="/cadastros/contas"          element={<ContaPage />} />
+            <Route path="/cadastros/clientes-imovel" element={<ClienteImovelPage />} />
 
             {/* Imóveis */}
             <Route path="/imoveis/loteamentos"     element={<LoteamentosPage />} />

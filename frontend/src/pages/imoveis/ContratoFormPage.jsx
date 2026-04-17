@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import empreendimentoService from '../../services/empreendimentoService';
-import compradorService from '../../services/compradorService';
+import clienteImovelService from '../../services/clienteImovelService';
 import contratoLoteService from '../../services/contratoLoteService';
 import { useGlobalToast } from '../../components/layout/MainLayout';
 import CurrencyInput from '../../components/ui/CurrencyInput';
@@ -17,14 +17,14 @@ export default function ContratoFormPage() {
   const [empreendimentos, setEmpreendimentos] = useState([]);
   const [quadras,         setQuadras]         = useState([]);
   const [lotes,           setLotes]           = useState([]);
-  const [compradores,     setCompradores]      = useState([]);
+  const [clientes,        setClientes]         = useState([]);
   const [saving,          setSaving]           = useState(false);
 
   const [form, setForm] = useState({
-    empreendimento_id: '',
-    quadra_id:         '',
-    lote_id:           '',
-    comprador_id:      '',
+    empreendimento_id:  '',
+    quadra_id:          '',
+    lote_id:            '',
+    cliente_imovel_id:  '',
     data_contrato:     new Date().toISOString().slice(0, 10),
     valor_total:       '',
     entrada_valor:     '',
@@ -36,7 +36,7 @@ export default function ContratoFormPage() {
 
   useEffect(() => {
     empreendimentoService.getAll().then(setEmpreendimentos);
-    compradorService.getAll().then(setCompradores);
+    clienteImovelService.getAll().then(setClientes);
   }, []);
 
   // Quando muda empreendimento, carrega quadras e lotes
@@ -76,8 +76,8 @@ export default function ContratoFormPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.lote_id)       return toast?.error('Selecione um lote');
-    if (!form.comprador_id)  return toast?.error('Selecione um comprador');
+    if (!form.lote_id)            return toast?.error('Selecione um lote');
+    if (!form.cliente_imovel_id)  return toast?.error('Selecione um cliente');
     if (!form.valor_total)   return toast?.error('Informe o valor total');
     if (!form.num_parcelas)  return toast?.error('Informe o número de parcelas');
     setSaving(true);
@@ -136,10 +136,10 @@ export default function ContratoFormPage() {
           <div className={s.sectionTitle}>Comprador</div>
           <div className={s.row2}>
             <div className={s.field}>
-              <label>Comprador</label>
-              <select value={form.comprador_id} onChange={e => set('comprador_id', e.target.value)} required>
+              <label>Cliente</label>
+              <select value={form.cliente_imovel_id} onChange={e => set('cliente_imovel_id', e.target.value)} required>
                 <option value="">Selecione...</option>
-                {compradores.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                {clientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
               </select>
             </div>
             <div className={s.field}>

@@ -73,6 +73,12 @@ const NAV = [
           { label: 'Centro de Custo', path: '/cadastros/centros-custo' },
         ],
       },
+      {
+        label: 'Imobiliária', section: true,
+        children: [
+          { label: 'Clientes', path: '/cadastros/clientes-imovel' },
+        ],
+      },
     ],
   },
   {

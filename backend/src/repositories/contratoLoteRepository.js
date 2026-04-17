@@ -10,7 +10,7 @@ const findAll = async (usuario_id, filtros = {}) => {
 
   const [rows] = await db.query(
     `SELECT c.*,
-       comp.nome AS comprador_nome,
+       ci.nome AS comprador_nome,
        l.numero AS lote_numero, l.area AS lote_area,
        q.nome AS quadra_nome,
        e.nome AS empreendimento_nome,
@@ -22,7 +22,7 @@ const findAll = async (usuario_id, filtros = {}) => {
      JOIN lote l ON l.id = c.lote_id
      JOIN quadra q ON q.id = l.quadra_id
      JOIN empreendimento e ON e.id = q.empreendimento_id
-     JOIN comprador comp ON comp.id = c.comprador_id
+     LEFT JOIN cliente_imovel ci ON ci.id = c.cliente_imovel_id
      WHERE ${where}
      ORDER BY c.created_at DESC`,
     params
@@ -33,7 +33,7 @@ const findAll = async (usuario_id, filtros = {}) => {
 const findById = async (id, usuario_id) => {
   const [[contrato]] = await db.query(
     `SELECT c.*,
-       comp.nome AS comprador_nome, comp.cpf_cnpj, comp.telefone, comp.email,
+       ci.nome AS comprador_nome, ci.cpf_cnpj, ci.telefone, ci.email,
        l.numero AS lote_numero, l.area AS lote_area, l.dimensoes AS lote_dimensoes,
        q.nome AS quadra_nome,
        e.nome AS empreendimento_nome, e.id AS empreendimento_id
@@ -41,7 +41,7 @@ const findById = async (id, usuario_id) => {
      JOIN lote l ON l.id = c.lote_id
      JOIN quadra q ON q.id = l.quadra_id
      JOIN empreendimento e ON e.id = q.empreendimento_id
-     JOIN comprador comp ON comp.id = c.comprador_id
+     LEFT JOIN cliente_imovel ci ON ci.id = c.cliente_imovel_id
      WHERE c.id = ? AND c.usuario_id = ? LIMIT 1`,
     [id, usuario_id]
   );
@@ -61,14 +61,14 @@ const findById = async (id, usuario_id) => {
 };
 
 const create = async (data) => {
-  const { lote_id, comprador_id, data_contrato, valor_total, entrada_valor,
+  const { lote_id, cliente_imovel_id, data_contrato, valor_total, entrada_valor,
           entrada_data, num_parcelas, dia_vencimento, observacao, usuario_id } = data;
   const [result] = await db.query(
     `INSERT INTO contrato_lote
-       (lote_id, comprador_id, data_contrato, valor_total, entrada_valor, entrada_data,
+       (lote_id, cliente_imovel_id, data_contrato, valor_total, entrada_valor, entrada_data,
         num_parcelas, dia_vencimento, observacao, status, usuario_id)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'ativo', ?)`,
-    [lote_id, comprador_id, data_contrato, valor_total,
+    [lote_id, cliente_imovel_id || null, data_contrato, valor_total,
      entrada_valor || 0, entrada_data || null,
      num_parcelas, dia_vencimento || 10, observacao || null, usuario_id]
   );
