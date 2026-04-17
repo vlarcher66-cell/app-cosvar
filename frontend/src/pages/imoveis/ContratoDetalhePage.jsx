@@ -83,7 +83,8 @@ export default function ContratoDetalhePage() {
 
   const abrirBaixa = (parcela) => {
     setFormBaixa({ data_pagamento: new Date().toISOString().slice(0, 10), observacao: '' });
-    const vFormatado = Number(parcela.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+    const vNum = parseFloat(parcela.valor) || 0;
+    const vFormatado = vNum.toFixed(2).replace('.', ',');
     setPagamentos([{ ...newParcela(), valor: vFormatado }]);
     setModal(parcela);
   };
@@ -91,8 +92,8 @@ export default function ContratoDetalhePage() {
   const setPag = (_id, k, v) => setPagamentos(prev => prev.map(p => p._id === _id ? { ...p, [k]: v, ...(k === 'conta_id' ? { forma_id: '' } : {}) } : p));
   const addPag = () => {
     const jaUsado = pagamentos.reduce((acc, p) => acc + (parseFloat(String(p.valor).replace(/\./g,'').replace(',','.')) || 0), 0);
-    const diferenca = Math.max(0, Number(modal?.valor || 0) - jaUsado);
-    const valorRestante = diferenca > 0 ? diferenca.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '';
+    const diferenca = Math.max(0, parseFloat(modal?.valor || 0) - jaUsado);
+    const valorRestante = diferenca > 0 ? diferenca.toFixed(2).replace('.', ',') : '';
     setPagamentos(prev => [...prev, { ...newParcela(), valor: valorRestante }]);
   };
   const remPag = (_id) => setPagamentos(prev => prev.filter(p => p._id !== _id));
