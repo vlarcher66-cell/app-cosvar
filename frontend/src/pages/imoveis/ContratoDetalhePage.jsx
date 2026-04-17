@@ -390,7 +390,7 @@ export default function ContratoDetalhePage() {
               <img src={preview.url} alt={preview.nome} className={s.previewImg} />
             ) : preview.url.match(/\.pdf/i) ? (
               <iframe
-                src={`https://docs.google.com/viewer?url=${encodeURIComponent(preview.url)}&embedded=true`}
+                src={preview.url.replace('/raw/upload/', '/raw/upload/fl_inline/')}
                 className={s.previewFrame}
                 title={preview.nome}
               />
@@ -398,8 +398,8 @@ export default function ContratoDetalhePage() {
               <div className={s.previewNoView}>
                 <IcoFile />
                 <p>Visualização não disponível para este formato.</p>
-                <a href={preview.url} download={preview.nome} target="_blank" rel="noreferrer" className={s.btnUpload}>
-                  Baixar arquivo
+                <a href={preview.url} target="_blank" rel="noreferrer" className={s.btnUpload}>
+                  Abrir arquivo
                 </a>
               </div>
             )}
