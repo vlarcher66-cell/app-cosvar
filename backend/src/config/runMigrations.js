@@ -658,10 +658,12 @@ const runMigrations = async () => {
     await addFkIfNotExists('cliente_imovel', 'fk_ci_usuario',
       `FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE`);
 
-    // 38. Adiciona coluna cliente_imovel_id em contrato_lote (nullable para não quebrar contratos existentes)
+    // 38. Adiciona coluna cliente_imovel_id em contrato_lote e torna comprador_id nullable
     await addColumnIfNotExists('contrato_lote', 'cliente_imovel_id', 'INT NULL');
     await addFkIfNotExists('contrato_lote', 'fk_cl_cliente_imovel',
       `FOREIGN KEY (cliente_imovel_id) REFERENCES cliente_imovel(id) ON DELETE SET NULL`);
+    // comprador_id era NOT NULL, precisa ser nullable pois novos contratos usam cliente_imovel_id
+    await makeColumnNullable('contrato_lote', 'comprador_id', 'INT');
 
     // 33. Log do estado atual das tabelas imobiliárias
     const [emps]   = await db.query(`SELECT id, nome FROM empreendimento ORDER BY id`).catch(() => [[]]);;
