@@ -1,7 +1,7 @@
-const repo       = require('../repositories/propostaLoteRepository');
-const clienteRepo = require('../repositories/clienteImovelRepository');
-const loteRepo    = require('../repositories/loteRepository');
-const contratoRepo = require('../repositories/contratoLoteRepository');
+const repo          = require('../repositories/propostaLoteRepository');
+const clienteRepo   = require('../repositories/clienteImovelRepository');
+const loteRepo      = require('../repositories/loteRepository');
+const contratoSvc   = require('../services/contratoLoteService');
 const { success, error } = require('../utils/apiResponse');
 const db = require('../config/database');
 
@@ -60,16 +60,22 @@ const aprovar = async (req, res, next) => {
     const opcaoIdx = req.body.opcao_idx ?? 0;
     const opcao = parcelas[opcaoIdx];
 
-    const contratoId = await contratoRepo.create({
+    // À vista: n=0 → gera 1 parcela com valor à vista; parcelado: usa n e taxa da opção
+    const isAvista    = opcao?.avista || opcao?.n === 0;
+    const numParcelas = isAvista ? 1 : (opcao?.n || 1);
+    const taxaJuros   = isAvista ? 0 : (opcao?.taxa || 0);
+    const valorTotal  = isAvista ? opcao?.pmt ?? p.valor_total : p.valor_total;
+
+    const contratoId = await contratoSvc.create({
       lote_id:          p.lote_id,
       cliente_imovel_id: p.cliente_imovel_id,
       data_contrato:    req.body.data_contrato || new Date().toISOString().slice(0, 10),
-      valor_total:      p.valor_total,
-      entrada_valor:    p.entrada_valor || 0,
+      valor_total:      valorTotal,
+      entrada_valor:    isAvista ? 0 : (p.entrada_valor || 0),
       entrada_data:     req.body.entrada_data || null,
-      num_parcelas:     opcao ? opcao.n : 1,
+      num_parcelas:     numParcelas,
       dia_vencimento:   req.body.dia_vencimento || 10,
-      taxa_juros:       opcao ? opcao.taxa : 0,
+      taxa_juros:       taxaJuros,
       observacao:       p.observacao,
       usuario_id:       req.user.id,
     });
