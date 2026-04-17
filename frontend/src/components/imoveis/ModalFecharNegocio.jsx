@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Modal from '../ui/Modal';
+import DateInput from '../ui/DateInput';
 import propostaLoteService from '../../services/propostaLoteService';
 import { formatCurrency } from '../../utils/formatters';
 import s from './ModalFecharNegocio.module.css';
@@ -109,14 +110,14 @@ export default function ModalFecharNegocio({ proposta, onClose, onContratoCriado
         <div className={s.fields}>
           <div className={s.field}>
             <label>Data do Contrato *</label>
-            <input type="date" className={s.input} value={dataContrato} onChange={e => setDataContrato(e.target.value)} />
+            <DateInput className={s.input} value={dataContrato} onChange={e => setDataContrato(e.target.value)} />
           </div>
           <div className={s.field}>
             <label>Data da Entrada</label>
-            <input type="date" className={s.input} value={entradaData} onChange={e => setEntradaData(e.target.value)} />
+            <DateInput className={s.input} value={entradaData} onChange={e => setEntradaData(e.target.value)} />
           </div>
           <div className={s.field}>
-            <label>Dia Vencimento das Parcelas</label>
+            <label>Dia Vencimento</label>
             <input type="number" className={s.input} min="1" max="28" value={diaVenc} onChange={e => setDiaVenc(e.target.value)} />
           </div>
         </div>
