@@ -247,8 +247,12 @@ export default function ContratoDetalhePage() {
             </thead>
             <tbody>
               {contrato.parcelas?.map(p => (
-                <tr key={p.id} className={p.status === 'vencido' ? s.rowVencido : ''}>
-                  <td className={s.mono}>{p.numero}</td>
+                <tr key={p.id} className={`${p.status === 'vencido' ? s.rowVencido : ''} ${p.numero === 0 ? s.rowEntrada : ''}`}>
+                  <td className={s.mono}>
+                    {p.numero === 0
+                      ? <span className={s.badgeEntrada}>Entrada</span>
+                      : p.numero}
+                  </td>
                   <td className={s.mono}>{formatDate(p.data_vencimento)}</td>
                   <td className={s.mono} style={{ fontWeight: 700 }}>{formatCurrency(p.valor)}</td>
                   <td>

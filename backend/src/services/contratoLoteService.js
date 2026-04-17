@@ -33,9 +33,20 @@ const create = async (data) => {
   const dataBase = new Date(data_contrato);
   const parcelas = [];
 
+  // Entrada como parcela 0 se houver valor e data definidos
+  if (valorEntrada > 0 && data.entrada_data) {
+    parcelas.push({
+      contrato_id:     contratoId,
+      numero:          0,
+      valor:           valorEntrada,
+      data_vencimento: data.entrada_data,
+      usuario_id,
+    });
+  }
+
   for (let i = 1; i <= num_parcelas; i++) {
     const ano = dataBase.getFullYear();
-    const mes = dataBase.getMonth() + i; // avança meses
+    const mes = dataBase.getMonth() + i;
     const venc = new Date(ano, mes, dia_vencimento || 10);
     parcelas.push({
       contrato_id:     contratoId,

@@ -26,6 +26,8 @@
 .table tr:last-child td { border-bottom: none; }
 .table tr:hover td { background: var(--surface); }
 .rowVencido td { background: rgba(239,68,68,0.03); }
+.rowEntrada td { background: rgba(99,102,241,0.04); }
+.badgeEntrada { display: inline-block; background: rgba(99,102,241,0.12); color: #6366f1; border: 1px solid rgba(99,102,241,0.3); border-radius: 99px; padding: 2px 10px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
 .mono { font-family: var(--font-mono); }
 
 .actions { white-space: nowrap; }
