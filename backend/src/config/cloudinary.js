@@ -14,10 +14,8 @@ const storage = new CloudinaryStorage({
     const baseName = file.originalname.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9]/g, '_');
     return {
       folder: 'cosvar/documentos',
-      resource_type: 'auto',
+      resource_type: 'raw',
       public_id: `${Date.now()}-${baseName}`,
-      use_filename: false,
-      unique_filename: false,
     };
   },
 });

@@ -59,8 +59,10 @@ const download = async (req, res, next) => {
     const urlObj = new URL(doc.url);
     const client = urlObj.protocol === 'https:' ? https : http;
 
-    res.setHeader('Content-Disposition', `inline; filename="${doc.nome}"`);
-    res.setHeader('Content-Type', 'application/pdf');
+    const isDownload = req.query.dl === '1';
+    const disposition = isDownload ? `attachment; filename="${doc.nome}"` : `inline; filename="${doc.nome}"`;
+    res.setHeader('Content-Disposition', disposition);
+    res.setHeader('Content-Type', 'application/octet-stream');
 
     client.get(doc.url, (stream) => {
       stream.pipe(res);
