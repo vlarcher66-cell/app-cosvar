@@ -336,9 +336,9 @@ export default function ContratoDetalhePage() {
                       </div>
                     </div>
                     <div className={s.docActions}>
-                      <a href={`${documentoContratoService.viewUrl(id, doc.id)}?token=${localStorage.getItem('cosvar_token')}`} target="_blank" rel="noreferrer" className={s.btnDl} title="Visualizar">
+                      <button className={s.btnDl} title="Visualizar" onClick={() => setPreview(doc)}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="14" height="14"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                      </a>
+                      </button>
                       <a href={`${documentoContratoService.viewUrl(id, doc.id)}?token=${localStorage.getItem('cosvar_token')}&dl=1`} target="_blank" rel="noreferrer" className={s.btnDl} title="Download">
                         <IcoDl />
                       </a>
@@ -352,6 +352,29 @@ export default function ContratoDetalhePage() {
             )
           }
         </motion.div>
+      )}
+
+      {/* Modal preview documento */}
+      {preview && (
+        <div className={s.overlay} onClick={() => setPreview(null)}>
+          <div className={s.previewModal} onClick={e => e.stopPropagation()}>
+            <div className={s.previewHeader}>
+              <span className={s.previewNome}>{preview.nome}</span>
+              <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                <a href={`${documentoContratoService.viewUrl(id, preview.id)}?token=${localStorage.getItem('cosvar_token')}&dl=1`} target="_blank" rel="noreferrer" className={s.btnDl} title="Download">
+                  <IcoDl />
+                </a>
+                <button className={s.btnDelDoc} style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }} onClick={() => setPreview(null)} title="Fechar">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+            </div>
+            {/\.(jpg|jpeg|png|gif|webp)$/i.test(preview.nome)
+              ? <img src={`${documentoContratoService.viewUrl(id, preview.id)}?token=${localStorage.getItem('cosvar_token')}`} alt={preview.nome} className={s.previewImg} />
+              : <iframe src={`${documentoContratoService.viewUrl(id, preview.id)}?token=${localStorage.getItem('cosvar_token')}`} className={s.previewFrame} title={preview.nome} />
+            }
+          </div>
+        </div>
       )}
 
       {/* Modal baixa */}
