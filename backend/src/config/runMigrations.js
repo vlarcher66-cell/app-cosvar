@@ -780,6 +780,13 @@ const runMigrations = async () => {
       console.log('⏭️  Migration 44: já executada');
     }
 
+    // 45. Adiciona parcela_lote_id em receita para rastrear origem de baixas de imóvel
+    await addColumnIfNotExists('receita', 'parcela_lote_id', 'INT NULL');
+    await addFkIfNotExists('receita', 'fk_receita_parcela_lote',
+      `FOREIGN KEY (parcela_lote_id) REFERENCES parcela_lote(id) ON DELETE SET NULL ON UPDATE CASCADE`
+    );
+    console.log('✅ Migration 45: coluna parcela_lote_id adicionada em receita');
+
     console.log('🎉 Todas as migrations concluídas');
   } catch (err) {
     console.error('❌ Erro fatal nas migrations:', err.message);

@@ -70,12 +70,12 @@ const baixar = async (id, dados, usuario_id) => {
       const descricao = `${label} — Lote ${parcela.lote_numero} Qd.${parcela.quadra_nome} (${parcela.empreendimento_nome})${parcela.comprador_nome ? ' — ' + parcela.comprador_nome : ''}`;
       const valorTotal = pagamentos.reduce((acc, p) => acc + (parseFloat(p.valor) || 0), 0) || Number(parcela.valor);
 
-      // Receita principal
+      // Receita principal com parcela_lote_id para rastrear origem
       const [recRes] = await conn.query(
-        `INSERT INTO receita (categoria_id, descricao_id, descricao, valor, data, status, conta_id, forma_pagamento_id, usuario_id)
-         VALUES (?, ?, ?, ?, ?, 'recebido', ?, ?, ?)`,
+        `INSERT INTO receita (categoria_id, descricao_id, descricao, valor, data, status, conta_id, forma_pagamento_id, parcela_lote_id, usuario_id)
+         VALUES (?, ?, ?, ?, ?, 'recebido', ?, ?, ?, ?)`,
         [cat.id, desc.id, descricao, valorTotal, data_pagamento,
-         primeiroPag.conta_id || null, primeiroPag.forma_pagamento_id || null, usuario_id]
+         primeiroPag.conta_id || null, primeiroPag.forma_pagamento_id || null, id, usuario_id]
       );
       const receitaId = recRes.insertId;
 

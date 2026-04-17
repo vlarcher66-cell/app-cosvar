@@ -8,7 +8,10 @@ const findAll = async (usuario_id, filters = {}) => {
       p.nome  AS projeto_nome,
       ct.numero AS conta_numero,
       fp.nome AS forma_pagamento_nome,
-      cb.numero_ordem AS cacau_venda_numero
+      cb.numero_ordem AS cacau_venda_numero,
+      CASE WHEN pl.numero = 0 THEN CONCAT('Entrada — ', e.nome, ' Qd.', q.nome, ' L.', l.numero)
+           ELSE CONCAT('Parcela ', pl.numero, ' — ', e.nome, ' Qd.', q.nome, ' L.', l.numero)
+      END AS imovel_origem
     FROM receita r
     LEFT JOIN categoria_receita c  ON c.id  = r.categoria_id
     LEFT JOIN descricao_receita d  ON d.id  = r.descricao_id
@@ -16,6 +19,11 @@ const findAll = async (usuario_id, filters = {}) => {
     LEFT JOIN conta ct             ON ct.id = r.conta_id
     LEFT JOIN forma_pagamento fp   ON fp.id = r.forma_pagamento_id
     LEFT JOIN cacau_baixa cb       ON cb.id = r.cacau_baixa_id
+    LEFT JOIN parcela_lote pl      ON pl.id = r.parcela_lote_id
+    LEFT JOIN contrato_lote cl     ON cl.id = pl.contrato_id
+    LEFT JOIN lote l               ON l.id  = cl.lote_id
+    LEFT JOIN quadra q             ON q.id  = l.quadra_id
+    LEFT JOIN empreendimento e     ON e.id  = q.empreendimento_id
     WHERE r.usuario_id = ?
   `;
   const params = [usuario_id];

@@ -138,10 +138,12 @@ export default function ReceitaPage() {
 
   const columns = [
     { key: 'data',           label: 'Data',      width: 105, render: v => <span className={s.cellDate}>{formatDate(v)}</span> },
-    { key: '_origem', label: 'Origem', width: 150,
+    { key: '_origem', label: 'Origem', width: 180,
       render: (_, row) => row.cacau_baixa_id
         ? <span className={s.cellVinculada} title="Gerada automaticamente pela venda de cacau">🔒 {row.cacau_venda_numero || 'Cacau'}</span>
-        : <span className={s.cellOrigemManual}>Manual</span> },
+        : row.parcela_lote_id
+          ? <span className={s.cellImovel} title={row.imovel_origem}>🏠 {row.imovel_origem || 'Imóvel'}</span>
+          : <span className={s.cellOrigemManual}>Manual</span> },
     { key: 'categoria_nome', label: 'Categoria', render: v => <span className={s.cellCategoria}>{v || '—'}</span> },
     { key: 'descricao_nome', label: 'Descrição', render: v => v || '—' },
     { key: 'conta_numero',         label: 'Conta',  width: 120, render: v => v ? <span className={s.cellConta}>{v}</span> : '—' },

@@ -255,6 +255,21 @@
   font-style: italic;
 }
 
+.cellImovel {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #6366f1;
+  background: rgba(99,102,241,0.08);
+  border: 1px solid rgba(99,102,241,0.2);
+  border-radius: var(--r-sm);
+  padding: 2px 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 170px;
+  display: inline-block;
+}
+
 .cellVinculada {
   font-size: 0.72rem;
   font-weight: 600;
