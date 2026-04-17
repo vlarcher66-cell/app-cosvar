@@ -11,13 +11,15 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => {
-    const isPdf = file.mimetype === 'application/pdf';
-    const isDoc = file.mimetype.includes('word') || file.originalname.match(/\.(doc|docx)$/i);
+    const ext = file.originalname.split('.').pop().toLowerCase();
+    const isPdf = ext === 'pdf';
+    const isDoc = ['doc', 'docx'].includes(ext);
+    const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
     return {
       folder: 'cosvar/documentos',
-      resource_type: (isPdf || isDoc) ? 'raw' : 'image',
-      public_id: `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9]/g, '_')}`,
-      format: '', // não força extensão
+      resource_type: isImage ? 'image' : 'raw',
+      public_id: `${Date.now()}-${file.originalname.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9]/g, '_')}.${ext}`,
+      format: false,
     };
   },
 });

@@ -388,8 +388,20 @@ export default function ContratoDetalhePage() {
             </div>
             {preview.url.match(/\.(jpg|jpeg|png|gif|webp)/i) ? (
               <img src={preview.url} alt={preview.nome} className={s.previewImg} />
+            ) : preview.url.match(/\.pdf/i) ? (
+              <iframe
+                src={`https://docs.google.com/viewer?url=${encodeURIComponent(preview.url)}&embedded=true`}
+                className={s.previewFrame}
+                title={preview.nome}
+              />
             ) : (
-              <iframe src={preview.url} className={s.previewFrame} title={preview.nome} />
+              <div className={s.previewNoView}>
+                <IcoFile />
+                <p>Visualização não disponível para este formato.</p>
+                <a href={preview.url} download={preview.nome} target="_blank" rel="noreferrer" className={s.btnUpload}>
+                  Baixar arquivo
+                </a>
+              </div>
             )}
           </div>
         </div>
