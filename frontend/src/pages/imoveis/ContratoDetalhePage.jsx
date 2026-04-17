@@ -42,6 +42,7 @@ export default function ContratoDetalhePage() {
   const [uploadForm,  setUploadForm]  = useState({ nome: '', tipo: '' });
   const [arquivo,     setArquivo]     = useState(null);
   const [cloudUsage,  setCloudUsage]  = useState(null);
+  const [preview,     setPreview]     = useState(null); // doc sendo visualizado
 
   const [formBaixa, setFormBaixa] = useState({
     data_pagamento: new Date().toISOString().slice(0, 10),
@@ -354,7 +355,10 @@ export default function ContratoDetalhePage() {
                       </div>
                     </div>
                     <div className={s.docActions}>
-                      <a href={doc.url} target="_blank" rel="noreferrer" className={s.btnDl} title="Baixar/Visualizar">
+                      <button className={s.btnDl} onClick={() => setPreview(doc)} title="Visualizar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="14" height="14"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      </button>
+                      <a href={doc.url} download={doc.nome} target="_blank" rel="noreferrer" className={s.btnDl} title="Download">
                         <IcoDl />
                       </a>
                       <button className={s.btnDelDoc} onClick={() => handleRemoveDoc(doc)} title="Remover">
@@ -367,6 +371,28 @@ export default function ContratoDetalhePage() {
             )
           }
         </motion.div>
+      )}
+
+      {/* Modal visualizador de documento */}
+      {preview && (
+        <div className={s.overlay} onClick={() => setPreview(null)}>
+          <div className={s.previewModal} onClick={e => e.stopPropagation()}>
+            <div className={s.previewHeader}>
+              <span className={s.previewNome}>{preview.nome}</span>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <a href={preview.url} download={preview.nome} target="_blank" rel="noreferrer" className={s.btnDl} title="Download">
+                  <IcoDl />
+                </a>
+                <button className={s.btnCancel} onClick={() => setPreview(null)}>✕ Fechar</button>
+              </div>
+            </div>
+            {preview.url.match(/\.(jpg|jpeg|png|gif|webp)/i) ? (
+              <img src={preview.url} alt={preview.nome} className={s.previewImg} />
+            ) : (
+              <iframe src={preview.url} className={s.previewFrame} title={preview.nome} />
+            )}
+          </div>
+        </div>
       )}
 
       {/* Modal baixa */}

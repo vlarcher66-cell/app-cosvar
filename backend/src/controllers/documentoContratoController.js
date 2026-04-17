@@ -31,7 +31,9 @@ const remove = async (req, res, next) => {
   try {
     const public_id = await repo.remove(req.params.id, req.user.id);
     if (!public_id) return error(res, 'Documento não encontrado', 404);
+    // Tenta deletar como raw (PDF/doc) e como image (fotos)
     await cloudinary.uploader.destroy(public_id, { resource_type: 'raw' }).catch(() => {});
+    await cloudinary.uploader.destroy(public_id, { resource_type: 'image' }).catch(() => {});
     return success(res, null, 'Documento removido');
   } catch (err) { next(err); }
 };

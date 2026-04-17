@@ -10,11 +10,16 @@ cloudinary.config({
 
 const storage = new CloudinaryStorage({
   cloudinary,
-  params: async (req, file) => ({
-    folder: 'cosvar/documentos',
-    resource_type: 'auto',
-    public_id: `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9.]/g, '_')}`,
-  }),
+  params: async (req, file) => {
+    const isPdf = file.mimetype === 'application/pdf';
+    const isDoc = file.mimetype.includes('word') || file.originalname.match(/\.(doc|docx)$/i);
+    return {
+      folder: 'cosvar/documentos',
+      resource_type: (isPdf || isDoc) ? 'raw' : 'image',
+      public_id: `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9]/g, '_')}`,
+      format: '', // não força extensão
+    };
+  },
 });
 
 const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB

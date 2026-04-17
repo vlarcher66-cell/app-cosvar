@@ -101,6 +101,13 @@
 .btnDelDoc { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: 1px solid rgba(239,68,68,0.3); border-radius: var(--r-sm); background: transparent; color: #ef4444; cursor: pointer; }
 .btnDelDoc:hover { background: rgba(239,68,68,0.1); }
 
+/* Preview modal */
+.previewModal { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-xl); width: 90vw; max-width: 900px; height: 85vh; display: flex; flex-direction: column; overflow: hidden; }
+.previewHeader { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--border); gap: 12px; }
+.previewNome { font-size: var(--text-sm); font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.previewFrame { flex: 1; width: 100%; border: none; background: #fff; }
+.previewImg { flex: 1; width: 100%; object-fit: contain; padding: 16px; }
+
 /* Modal */
 .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
 .modal { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-xl); padding: 24px; width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 14px; }
