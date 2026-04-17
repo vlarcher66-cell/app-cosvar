@@ -339,7 +339,7 @@ export default function ContratoDetalhePage() {
                       <button className={s.btnDl} onClick={() => setPreview(doc)} title="Visualizar">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="14" height="14"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                       </button>
-                      <a href={doc.url.replace('/upload/', '/upload/fl_attachment/')} target="_blank" rel="noreferrer" className={s.btnDl} title="Download">
+                      <a href={documentoContratoService.viewUrl(id, doc.id)} target="_blank" rel="noreferrer" className={s.btnDl} title="Download">
                         <IcoDl />
                       </a>
                       <button className={s.btnDelDoc} onClick={() => handleRemoveDoc(doc)} title="Remover">
@@ -369,20 +369,12 @@ export default function ContratoDetalhePage() {
             </div>
             {preview.url.match(/\.(jpg|jpeg|png|gif|webp)/i) ? (
               <img src={preview.url} alt={preview.nome} className={s.previewImg} />
-            ) : preview.url.match(/\.pdf/i) ? (
+            ) : (
               <iframe
-                src={preview.url.replace('/raw/upload/', '/raw/upload/fl_inline/')}
+                src={documentoContratoService.viewUrl(id, preview.id)}
                 className={s.previewFrame}
                 title={preview.nome}
               />
-            ) : (
-              <div className={s.previewNoView}>
-                <IcoFile />
-                <p>Visualização não disponível para este formato.</p>
-                <a href={preview.url} target="_blank" rel="noreferrer" className={s.btnUpload}>
-                  Abrir arquivo
-                </a>
-              </div>
             )}
           </div>
         </div>

@@ -44,4 +44,28 @@ const usage = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { getAll, upload, remove, usage };
+const download = async (req, res, next) => {
+  try {
+    const [[doc]] = await require('../config/database').query(
+      `SELECT d.* FROM documento_contrato d
+       JOIN contrato_lote c ON c.id = d.contrato_id AND c.usuario_id = ?
+       WHERE d.id = ? LIMIT 1`,
+      [req.user.id, req.params.id]
+    );
+    if (!doc) return error(res, 'Documento não encontrado', 404);
+
+    const https = require('https');
+    const http  = require('http');
+    const urlObj = new URL(doc.url);
+    const client = urlObj.protocol === 'https:' ? https : http;
+
+    res.setHeader('Content-Disposition', `inline; filename="${doc.nome}"`);
+    res.setHeader('Content-Type', 'application/pdf');
+
+    client.get(doc.url, (stream) => {
+      stream.pipe(res);
+    }).on('error', next);
+  } catch (err) { next(err); }
+};
+
+module.exports = { getAll, upload, remove, usage, download };
