@@ -3,6 +3,7 @@ import { formatCurrency } from '../../utils/formatters';
 import CurrencyInput from '../ui/CurrencyInput';
 import clienteImovelService from '../../services/clienteImovelService';
 import propostaLoteService from '../../services/propostaLoteService';
+import { LOGO_B64 } from './logoBase64';
 import s from './ModalProposta.module.css';
 
 // Opções fixas vinculadas: parcelas → taxa automática
@@ -99,12 +100,14 @@ export default function ModalProposta({ lote, onClose, onSaved }) {
     const nomeCliente = modoCliente === 'existente'
       ? clientes.find(c => String(c.id) === String(clienteId))?.nome || ''
       : cliente.nome;
+    const now = new Date();
+    const numeroProposta = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}-${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
     const win = window.open('', '_blank');
     win.document.write(gerarHtmlProposta({
       lote, valorLote: valor, valorAVista, entrada, saldo,
       descontoAVista, entradaPct, opcoes, nomeCliente,
       cpf: modoCliente === 'novo' ? cliente.cpf_cnpj : clientes.find(c => String(c.id) === String(clienteId))?.cpf_cnpj || '',
-      observacao,
+      observacao, numeroProposta, logoB64: LOGO_B64,
     }));
     win.document.close();
     win.focus();
@@ -313,85 +316,170 @@ export default function ModalProposta({ lote, onClose, onSaved }) {
 }
 
 // Gera HTML para impressão no padrão da proposta COSVAR
-function gerarHtmlProposta({ lote, valorLote, valorAVista, entrada, saldo, descontoAVista, entradaPct, opcoes, nomeCliente, cpf, observacao }) {
+function gerarHtmlProposta({ lote, valorLote, valorAVista, entrada, saldo, descontoAVista, entradaPct, opcoes, nomeCliente, cpf, observacao, numeroProposta, logoB64 }) {
   const fmt = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const dataEmissao = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
   const linhasParcelas = [
-    `<tr style="background:#f0fdf4">
-      <td><strong>À VISTA (${descontoAVista}% de desconto):</strong></td>
-      <td><strong style="color:#16a34a">${fmt(valorAVista)}</strong></td>
-      <td></td>
+    `<tr class="avista-row">
+      <td style="padding:10px 14px"><strong>À VISTA</strong> — ${descontoAVista}% de desconto</td>
+      <td style="padding:10px 14px;color:#16a34a;font-size:13px">—</td>
+      <td style="padding:10px 14px;color:#16a34a;font-weight:700;font-size:14px">${fmt(valorAVista)}</td>
+      <td style="padding:10px 14px;color:#16a34a;font-weight:700">${fmt(valorAVista)}</td>
     </tr>`,
-    ...opcoes.map(op => {
-      const label = op.taxa > 0
-        ? `${op.n}X  TAXA  ${String(op.taxa.toFixed(2)).replace('.', ',')} a/m:`
-        : `${op.n}X  SEM JUROS:`;
-      return `<tr>
-        <td>${label}</td>
-        <td><strong>${fmt(op.pmt)}</strong></td>
-        <td style="color:#555; font-size:11px">${op.taxa > 0 ? '' : 'SEM JUROS'}</td>
-      </tr>`;
-    }),
+    ...opcoes.map((op, i) => `<tr style="${i % 2 === 0 ? 'background:#f8fafc' : ''}">
+      <td style="padding:9px 14px">${op.n}x</td>
+      <td style="padding:9px 14px;color:${op.taxa === 0 ? '#16a34a' : '#374151'};font-weight:600">${op.taxa === 0 ? 'SEM JUROS' : String(op.taxa.toFixed(2)).replace('.', ',') + '% a.m.'}</td>
+      <td style="padding:9px 14px;font-weight:700">${fmt(op.pmt)}</td>
+      <td style="padding:9px 14px;color:#555">${fmt(op.pmt * op.n + entrada)}</td>
+    </tr>`),
   ].join('');
+
+  const logoHtml = logoB64
+    ? `<img src="${logoB64}" alt="COSVAR" style="height:56px;max-width:200px;object-fit:contain"/>`
+    : `<div style="font-size:32px;font-weight:900;color:#1e3a5f;letter-spacing:-1px">COSVAR</div>`;
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
-<title>Proposta Comercial — COSVAR</title>
+<title>Proposta ${numeroProposta} — COSVAR</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family: Arial, sans-serif; font-size: 13px; color: #111; padding: 32px; }
-  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; border-bottom: 2px solid #1e3a5f; padding-bottom: 16px; }
-  .logo { font-size: 28px; font-weight: 900; color: #1e3a5f; letter-spacing: -1px; }
-  .empresa { text-align: right; font-size: 11px; color: #555; line-height: 1.6; }
-  h2 { font-size: 15px; color: #1e3a5f; margin: 20px 0 10px; text-transform: uppercase; letter-spacing: 0.05em; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; margin-bottom: 16px; }
-  .row { display: flex; justify-content: space-between; border-bottom: 1px dotted #ddd; padding: 4px 0; }
-  .row span { color: #555; }
-  .row strong { color: #111; }
-  table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-  th { background: #1e3a5f; color: #fff; padding: 7px 10px; text-align: left; font-size: 12px; }
-  td { padding: 7px 10px; border-bottom: 1px solid #eee; }
-  tr:last-child td { border-bottom: none; }
-  .highlight { background: #f0fdf4; }
-  .obs { margin-top: 20px; font-size: 11px; color: #666; font-style: italic; }
-  .rodape { margin-top: 32px; border-top: 1px solid #ddd; padding-top: 12px; font-size: 10px; color: #999; text-align: center; }
-  @media print { body { padding: 0; } }
+  body { font-family: 'Arial', sans-serif; font-size: 13px; color: #1a1a1a; background:#fff; }
+  .page { max-width: 800px; margin: 0 auto; padding: 36px 40px; }
+
+  /* HEADER */
+  .header { display:flex; justify-content:space-between; align-items:center; padding-bottom:18px; border-bottom:3px solid #1e3a5f; margin-bottom:24px; }
+  .header-right { text-align:right; }
+  .prop-num { font-size:11px; color:#888; letter-spacing:0.05em; text-transform:uppercase; }
+  .prop-num strong { display:block; font-size:16px; color:#1e3a5f; letter-spacing:-0.5px; }
+  .prop-data { font-size:11px; color:#888; margin-top:4px; }
+
+  /* BADGE PROPOSTA COMERCIAL */
+  .badge { display:inline-block; background:#1e3a5f; color:#fff; font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; padding:3px 10px; border-radius:3px; margin-bottom:20px; }
+
+  /* SEÇÕES */
+  .section { margin-bottom:22px; }
+  .section-title { font-size:10px; font-weight:700; color:#1e3a5f; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px; padding-bottom:4px; border-bottom:1px solid #e2e8f0; }
+
+  /* GRID INFO */
+  .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:0; border:1px solid #e2e8f0; border-radius:6px; overflow:hidden; }
+  .info-cell { padding:9px 14px; border-bottom:1px solid #e2e8f0; border-right:1px solid #e2e8f0; }
+  .info-cell:nth-child(2n) { border-right:none; }
+  .info-cell:nth-last-child(-n+2) { border-bottom:none; }
+  .info-cell .label { font-size:10px; color:#888; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:2px; }
+  .info-cell .value { font-size:13px; font-weight:600; color:#1a1a1a; }
+
+  /* RESUMO FINANCEIRO */
+  .financeiro { display:grid; grid-template-columns:repeat(4,1fr); gap:0; border:1px solid #e2e8f0; border-radius:6px; overflow:hidden; }
+  .fin-cell { padding:10px 14px; border-right:1px solid #e2e8f0; }
+  .fin-cell:last-child { border-right:none; }
+  .fin-cell .label { font-size:10px; color:#888; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:3px; }
+  .fin-cell .value { font-size:14px; font-weight:700; color:#1a1a1a; }
+  .fin-cell.destaque { background:#f0fdf4; }
+  .fin-cell.destaque .value { color:#16a34a; }
+
+  /* TABELA PARCELAMENTO */
+  table { width:100%; border-collapse:collapse; border-radius:6px; overflow:hidden; border:1px solid #e2e8f0; }
+  thead tr { background:#1e3a5f; }
+  th { padding:10px 14px; text-align:left; font-size:11px; font-weight:700; color:#fff; letter-spacing:0.06em; text-transform:uppercase; }
+  .avista-row { background:#f0fdf4; }
+  td { border-bottom:1px solid #e2e8f0; font-size:13px; }
+  tr:last-child td { border-bottom:none; }
+
+  /* CLIENTE */
+  .cliente-box { background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:12px 16px; }
+  .cliente-nome { font-size:15px; font-weight:700; color:#1e3a5f; }
+  .cliente-cpf { font-size:11px; color:#888; margin-top:2px; }
+
+  /* OBS + RODAPÉ */
+  .obs { margin-top:18px; background:#fffbeb; border-left:3px solid #f59e0b; padding:8px 12px; font-size:11px; color:#78350f; border-radius:0 4px 4px 0; }
+  .rodape { margin-top:30px; border-top:1px solid #e2e8f0; padding-top:12px; display:flex; justify-content:space-between; align-items:flex-end; }
+  .rodape-texto { font-size:10px; color:#aaa; line-height:1.7; }
+  .assinatura { text-align:center; }
+  .assinatura-linha { width:180px; border-top:1px solid #555; margin-bottom:4px; }
+  .assinatura-label { font-size:10px; color:#777; }
+
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page { padding: 20px 28px; }
+  }
 </style>
 </head>
 <body>
-<div class="header">
-  <div class="logo">COSVAR</div>
-  <div class="empresa">Cosvar Imobiliária<br/>Proposta Comercial</div>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>${logoHtml}</div>
+    <div class="header-right">
+      <div class="prop-num">Proposta Comercial<strong>#${numeroProposta}</strong></div>
+      <div class="prop-data">Emitida em ${dataEmissao}</div>
+    </div>
+  </div>
+
+  <!-- CLIENTE -->
+  <div class="section">
+    <div class="section-title">Cliente</div>
+    <div class="cliente-box">
+      <div class="cliente-nome">${nomeCliente || '—'}</div>
+      ${cpf ? `<div class="cliente-cpf">CPF / CNPJ: ${cpf}</div>` : ''}
+    </div>
+  </div>
+
+  <!-- IMÓVEL -->
+  <div class="section">
+    <div class="section-title">Dados do Imóvel</div>
+    <div class="info-grid">
+      <div class="info-cell"><div class="label">Empreendimento</div><div class="value">${lote?.empreendimento_nome || '—'}</div></div>
+      <div class="info-cell"><div class="label">Quadra / Lote</div><div class="value">Qd. ${lote?.quadra_nome} — Lote ${lote?.numero}</div></div>
+      ${lote?.area ? `<div class="info-cell"><div class="label">Área</div><div class="value">${lote.area} m²</div></div>` : ''}
+      ${lote?.dimensoes ? `<div class="info-cell"><div class="label">Dimensões</div><div class="value">${lote.dimensoes}</div></div>` : ''}
+      <div class="info-cell"><div class="label">Valor do Imóvel</div><div class="value">${fmt(valorLote)}</div></div>
+    </div>
+  </div>
+
+  <!-- RESUMO FINANCEIRO -->
+  <div class="section">
+    <div class="section-title">Resumo Financeiro</div>
+    <div class="financeiro">
+      <div class="fin-cell"><div class="label">Valor do Imóvel</div><div class="value">${fmt(valorLote)}</div></div>
+      <div class="fin-cell destaque"><div class="label">À Vista (${descontoAVista}% desc.)</div><div class="value">${fmt(valorAVista)}</div></div>
+      <div class="fin-cell"><div class="label">Entrada (${entradaPct}%)</div><div class="value">${fmt(entrada)}</div></div>
+      <div class="fin-cell"><div class="label">Saldo a Financiar</div><div class="value">${fmt(saldo)}</div></div>
+    </div>
+  </div>
+
+  <!-- PARCELAMENTO -->
+  <div class="section">
+    <div class="section-title">Opções de Parcelamento</div>
+    <table>
+      <thead><tr>
+        <th>Modalidade</th>
+        <th>Taxa</th>
+        <th>Parcela Mensal</th>
+        <th>Total</th>
+      </tr></thead>
+      <tbody>${linhasParcelas}</tbody>
+    </table>
+  </div>
+
+  ${observacao ? `<div class="obs"><strong>Observação:</strong> ${observacao}</div>` : ''}
+
+  <!-- RODAPÉ -->
+  <div class="rodape">
+    <div class="rodape-texto">
+      Proposta válida por 15 dias a partir da emissão.<br/>
+      Sujeita à aprovação cadastral. Valores em R$ (reais).
+    </div>
+    <div class="assinatura">
+      <div class="assinatura-linha"></div>
+      <div class="assinatura-label">Assinatura do Responsável</div>
+    </div>
+  </div>
+
 </div>
-
-<h2>Dados do Imóvel</h2>
-<div class="grid">
-  <div class="row"><span>Empreendimento</span><strong>${lote?.empreendimento_nome || '—'}</strong></div>
-  <div class="row"><span>Quadra / Lote</span><strong>Qd. ${lote?.quadra_nome} — Lote ${lote?.numero}</strong></div>
-  ${lote?.area ? `<div class="row"><span>Área</span><strong>${lote.area} m²</strong></div>` : ''}
-  ${lote?.dimensoes ? `<div class="row"><span>Dimensões</span><strong>${lote.dimensoes}</strong></div>` : ''}
-  <div class="row"><span>Valor</span><strong>${fmt(valorLote)}</strong></div>
-</div>
-
-<h2>A/C — ${nomeCliente || ''}${cpf ? ` &nbsp;|&nbsp; CPF: ${cpf}` : ''}</h2>
-
-<h2>Condições Comerciais</h2>
-<div class="grid">
-  <div class="row"><span>Valor do Imóvel</span><strong>${fmt(valorLote)}</strong></div>
-  <div class="row highlight"><span>À Vista (${descontoAVista}% de desconto)</span><strong>${fmt(valorAVista)}</strong></div>
-  <div class="row"><span>Entrada (${entradaPct}%)</span><strong>${fmt(entrada)}</strong></div>
-  <div class="row"><span>Saldo a Financiar</span><strong>${fmt(saldo)}</strong></div>
-</div>
-
-<h2>Opções de Parcelamento</h2>
-<table>
-  <tbody>${linhasParcelas}</tbody>
-</table>
-
-${observacao ? `<p class="obs">Obs: ${observacao}</p>` : ''}
-
-<div class="rodape">Proposta válida por 15 dias a partir da emissão. Sujeita à aprovação cadastral.</div>
 </body>
 </html>`;
 }
