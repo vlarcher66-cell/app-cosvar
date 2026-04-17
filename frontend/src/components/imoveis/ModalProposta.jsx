@@ -247,7 +247,7 @@ export default function ModalProposta({ lote, onClose, onSaved, onFecharNegocio 
                 <div className={s.resumoItem}><span>Saldo a Financiar</span><strong>{formatCurrency(saldo)}</strong></div>
               </div>
 
-              {/* Tabela de opções */}
+              {/* Tabela de opções — apenas informativa */}
               <div className={s.tabelaWrap}>
                 <div className={s.tabelaTitle}>Opções de Parcelamento</div>
                 <table className={s.tabela}>
@@ -257,23 +257,17 @@ export default function ModalProposta({ lote, onClose, onSaved, onFecharNegocio 
                       <th>Taxa a.m. (%)</th>
                       <th>Valor da Parcela</th>
                       <th>Total</th>
-                      <th>Sel.</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {/* Linha À Vista */}
-                    <tr className={opcaoEscolhida === 'avista' ? s.rowSelected : s.rowAvista}>
+                    <tr className={s.rowAvista}>
                       <td><strong style={{ color: '#10b981' }}>À Vista</strong></td>
                       <td><span style={{ color: '#10b981', fontSize: '0.72rem', fontWeight: 700 }}>{descontoAVista}% de desconto</span></td>
                       <td className={s.mono}><strong style={{ color: '#10b981' }}>{formatCurrency(valorAVista)}</strong></td>
                       <td className={s.mono} style={{ color: '#10b981' }}>{formatCurrency(valorAVista)}</td>
-                      <td style={{ textAlign: 'center' }}>
-                        <input type="radio" name="opcao" checked={opcaoEscolhida === 'avista'}
-                          onChange={() => setOpcaoEscolhida('avista')} />
-                      </td>
                     </tr>
                     {opcoes.map((op, i) => (
-                      <tr key={i} className={opcaoEscolhida === i ? s.rowSelected : ''}>
+                      <tr key={i}>
                         <td>
                           <div className={s.inputInlineGroup}>
                             <input className={s.inputSm} type="number" min="1" value={taxas[i].n}
@@ -292,10 +286,6 @@ export default function ModalProposta({ lote, onClose, onSaved, onFecharNegocio 
                         </td>
                         <td className={s.mono}><strong>{formatCurrency(op.pmt)}</strong></td>
                         <td className={s.mono}>{formatCurrency(op.pmt * op.n + entrada)}</td>
-                        <td style={{ textAlign: 'center' }}>
-                          <input type="radio" name="opcao" checked={opcaoEscolhida === i}
-                            onChange={() => setOpcaoEscolhida(i)} />
-                        </td>
                       </tr>
                     ))}
                   </tbody>
