@@ -72,6 +72,12 @@
 .btnSave:hover:not(:disabled) { background: #059669; }
 .btnSave:disabled { opacity: 0.5; cursor: not-allowed; }
 
+.fecharNegocioBox { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.3); border-radius: var(--r-md); padding: 12px 16px; }
+.fecharNegocioTexto { font-size: var(--text-sm); font-weight: 600; color: #10b981; }
+.btnFecharNegocio { height: 38px; padding: 0 20px; border: none; border-radius: var(--r-md); background: #10b981; color: #fff; font-size: var(--text-sm); font-weight: 700; cursor: pointer; white-space: nowrap; }
+.btnFecharNegocio:hover { background: #059669; }
+
 @media (max-width: 600px) {
   .grid2, .clienteGrid, .paramRow, .resumo { grid-template-columns: 1fr; }
+  .fecharNegocioBox { flex-direction: column; align-items: flex-start; }
 }

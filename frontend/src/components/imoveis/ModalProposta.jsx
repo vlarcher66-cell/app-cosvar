@@ -24,7 +24,7 @@ function calcPMT(pv, taxa, n) {
   return pv * taxa / (1 - Math.pow(1 + taxa, -n));
 }
 
-export default function ModalProposta({ lote, onClose, onSaved }) {
+export default function ModalProposta({ lote, onClose, onSaved, onFecharNegocio }) {
   const [aba, setAba] = useState('lote');
   const [saving, setSaving] = useState(false);
   const [clientes, setClientes] = useState([]);
@@ -72,6 +72,8 @@ export default function ModalProposta({ lote, onClose, onSaved }) {
     ));
   };
 
+  const [propostaSalva, setPropostaSalva] = useState(null); // { id, contrato_cliente_id }
+
   const handleSave = async () => {
     if (!valorLote) return alert('Informe o valor do lote');
     const nomeCliente = modoCliente === 'existente' ? clientes.find(c => String(c.id) === String(clienteId))?.nome : cliente.nome;
@@ -79,7 +81,7 @@ export default function ModalProposta({ lote, onClose, onSaved }) {
 
     setSaving(true);
     try {
-      await propostaLoteService.create({
+      const res = await propostaLoteService.create({
         lote_id: lote.id,
         cliente_imovel_id: modoCliente === 'existente' ? clienteId : null,
         cliente: modoCliente === 'novo' ? cliente : null,
@@ -88,8 +90,10 @@ export default function ModalProposta({ lote, onClose, onSaved }) {
         entrada_pct: parseFloat(entradaPct || 0),
         entrada_valor: entrada,
         parcelas_json: [{ n: 0, taxa: 0, pmt: valorAVista, avista: true }, ...opcoes],
+        opcao_escolhida: opcaoEscolhida,
         observacao,
       });
+      setPropostaSalva({ id: res.data?.id, cliente_imovel_id: res.data?.cliente_imovel_id });
       onSaved?.();
     } catch (err) {
       alert(err?.response?.data?.message || 'Erro ao salvar proposta');
@@ -298,12 +302,21 @@ export default function ModalProposta({ lote, onClose, onSaved }) {
                 </table>
               </div>
 
+              {propostaSalva && (
+                <div className={s.fecharNegocioBox}>
+                  <span className={s.fecharNegocioTexto}>✅ Proposta salva! Cliente interessado?</span>
+                  <button className={s.btnFecharNegocio} onClick={() => onFecharNegocio?.(propostaSalva)}>
+                    Fechar Negócio → Contrato
+                  </button>
+                </div>
+              )}
+
               <div className={s.nextRow} style={{ justifyContent: 'space-between' }}>
                 <button className={s.btnSecondary} onClick={() => setAba('cliente')}>← Voltar</button>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button className={s.btnPrint} onClick={handlePrint}>🖨 Imprimir</button>
-                  <button className={s.btnSave} onClick={handleSave} disabled={saving}>
-                    {saving ? 'Salvando...' : 'Salvar Proposta'}
+                  <button className={s.btnSave} onClick={handleSave} disabled={saving || !!propostaSalva}>
+                    {saving ? 'Salvando...' : propostaSalva ? 'Salva ✓' : 'Salvar Proposta'}
                   </button>
                 </div>
               </div>

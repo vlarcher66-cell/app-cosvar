@@ -13,6 +13,8 @@ import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import DateInput from '../../components/ui/DateInput';
 import CurrencyInput from '../../components/ui/CurrencyInput';
 import ModalProposta from '../../components/imoveis/ModalProposta';
+import ModalFecharNegocio from '../../components/imoveis/ModalFecharNegocio';
+import propostaLoteService from '../../services/propostaLoteService';
 import { useGlobalToast } from '../../components/layout/MainLayout';
 import { formatCurrency, formatDate, formatDateInput } from '../../utils/formatters';
 import s from './MapaLoteamentoPage.module.css';
@@ -63,6 +65,8 @@ export default function MapaLoteamentoPage() {
   const [contas,      setContas]      = useState([]);
   const [formas,      setFormas]      = useState([]);
   const [contratoDetalhe, setContratoDetalhe] = useState(null);
+  const [propostaDetalhe, setPropostaDetalhe] = useState(null);
+  const [modalFechar, setModalFechar] = useState(false);
 
   const [aba, setAba] = useState('mapa');
 
@@ -178,6 +182,7 @@ export default function MapaLoteamentoPage() {
   // Abre modal de detalhe do lote
   const abrirDetalhe = async (lote) => {
     setSelected(lote);
+    setPropostaDetalhe(null);
     if (lote.contrato_id) {
       try {
         const c = await contratoLoteService.getOne(lote.contrato_id);
@@ -185,6 +190,13 @@ export default function MapaLoteamentoPage() {
       } catch { setContratoDetalhe(null); }
     } else {
       setContratoDetalhe(null);
+    }
+    if (lote.status === 'reservado' && !lote.contrato_id) {
+      try {
+        const propostas = await propostaLoteService.getByLote(lote.id);
+        const ativa = propostas.find(p => p.status === 'pendente') || propostas[0] || null;
+        setPropostaDetalhe(ativa);
+      } catch { setPropostaDetalhe(null); }
     }
     setModalDetalhe(true);
   };
@@ -499,6 +511,17 @@ export default function MapaLoteamentoPage() {
 
               {selected.observacao && <p className={s.obs}>{selected.observacao}</p>}
 
+              {propostaDetalhe && (
+                <div className={s.propostaResumo}>
+                  <div className={s.propostaResumoTitulo}>📋 Proposta pendente</div>
+                  <div className={s.propostaResumoRow}><span>Cliente</span><strong>{propostaDetalhe.cliente_nome || '—'}</strong></div>
+                  <div className={s.propostaResumoRow}><span>Valor</span><strong>{formatCurrency(propostaDetalhe.valor_total)}</strong></div>
+                  {propostaDetalhe.entrada_valor > 0 && (
+                    <div className={s.propostaResumoRow}><span>Entrada</span><strong>{formatCurrency(propostaDetalhe.entrada_valor)}</strong></div>
+                  )}
+                </div>
+              )}
+
               <div className={s.detalheActions}>
                 <Button variant="secondary" onClick={() => abrirEditLote(selected)}>
                   <IcoEdit /> Editar Lote
@@ -513,6 +536,20 @@ export default function MapaLoteamentoPage() {
                         Fazer Proposta
                       </Button>
                     : <div className={s.semValorAviso}>⚠ Defina o valor do lote para fazer proposta</div>
+                )}
+                {selected.status === 'reservado' && !contratoDetalhe && propostaDetalhe && (
+                  <Button variant="primary" onClick={() => setModalFechar(true)}>
+                    Fechar Negócio → Contrato
+                  </Button>
+                )}
+                {selected.status === 'reservado' && !contratoDetalhe && !propostaDetalhe && (
+                  <Button variant="primary" onClick={() => {
+                    setLoteParaProposta({ ...selected, empreendimento_nome: emp?.nome });
+                    setModalDetalhe(false);
+                    setModalProposta(true);
+                  }}>
+                    Fazer Proposta / Contrato
+                  </Button>
                 )}
                 {contratoDetalhe && (
                   <Button variant="secondary" onClick={() => navigate(`/imoveis/contratos/${contratoDetalhe.id}`)}>
@@ -693,9 +730,33 @@ export default function MapaLoteamentoPage() {
           lote={loteParaProposta}
           onClose={() => setModalProposta(false)}
           onSaved={() => {
-            setModalProposta(false);
             toast?.success('Proposta salva! Lote marcado como reservado.');
             load();
+          }}
+          onFecharNegocio={async (propostaSalva) => {
+            setModalProposta(false);
+            try {
+              const p = await propostaLoteService.getOne(propostaSalva.id);
+              setPropostaDetalhe(p);
+            } catch {
+              setPropostaDetalhe(propostaSalva);
+            }
+            setModalFechar(true);
+          }}
+        />
+      )}
+
+      {/* Modal Fechar Negócio */}
+      {modalFechar && propostaDetalhe && (
+        <ModalFecharNegocio
+          proposta={propostaDetalhe}
+          onClose={() => setModalFechar(false)}
+          onContratoCriado={(contratoId) => {
+            setModalFechar(false);
+            setModalDetalhe(false);
+            toast?.success('Contrato gerado com sucesso!');
+            load();
+            if (contratoId) navigate(`/imoveis/contratos/${contratoId}`);
           }}
         />
       )}
