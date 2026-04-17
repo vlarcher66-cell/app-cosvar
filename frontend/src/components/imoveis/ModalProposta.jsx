@@ -5,13 +5,15 @@ import clienteImovelService from '../../services/clienteImovelService';
 import propostaLoteService from '../../services/propostaLoteService';
 import s from './ModalProposta.module.css';
 
-// Taxas padrão editáveis
-const TAXAS_PADRAO = [
-  { n: 12,  taxa: 0    },
-  { n: 24,  taxa: 0    },
-  { n: 36,  taxa: 0.99 },
-  { n: 48,  taxa: 1.10 },
+// Opções fixas vinculadas: parcelas → taxa automática
+const OPCOES_PADRAO = [
+  { n: 12, taxa: 0    },
+  { n: 24, taxa: 0.99 },
+  { n: 36, taxa: 1.10 },
 ];
+
+// Tabela de vinculação n → taxa padrão
+const TAXA_POR_N = { 12: 0, 24: 0.99, 36: 1.10 };
 
 const parseBR = (v) => parseFloat(String(v || '0').replace(/\./g, '').replace(',', '.')) || 0;
 
@@ -37,8 +39,8 @@ export default function ModalProposta({ lote, onClose, onSaved }) {
   // Aba Proposta
   const [descontoAVista, setDescontoAVista] = useState('5');
   const [entradaPct, setEntradaPct] = useState('30');
-  const [taxas, setTaxas] = useState(TAXAS_PADRAO.map(t => ({ ...t })));
-  const [opcaoEscolhida, setOpcaoEscolhida] = useState(null); // idx da linha escolhida para converter
+  const [taxas, setTaxas] = useState(OPCOES_PADRAO.map(t => ({ ...t })));
+  const [opcaoEscolhida, setOpcaoEscolhida] = useState(null);
   const [observacao, setObservacao] = useState('');
 
   useEffect(() => {
@@ -59,7 +61,15 @@ export default function ModalProposta({ lote, onClose, onSaved }) {
   });
 
   const setTaxa = (i, val) => setTaxas(prev => prev.map((t, idx) => idx === i ? { ...t, taxa: parseFloat(val) || 0 } : t));
-  const setN    = (i, val) => setTaxas(prev => prev.map((t, idx) => idx === i ? { ...t, n: parseInt(val) || 1 } : t));
+  const setN    = (i, val) => {
+    const n = parseInt(val) || 1;
+    // Vincula taxa automaticamente se houver padrão para esse nº de parcelas
+    const taxa = TAXA_POR_N.hasOwnProperty(n) ? TAXA_POR_N[n] : null;
+    setTaxas(prev => prev.map((t, idx) => idx === i
+      ? { ...t, n, taxa: taxa !== null ? taxa : t.taxa }
+      : t
+    ));
+  };
 
   const handleSave = async () => {
     if (!valorLote) return alert('Informe o valor do lote');
@@ -257,7 +267,9 @@ export default function ModalProposta({ lote, onClose, onSaved }) {
                           <div className={s.inputInlineGroup}>
                             <input className={s.inputSm} type="number" step="0.01" min="0" value={taxas[i].taxa}
                               onChange={e => setTaxa(i, e.target.value)} />
-                            <span className={s.inputInlineSuffix}>% a.m.</span>
+                            <span className={s.inputInlineSuffix} style={{ color: op.taxa === 0 ? '#10b981' : 'var(--text-muted)' }}>
+                              {op.taxa === 0 ? 'SEM JUROS' : '% a.m.'}
+                            </span>
                           </div>
                         </td>
                         <td className={s.mono}><strong>{formatCurrency(op.pmt)}</strong></td>
@@ -292,14 +304,16 @@ export default function ModalProposta({ lote, onClose, onSaved }) {
 // Gera HTML para impressão no padrão da proposta COSVAR
 function gerarHtmlProposta({ lote, valorLote, valorAVista, entrada, saldo, descontoAVista, entradaPct, opcoes, nomeCliente, cpf, observacao }) {
   const fmt = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-  const linhasParcelas = opcoes.map(op =>
-    `<tr>
-      <td>${op.n}x</td>
-      <td>${op.taxa > 0 ? op.taxa.toFixed(2) + '% a.m.' : 'SEM JUROS'}</td>
+  const linhasParcelas = opcoes.map(op => {
+    const label = op.taxa > 0
+      ? `${op.n}X  TAXA  ${String(op.taxa.toFixed(2)).replace('.', ',')} a/m:`
+      : `${op.n}X  SEM JUROS:`;
+    return `<tr>
+      <td>${label}</td>
       <td><strong>${fmt(op.pmt)}</strong></td>
-      <td>${fmt(op.pmt * op.n + entrada)}</td>
-    </tr>`
-  ).join('');
+      <td style="color:#555; font-size:11px">${op.taxa > 0 ? '' : 'SEM JUROS'}</td>
+    </tr>`;
+  }).join('');
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -354,7 +368,6 @@ function gerarHtmlProposta({ lote, valorLote, valorAVista, entrada, saldo, desco
 
 <h2>Opções de Parcelamento</h2>
 <table>
-  <thead><tr><th>Parcelas</th><th>Juros</th><th>Valor da Parcela</th><th>Total Financiado</th></tr></thead>
   <tbody>${linhasParcelas}</tbody>
 </table>
 
