@@ -821,7 +821,7 @@
 }
 
 /* ── Tab Content ── */
-.tabContent { display: flex; flex-direction: column; gap: 16px; }
+.tabContent { display: flex; flex-direction: column; gap: 28px; }
 
 /* ══ ANÁLISES — ESTILO RELATÓRIO PROFISSIONAL ══ */
 .emptyState {
