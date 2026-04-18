@@ -36,6 +36,7 @@ const getResumo = async (usuario_id, mes, ano) => {
     GROUP BY n.mes
     ORDER BY n.mes
   `, [usuario_id, ano, usuario_id, ano]);
+  console.log('[dashboard] evolucaoRaw:', JSON.stringify(evolucaoRaw));
   const evolucao = evolucaoRaw.map(r => ({ mes: Number(r.mes), receitas: parseFloat(r.receitas||0), despesas: parseFloat(r.despesas||0) }));
 
   // Cacau: vendas por mês no ano — todos os 12 meses
@@ -126,6 +127,7 @@ const getResumo = async (usuario_id, mes, ano) => {
   `, [usuario_id]);
 
   // Receitas por categoria no mês
+  console.log('[dashboard] recPorStatus:', JSON.stringify(recPorStatus));
   const [receitasPorCategoria] = await db.query(`
     SELECT cr.nome AS categoria, SUM(r.valor) AS total
     FROM receita r
