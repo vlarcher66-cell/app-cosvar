@@ -937,20 +937,22 @@
 @media (max-width: 800px) { .rptChartRow { grid-template-columns: 1fr; } }
 
 .rptChartBlock {
-  background: #0f2044;
-  border: 1px solid #1e3a5f;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: var(--r-lg);
   overflow: hidden;
+  box-shadow: var(--shadow-xs);
 }
 .rptChartHeader {
-  padding: 12px 20px 4px;
+  background: #0f2044;
+  padding: 12px 20px;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 8px;
 }
 .rptChartHeader span:first-child { font-size: 12px; font-weight: 700; color: #e2e8f0; }
-.rptChartSub { font-size: 10px; color: #64748b; }
+.rptChartSub { font-size: 10px; color: #94a3b8; }
 
 /* compatibilidade com classes antigas que possam estar em uso */
 .analiseGrid, .analiseCard, .analiseCardHeader, .analiseCardTitle,

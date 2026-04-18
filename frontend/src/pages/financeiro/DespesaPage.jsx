@@ -1139,7 +1139,7 @@ function TabAnalises({ toast }) {
     dataLabels: { enabled: false },
     legend: {
       position: 'right', fontSize: '11px',
-      labels: { colors: '#cbd5e1' },
+      labels: { colors: 'var(--text-muted, #64748b)' },
       markers: { radius: 3 },
       formatter: (name, opts) => {
         const v = opts.w.globals.series[opts.seriesIndex];
@@ -1147,7 +1147,7 @@ function TabAnalises({ toast }) {
         return `${name} — ${pct}%`;
       },
     },
-    plotOptions: { pie: { donut: { size: '65%', labels: { show: true, total: { show: true, label: 'Total', color: '#94a3b8', fontSize: '11px', formatter: w => `R$ ${fmtBRL(w.globals.seriesTotals.reduce((a,b)=>a+b,0))}` } } } } },
+    plotOptions: { pie: { donut: { size: '65%', labels: { show: true, total: { show: true, label: 'Total', color: '#64748b', fontSize: '11px', formatter: w => `R$ ${fmtBRL(w.globals.seriesTotals.reduce((a,b)=>a+b,0))}` } } } } },
     stroke: { show: false },
     tooltip: { theme: 'dark', y: { formatter: v => `R$ ${fmtBRL(v)}` } },
   };
@@ -1168,21 +1168,20 @@ function TabAnalises({ toast }) {
   };
 
   // ── AreaChart evolução mensal ──
-  const mesesComDados = MESES.filter((_, i) => totaisMes[i] > 0);
   const areaOpts = {
     chart: { type: 'area', toolbar: { show: false }, background: 'transparent', fontFamily: 'inherit', animations: { speed: 600 }, zoom: { enabled: false } },
     colors: ['#2563eb', '#10b981'],
-    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.3, opacityTo: 0.02, stops: [0, 100] } },
+    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.25, opacityTo: 0.02, stops: [0, 100] } },
     stroke: { curve: 'smooth', width: 2 },
     dataLabels: { enabled: false },
     xaxis: {
       categories: MESES,
-      labels: { style: { colors: '#94a3b8', fontSize: '10px' } },
+      labels: { style: { colors: '#64748b', fontSize: '10px' } },
       axisBorder: { show: false }, axisTicks: { show: false },
     },
-    yaxis: { labels: { formatter: v => v >= 1000 ? `R$${(v/1000).toFixed(0)}k` : `R$${v}`, style: { colors: '#94a3b8', fontSize: '10px' } } },
-    grid: { borderColor: '#1e293b', strokeDashArray: 3 },
-    legend: { position: 'top', horizontalAlign: 'left', labels: { colors: '#94a3b8' }, markers: { radius: 3 } },
+    yaxis: { labels: { formatter: v => v >= 1000 ? `R$${(v/1000).toFixed(0)}k` : `R$${v}`, style: { colors: '#64748b', fontSize: '10px' } } },
+    grid: { borderColor: '#e2e8f0', strokeDashArray: 3 },
+    legend: { position: 'top', horizontalAlign: 'left', labels: { colors: '#64748b' }, markers: { radius: 3 } },
     tooltip: { theme: 'dark', y: { formatter: v => `R$ ${fmtBRL(v)}` } },
   };
   const areaSeries = [
