@@ -80,10 +80,12 @@
 /* ── KPI Cards ── */
 .kpis {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(6, 1fr);
   gap: 14px;
   align-items: stretch;
 }
+@media (max-width: 1100px) { .kpis { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 600px)  { .kpis { grid-template-columns: repeat(2, 1fr); } }
 
 .kpi {
   background: var(--surface);
@@ -126,11 +128,13 @@
 .kpiBody { flex: 1; min-width: 0; }
 .kpiValue {
   font-family: var(--font-mono);
-  font-size: clamp(0.75rem, 1.5vw, var(--text-md));
+  font-size: clamp(0.7rem, 1.1vw, var(--text-md));
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.02em;
-  word-break: break-all;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .kpiLabel {
   font-size: var(--text-xs);

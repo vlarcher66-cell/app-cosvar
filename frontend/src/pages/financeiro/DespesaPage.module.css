@@ -120,11 +120,13 @@
 
 .kpiValue {
   font-family: var(--font-mono);
-  font-size: clamp(0.75rem, 1.5vw, var(--text-md));
+  font-size: clamp(0.7rem, 1.1vw, var(--text-md));
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.02em;
-  word-break: break-all;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .kpi_pago     .kpiValue { color: #059669; }
