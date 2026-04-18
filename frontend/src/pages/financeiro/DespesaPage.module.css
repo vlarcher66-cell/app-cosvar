@@ -823,7 +823,7 @@
 /* ── Tab Content ── */
 .tabContent { display: flex; flex-direction: column; gap: 16px; }
 
-/* ══ ANÁLISES ══ */
+/* ══ ANÁLISES — ESTILO RELATÓRIO PROFISSIONAL ══ */
 .emptyState {
   text-align: center;
   padding: 60px 20px;
@@ -831,117 +831,133 @@
   font-size: var(--text-sm);
 }
 
-/* Chart grid 2 colunas */
-.analiseChartGrid {
+/* bloco de relatório */
+.rptBlock {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-xs);
+}
+
+/* header azul escuro */
+.rptHeader {
+  background: #0f2044;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.rptHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #7dd3fc;
+}
+.rptHeaderLeft svg { width: 18px; height: 18px; }
+.rptTitle  { font-size: var(--text-sm); font-weight: 700; color: #e2e8f0; letter-spacing: 0.01em; }
+.rptSub    { font-size: var(--text-xs); color: #64748b; margin-top: 1px; }
+.rptBadge  { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; color: #94a3b8; background: #1e293b; border: 1px solid #334155; border-radius: 4px; padding: 3px 8px; white-space: nowrap; }
+
+/* scroll horizontal para a tabela */
+.rptTableWrap { overflow-x: auto; }
+
+.rptTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* cabeçalho da tabela */
+.rptTable thead tr {
+  background: #0f2044;
+}
+.rptTh, .rptThDesc, .rptThTotal, .rptThMedia {
+  padding: 8px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  color: #94a3b8;
+  text-align: right;
+  border-bottom: 1px solid #1e3a5f;
+}
+.rptThDesc  { text-align: left; min-width: 180px; padding-left: 20px; }
+.rptThTotal { color: #f1a227; min-width: 100px; }
+.rptThMedia { color: #f1a227; min-width: 90px; }
+
+/* células */
+.rptTd { padding: 7px 10px; text-align: right; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.rptTdDesc     { padding: 8px 10px 8px 20px; text-align: left; font-weight: 700; color: var(--text); font-size: 11px; letter-spacing: 0.04em; }
+.rptTdDescGrupo { padding: 8px 10px 8px 20px; text-align: left; color: var(--text); font-size: 11px; display: flex; align-items: center; gap: 8px; }
+.rptTdDescForn  { padding: 8px 10px 8px 20px; text-align: left; color: var(--text); font-size: 11px; position: relative; min-width: 180px; }
+.rptTdTotal { padding: 7px 10px; text-align: right; font-weight: 700; font-size: 11px; font-variant-numeric: tabular-nums; }
+.rptTdMedia { padding: 7px 10px; text-align: right; font-weight: 700; font-size: 11px; font-variant-numeric: tabular-nums; color: #f1a227; }
+
+/* barra lateral colorida no grupo */
+.rptGrupoBar {
+  display: inline-block;
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* mini barra inline no fornecedor */
+.rptFornBar {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: rgba(37,99,235,0.07);
+  pointer-events: none;
+  max-width: 100%;
+}
+
+/* linhas zebradas */
+.rptRowEven { background: var(--surface); }
+.rptRowOdd  { background: var(--surface-2, #f8fafc08); }
+.rptRowEven:hover, .rptRowOdd:hover { background: rgba(37,99,235,0.06); }
+
+/* linha total em negrito */
+.rptRowTotal td { background: #0f2044 !important; color: #e2e8f0 !important; font-weight: 700; }
+.rptRowTotal .rptTdTotal, .rptRowTotal .rptTdMedia { color: #f1a227 !important; }
+
+/* linha crescimento */
+.rptRowCrescLabel td { background: var(--surface-2, #f8fafc05); font-size: 10px; letter-spacing: 0.04em; }
+.rptRowCrescLabel .rptTdDesc { color: var(--text-muted); font-size: 10px; }
+.rptPos { color: #10b981 !important; font-weight: 700; }
+.rptNeg { color: #ef4444 !important; font-weight: 700; }
+
+/* gráficos lado a lado */
+.rptChartRow {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
-@media (max-width: 860px) {
-  .analiseChartGrid { grid-template-columns: 1fr; }
-}
+@media (max-width: 800px) { .rptChartRow { grid-template-columns: 1fr; } }
 
-.analiseChartCard {
-  background: var(--surface);
-  border: 1px solid var(--border);
+.rptChartBlock {
+  background: #0f2044;
+  border: 1px solid #1e3a5f;
   border-radius: var(--r-lg);
-  padding: 20px 20px 12px;
-  box-shadow: var(--shadow-xs);
-}
-
-.analiseChartTitle {
-  font-family: var(--font-display);
-  font-size: var(--text-sm);
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: -0.01em;
-  margin-bottom: 8px;
-}
-
-/* Cards por grupo */
-.analiseGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 14px;
-}
-
-.analiseCard {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  padding: 18px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  box-shadow: var(--shadow-xs);
-  transition: box-shadow 0.2s, border-color 0.2s;
-}
-.analiseCard:hover {
-  border-color: var(--primary-soft, #6366f130);
-  box-shadow: 0 4px 20px rgba(99,102,241,0.10);
-}
-
-.analiseCardHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.analiseCardTitle {
-  font-family: var(--font-display);
-  font-size: var(--text-sm);
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: -0.01em;
-}
-
-.analiseCardChevron {
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-}
-
-.analiseCardTotal {
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: var(--text);
-  letter-spacing: -0.02em;
-}
-
-.analiseBar {
-  height: 6px;
-  background: var(--surface-2);
-  border-radius: 6px;
   overflow: hidden;
-  display: flex;
 }
-.analiseBarPago     { height: 100%; background: #10b981; border-radius: 6px 0 0 6px; }
-.analiseBarPendente { height: 100%; background: #f59e0b; border-radius: 0 6px 6px 0; }
-
-.analiseCardDetail { display: flex; gap: 10px; flex-wrap: wrap; }
-.analiseTagPago    { font-size: var(--text-xs); color: #10b981; font-weight: 600; }
-.analiseTagPendente { font-size: var(--text-xs); color: #f59e0b; font-weight: 600; }
-
-.analiseCardExpanded {
-  overflow: hidden;
-  border-top: 1px solid var(--border);
-  padding-top: 10px;
+.rptChartHeader {
+  padding: 12px 20px 4px;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.analiseCardExpandedRow {
-  display: flex;
+  align-items: baseline;
   justify-content: space-between;
-  font-size: var(--text-xs);
-  color: var(--text-muted);
+  gap: 8px;
 }
-.analiseCardExpandedRow strong {
-  color: var(--text);
-  font-weight: 700;
-}
+.rptChartHeader span:first-child { font-size: 12px; font-weight: 700; color: #e2e8f0; }
+.rptChartSub { font-size: 10px; color: #64748b; }
+
+/* compatibilidade com classes antigas que possam estar em uso */
+.analiseGrid, .analiseCard, .analiseCardHeader, .analiseCardTitle,
+.analiseCardChevron, .analiseCardTotal, .analiseBar, .analiseBarPago,
+.analiseBarPendente, .analiseCardDetail, .analiseTagPago, .analiseTagPendente,
+.analiseCardExpanded, .analiseCardExpandedRow,
+.analiseChartGrid, .analiseChartCard, .analiseChartTitle { display: none; }
 
 /* ── Carrinho totais com desconto ── */
 .carrinhoTotais {
