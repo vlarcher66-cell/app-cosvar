@@ -17,29 +17,35 @@ const getResumo = async (usuario_id, mes, ano) => {
   const recRecebidas   = recPorStatus.find(r => r.status === 'recebido')?.total || 0;
   const recPendentes   = recPorStatus.find(r => r.status === 'pendente')?.total || 0;
 
-  // Evolução mensal receitas vs despesas (ano inteiro)
-  const [evolucao] = await db.query(`
+  // Evolução mensal receitas vs despesas — todos os 12 meses do ano
+  const [evolucaoRaw] = await db.query(`
     SELECT
-      m.mes,
-      COALESCE(SUM(CASE WHEN tipo='receita' AND status IN ('recebido','pendente') THEN valor ELSE 0 END),0) AS receitas,
-      COALESCE(SUM(CASE WHEN tipo='despesa' AND status IN ('pago','pendente') THEN valor ELSE 0 END),0) AS despesas
+      n.mes,
+      COALESCE(SUM(CASE WHEN tipo='receita' THEN valor ELSE 0 END),0) AS receitas,
+      COALESCE(SUM(CASE WHEN tipo='despesa' THEN valor ELSE 0 END),0) AS despesas
     FROM (
-      SELECT MONTH(data) AS mes, valor, status, 'receita' AS tipo FROM receita WHERE usuario_id = ? AND YEAR(data) = ?
+      SELECT 1 AS mes UNION SELECT 2 UNION SELECT 3 UNION SELECT 4
+      UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8
+      UNION SELECT 9 UNION SELECT 10 UNION SELECT 11 UNION SELECT 12
+    ) n
+    LEFT JOIN (
+      SELECT MONTH(data) AS mes, valor, 'receita' AS tipo FROM receita WHERE usuario_id = ? AND YEAR(data) = ?
       UNION ALL
-      SELECT MONTH(data) AS mes, valor, status, 'despesa' AS tipo FROM despesa WHERE usuario_id = ? AND YEAR(data) = ?
-    ) m
-    GROUP BY m.mes
-    ORDER BY m.mes
+      SELECT MONTH(data) AS mes, valor, 'despesa' AS tipo FROM despesa WHERE usuario_id = ? AND YEAR(data) = ?
+    ) m ON m.mes = n.mes
+    GROUP BY n.mes
+    ORDER BY n.mes
   `, [usuario_id, ano, usuario_id, ano]);
+  const evolucao = evolucaoRaw.map(r => ({ mes: Number(r.mes), receitas: parseFloat(r.receitas||0), despesas: parseFloat(r.despesas||0) }));
 
-  // Cacau: vendas por mês no ano
-  const [cacauVendas] = await db.query(`
-    SELECT MONTH(data) AS mes, SUM(valor_total) AS total, SUM(kg) AS kg, SUM(qtd_arrobas) AS arrobas
-    FROM cacau_baixa
-    WHERE YEAR(data) = ?
-    GROUP BY MONTH(data)
-    ORDER BY MONTH(data)
+  // Cacau: vendas por mês no ano — todos os 12 meses
+  const [cacauVendasRaw] = await db.query(`
+    SELECT n.mes, COALESCE(SUM(b.valor_total),0) AS total, COALESCE(SUM(b.kg),0) AS kg, COALESCE(SUM(b.qtd_arrobas),0) AS arrobas
+    FROM (SELECT 1 AS mes UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION SELECT 11 UNION SELECT 12) n
+    LEFT JOIN cacau_baixa b ON MONTH(b.data) = n.mes AND YEAR(b.data) = ?
+    GROUP BY n.mes ORDER BY n.mes
   `, [ano]);
+  const cacauVendas = cacauVendasRaw.map(r => ({ mes: Number(r.mes), total: parseFloat(r.total||0), kg: parseFloat(r.kg||0), arrobas: parseFloat(r.arrobas||0) }));
 
   // Cacau: totais gerais
   const [[cacauTotais]] = await db.query(`
@@ -86,15 +92,15 @@ const getResumo = async (usuario_id, mes, ano) => {
     WHERE c.usuario_id = ?
   `, [usuario_id]);
 
-  // Imóveis: recebimentos por mês no ano
-  const [parcelasPorMes] = await db.query(`
-    SELECT MONTH(pl.data_pagamento) AS mes, SUM(pl.valor) AS total
-    FROM parcela_lote pl
-    JOIN contrato_lote c ON c.id = pl.contrato_id
-    WHERE c.usuario_id = ? AND pl.status='pago' AND YEAR(pl.data_pagamento) = ?
-    GROUP BY MONTH(pl.data_pagamento)
-    ORDER BY mes
-  `, [usuario_id, ano]);
+  // Imóveis: recebimentos por mês no ano — todos os 12 meses
+  const [parcelasPorMesRaw] = await db.query(`
+    SELECT n.mes, COALESCE(SUM(pl.valor),0) AS total
+    FROM (SELECT 1 AS mes UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION SELECT 11 UNION SELECT 12) n
+    LEFT JOIN parcela_lote pl ON MONTH(pl.data_pagamento) = n.mes AND YEAR(pl.data_pagamento) = ? AND pl.status='pago'
+    LEFT JOIN contrato_lote c ON c.id = pl.contrato_id AND c.usuario_id = ?
+    GROUP BY n.mes ORDER BY n.mes
+  `, [ano, usuario_id]);
+  const parcelasPorMes = parcelasPorMesRaw.map(r => ({ mes: Number(r.mes), total: parseFloat(r.total||0) }));
 
   // Lotes por status
   const [lotesPorStatus] = await db.query(`

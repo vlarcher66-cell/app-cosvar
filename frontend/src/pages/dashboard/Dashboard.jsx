@@ -111,10 +111,10 @@ export default function Dashboard() {
     </div>
   );
 
-  // Montar séries
-  const evolByMes = Array(12).fill(null).map((_, i) => data.evolucao?.find(e => e.mes === i+1) || { mes: i+1, receitas: 0, despesas: 0 });
-  const cacauByMes = Array(12).fill(null).map((_, i) => data.cacau?.vendas?.find(v => v.mes === i+1) || { mes: i+1, total: 0 });
-  const imovelByMes = Array(12).fill(null).map((_, i) => data.imoveis?.recebimentosPorMes?.find(v => v.mes === i+1) || { mes: i+1, total: 0 });
+  // Backend já retorna 12 meses em ordem
+  const evolByMes   = data.evolucao || Array(12).fill({ receitas: 0, despesas: 0 });
+  const cacauByMes  = data.cacau?.vendas || Array(12).fill({ total: 0 });
+  const imovelByMes = data.imoveis?.recebimentosPorMes || Array(12).fill({ total: 0 });
 
   const loteStatus = data.imoveis?.lotesPorStatus || [];
   const contratos  = data.imoveis?.contratos || {};
